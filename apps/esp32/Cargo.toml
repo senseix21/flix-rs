@@ -1,0 +1,15 @@
+[package]
+name = "flight-esp32"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+[lib]
+crate-type = ["rlib"]
+[features]
+default = []
+[dependencies]
+flight-core.workspace = true
+flight-protocol.workspace = true
+flight-config.workspace = true
+libm.workspace = true
+
