@@ -1,162 +1,224 @@
-# Flix Rust
+# Flix RS
 
-Rust rewrite of the Flix ESP32 quadcopter controller. The repository contains a deterministic `no_std` control core, protocol/configuration services, an ESP32-S3/MPU6050 firmware candidate, host replay and a Gazebo adapter.
+**A Rust flight controller for the Flix ESP32 quadcopter, with deterministic control, bounded communication, and Gazebo simulation.**
 
-**Development status:** software implementation spans Phases 0–8, with additional wired radio enrollment, authenticated replies, an opt-in battery guard and timing counters. Physical bench, battery acquisition, transport qualification and flight qualification remain open. PWM defaults to disabled and all board pins are unwired. Read the [execution report](docs/rust-rewrite/execution-report.md), [remaining plan](docs/rust-rewrite/remaining-plan.md) and [development runbook](docs/rust-rewrite/development-runbook.md) before using a target artifact.
+Flix RS is an educational and research rewrite of [Flix](https://github.com/okalachev/flix). It combines a portable `no_std` control core with ESP32-S3 firmware integration, authenticated MAVLink 2 communication, host replay tools, and a browser-accessible Gazebo environment.
 
-## How it works
+The GitHub repository is named `flix-rs`. Existing crate names, scripts, and Docker resources retain their `flight-*` and `flix-rust` names.
 
-Validated sensor samples and fresh authorized commands enter one Rust owner. The owner updates attitude/rates, selects STAB/ACRO/AUTO control, computes torque, and mixes four motor commands in rear-left/rear-right/front-right/front-left order. One final gate checks lifecycle, source lease, sensor age, generation and frame expiry. Disarm and faults stop output and invalidate cached frames. The SDK boundary adds a separate expiring physical motor-enable gate; its behavior still requires instrumented measurements.
+[Quick start](#quick-start) · [Simulation](#gazebo-simulation) · [Architecture](#architecture) · [Verification](#verification-status) · [Documentation](#documentation)
 
-| Package | Responsibility |
+## Project status
+
+**Development software; physical flight qualification is incomplete.** Firmware builds and simulation checks provide evidence for their stated workloads. They do not establish safe motor operation, target timing, radio reliability, or real flight behavior.
+
+The latest verification includes 49 Rust tests, 34 Python tests, 20 Gazebo scenarios, exact ESP32-S3 SDK builds, and signed QGroundControl discovery and parameter loading. Full C++/Rust plant comparisons still fail their original limits. Manual QGroundControl flight controls and physical hardware qualification remain open.
+
+See the [software acceptance report](docs/rust-rewrite/software-acceptance.md) for results, failures, commands, and trace provenance.
+
+## Capabilities
+
+- **Portable flight core:** attitude estimation, STAB/ACRO/AUTO control, PID control, motor mixing, and explicit lifecycle transitions.
+- **Bounded execution:** one owner of flight state, bounded queues, and a flight tick without heap allocation.
+- **Output safety:** source leases, sensor freshness, frame expiry, fault handling, and Stop priority through a final motor-output policy.
+- **Authenticated communication:** a defined MAVLink 2 subset with signing, replay checks, telemetry, and a 96-parameter schema.
+- **ESP32-S3 integration:** an MPU6050 driver and ESP-IDF adapters for sensor, output, storage, and transport boundaries.
+- **Simulation and replay:** a Gazebo 11 adapter, finite acceptance scenarios, raw traces, host benchmarks, and pinned legacy comparisons.
+- **Optional radio proxy:** a separate Rust application bridging native USB serial to an explicitly provisioned encrypted ESP-NOW peer.
+- **Local delivery tooling:** verified software packages, source inventories, staged installation, and package rollback.
+
+## Architecture
+
+Validated commands and sensor samples enter a single Rust owner. The owner updates estimation and lifecycle state, selects the control intent, computes torque, and mixes motor commands. A final safety policy decides whether those commands may reach the output boundary.
+
+```mermaid
+flowchart LR
+    Sensors[Validated sensor samples] --> Owner[Single flight-state owner]
+    Clients[Control clients] --> Ingress[Bounded authenticated ingress]
+    Ingress --> Owner
+    Owner --> Control[Estimator and controller]
+    Control --> Mixer[Four-motor mixer]
+    Mixer --> Safety[Final output safety policy]
+    Safety --> Output[ESP32 outputs or Gazebo adapter]
+    Owner --> Telemetry[Telemetry and parameter replies]
+```
+
+The shared contract uses FLU coordinates and rear-left, rear-right, front-right, front-left motor order. Stop and fault transitions invalidate cached output frames. The SDK boundary also has an expiring motor-enable gate; its physical behavior requires instrumented verification.
+
+| Component | Responsibility |
 | --- | --- |
-| `flight-core` | Time, FLU math, estimator, PID/mixing, lifecycle/safety, SBUS and log ring |
-| `flight-protocol` | Bounded MAVLink 2 subset, signing/replay validation, ingress, telemetry and peer limits |
-| `flight-config` | Generated 96-name schema, validation, versioned CRC records and interrupted-write recovery |
-| `flight-esp32` | Single-owner integration and bounded MPU6050 register driver |
-| `flight-replay` | CSV scenarios, legacy comparison, host benchmark, loopback bench and settings tools |
-| `flight-gazebo` | Owned instances behind a versioned C ABI; Gazebo 11 plant adapter |
+| [`crates/flight-core`](crates/flight-core) | Time, estimation, control, mixing, lifecycle, safety, SBUS, and log ring |
+| [`crates/flight-protocol`](crates/flight-protocol) | MAVLink framing, signing, replay validation, ingress, and telemetry |
+| [`crates/flight-config`](crates/flight-config) | Generated parameter schema, validation, persistence, and interrupted-write recovery |
+| [`apps/esp32`](apps/esp32) | Flight owner integration, sensor driver, and ESP32-S3 firmware boundary |
+| [`apps/proxy`](apps/proxy) | Serial / ESP-NOW bridge with bounded queues and Stop priority |
+| [`apps/replay`](apps/replay) | Replay, benchmarks, loopback bench, and settings tools |
+| [`adapters/gazebo`](adapters/gazebo) | Versioned C ABI and Gazebo plant integration |
+| [`tools`](tools) | Python clients, browser viewer, scenario analysis, and acceptance tooling |
 
-## Run on the host
+Flight logic is implemented in Rust. C and C++ remain at the ESP-IDF and Gazebo integration boundaries. Read the [architecture](docs/rust-rewrite/architecture.md) and [runtime decision](docs/rust-rewrite/adr-001-runtime.md) for ownership and boundary details.
 
-```sh
-cargo run --release -p flight-replay --bin flight-replay -- --demo
-cargo run --release -p flight-replay --bin flight-replay -- --benchmark
-sh scripts/check.sh
+## Quick start
+
+### Prerequisites
+
+- Rust through `rustup`; [`rust-toolchain.toml`](rust-toolchain.toml) pins the host toolchain to **1.92.0** with Clippy and rustfmt.
+- Python 3, Git, Make, and a host C++ compiler for the consolidated checks.
+- Docker for the documented Gazebo workflow.
+- The pinned original Flix checkout for legacy comparisons and simulator assets.
+
+Keep the two repositories beside each other:
+
+```text
+workspace/
+├── flix/       # Original Flix at the reviewed revision
+└── flix-rs/    # This repository
 ```
 
-The consolidated check includes Clippy, Rust tests, Python client tests against a real loopback Rust owner, C++ parity, ABI checks and deterministic simulator fault replay. Run `make sim-check` for actual Gazebo arm/motor/disarm checks in an isolated container. Keep the pinned legacy checkout at `../flix`, or set `FLIX_LEGACY`. A restricted environment must permit loopback sockets for the client test. Embedded portability can additionally be checked with:
-
 ```sh
-rustup target add thumbv7em-none-eabihf
-cargo check --manifest-path apps/esp32/firmware/Cargo.toml --locked --release --target thumbv7em-none-eabihf
+git clone https://github.com/senseix21/flix-rs.git
+git clone https://github.com/okalachev/flix.git
+git -C flix checkout 1f5b268271536e45a9377d1c5317d3eb6f3c3bba
+cd flix-rs
 ```
 
-The ARM check establishes `no_std` portability, not an ESP32 build.
+If the legacy checkout is elsewhere, set `FLIX_LEGACY` for host comparisons. The Docker commands below explicitly mount `../flix`.
 
-## Firmware and simulator
+### Run and check the host software
 
-The target build uses Rust Xtensa v1.88.0.0 and ESP-IDF v5.4.2. Install the named toolchain with espup, source its export file and ESP-IDF's `export.sh`, then run `sh scripts/build-esp32.sh`. Configure an actual verified bench profile with `idf.py -C apps/esp32/idf menuconfig`; default output is disabled. The first profile is a development candidate; follow the [qualification/recovery procedure](docs/rust-rewrite/qualification.md).
+```sh
+# Deterministic demonstration
+make demo
 
-For Gazebo 11, build the host Rust archive, then `cmake -S adapters/gazebo -B target/gazebo` and `cmake --build target/gazebo`. The supplied Dockerfile supports Linux verification. Point a copy of the legacy model's plugin at `libflix_rust.so`, assign a distinct loopback UDP port per instance, and preserve the legacy plant assets. Heading truth is not injected into ordinary scenarios.
+# Release build of the host workspace
+make build
 
-## Documentation
+# Formatting, generation checks, Clippy, tests, replay, and ABI checks
+make check
+```
 
-- [Completion report and remaining gates](docs/rust-rewrite/completion-report.md)
-- [Remaining implementation and qualification plan](docs/rust-rewrite/remaining-plan.md)
-- [Architecture](docs/rust-rewrite/architecture.md)
-- [Specification](docs/rust-rewrite-spec.md) and [phase plan](docs/rust-rewrite-plan.md)
-- [Behavior/compatibility changes](docs/rust-rewrite/compatibility.md)
-- [Runtime decision](docs/rust-rewrite/adr-001-runtime.md)
-- [Protocol/authentication contract](docs/rust-rewrite/protocol.md)
-- [Legacy architecture review](docs/architecture-review.md) and [source provenance](docs/legacy-source.md)
+The consolidated check includes Python integration tests against a real loopback Rust owner, 400 scalar legacy comparisons, simulator ABI safety checks, and a host benchmark. It requires permission to open local sockets. Actual Gazebo physics scenarios run separately.
 
-The engineering approach follows this repository's [AGENTS.md](AGENTS.md). It draws on Jon Gjengset's teaching habits without attributing this implementation to him or to Helsing.
+## Gazebo simulation
 
-## Gazebo smoke test
+The supported workflow runs Gazebo 11 headlessly in Docker and exposes a local browser viewer. It uses the original Flix plant assets, including mass and motor geometry. It does not model or qualify a specific development board's electrical hardware.
 
-With Docker and the pinned legacy checkout at `../flix`:
+### Start the world and viewer
+
+From the repository root:
 
 ```sh
 docker build -t flix-rust-gazebo:local -f adapters/gazebo/Dockerfile .
-docker run --rm -v "$PWD:/work" -v "$PWD/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-smoke.sh
-```
 
-This compiles and loads the actual plugin with the ground-start world, then checks a parameter response, STAB mode, explicit arm, positive motor telemetry and stopped outputs after disarm. It does not establish sustained flight or physics parity.
-
-## Persistent Gazebo simulation on macOS
-
-The Docker server runs headlessly with the Flix model resting on a ground plane.
-The model retains the legacy mass and motor geometry; it does not model a specific
-ESP32 development board or qualify its electrical hardware.
-
-```sh
 docker run --init -d --name flix-rust-gazebo \
   -p 127.0.0.1:14550:14551/udp \
   -v "$PWD:/work" -v "$PWD/../flix:/legacy:ro" -w /work \
   flix-rust-gazebo:local sh scripts/gazebo-run.sh
-PYTHONPATH=tools python3 tools/gazebo-check.py
-docker logs --tail 30 flix-rust-gazebo
-```
 
-The check connects from the host, reads a parameter, selects STAB, arms with zero
-thrust, observes low-power simulated motor telemetry, disarms and verifies zero
-motor telemetry. A bounded UDP relay connects the container's loopback-only
-plugin to host loopback. It serves one development client at a time and is not a
-flight gateway. Close other clients before running the check.
-
-Stop with `docker stop flix-rust-gazebo`; resume with
-`docker start flix-rust-gazebo`. There is no graphical window in this headless
-configuration. The simulation's default outputs are disarmed.
-
-## Browser viewer and keyboard control
-
-With `flix-rust-gazebo` running, start the browser viewer from the repository:
-
-```sh
 python3 tools/gazebo-viewer.py
 ```
 
-Open **http://127.0.0.1:8765**. Drag to orbit, scroll to zoom, or use the camera
-buttons. The stylized drone uses the actual Gazebo model pose; motor/state data
-comes from passively observed Rust replies. The viewer has no external assets or dependencies. Its simulation controls require
-explicit arming and fresh browser input; browser input loss stops control. The viewer connects a local simulation client for controls and telemetry.
+Open **[http://127.0.0.1:8765/?v=5](http://127.0.0.1:8765/?v=5)**. The viewer displays the actual Gazebo pose and Rust controller telemetry. It uses no external web assets or dependencies.
 
-For terminal control, start the viewer with `python3 tools/gazebo-viewer.py --view-only` so its browser client does not compete with the terminal:
+For an existing container, use `docker start flix-rust-gazebo`. Stop the world with `docker stop flix-rust-gazebo`; inspect it with `docker logs --tail 30 flix-rust-gazebo`.
+
+### Browser controls
+
+Wait for **Ready**, press **Arm**, and increase **Thrust** gradually. Hold the direction buttons to steer.
+
+| Control | Action |
+| --- | --- |
+| Arm / Disarm | Explicitly enable control / stop motor output |
+| Thrust slider or ↑ / ↓ | Adjust thrust |
+| W / A / S / D | Tilt |
+| Q / E | Yaw |
+| Space | Disarm |
+| Reset drone | Stop control and restart the simulated world upright |
+| Isometric / Top view / Reset view | Change the camera |
+
+Drag to orbit and scroll to zoom. Keep the viewer focused and visible: leaving the page requests disarm, and lost input expires the browser control lease after 500 ms. **Reset drone** resets the whole world; **Reset view** only changes the camera.
+
+Use one control client at a time. Browser controls are restricted to the localhost simulation and require the viewer session token and matching localhost Origin.
+
+For terminal control, run the viewer with `--view-only`, then use a second terminal:
 
 ```sh
-cd /Users/abuhamzah/Dev/erik/flix-rust
 PYTHONPATH=tools python3 tools/gazebo-control.py
 ```
 
-| Key | Simulation control |
+The terminal client uses its own key mapping: A arms, Space disarms, W/S adjusts thrust, I/K controls pitch, J/L controls roll, Q/E controls yaw, C clears a latched fault while stopped, and X exits and disarms.
+
+### Run simulator acceptance checks
+
+```sh
+# Build/load the plugin and check parameter, arm, motor, and disarm behavior
+make sim-check
+
+# Run 20 isolated finite physics and failure scenarios
+make sim-scenarios
+```
+
+Scenario inputs and thresholds are declared in [`fixtures/simulator/acceptance.json`](fixtures/simulator/acceptance.json). Results, logs, and per-tick traces are written under `.local/qualification/`. These checks run separately from the live viewer container. Dropped trace packets invalidate timing conclusions.
+
+## ESP32-S3 firmware
+
+The target integration uses **ESP-IDF v5.4.2** and **Xtensa Rust 1.88.0.0**. Activate the pinned `esp` toolchain and ESP-IDF environment before building:
+
+```sh
+sh scripts/build-esp32.sh
+sh scripts/build-proxy.sh
+```
+
+Default PWM output is disabled and board pins are unassigned. An exact reviewed board profile, wiring, power system, and measured output behavior are required before hardware use. Build scripts do not flash devices.
+
+A separate ARM check verifies portable `no_std` compilation:
+
+```sh
+rustup target add thumbv7em-none-eabihf
+cargo check --manifest-path apps/esp32/firmware/Cargo.toml \
+  --locked --release --target thumbv7em-none-eabihf
+```
+
+This establishes portability; it is not an ESP32 target build. Follow the [development runbook](docs/rust-rewrite/development-runbook.md), [qualification procedure](docs/rust-rewrite/qualification.md), and [proxy guide](apps/proxy/README.md) for target configuration, private provisioning, packaging, and recovery.
+
+## Verification status
+
+Recorded results from the latest [software acceptance report](docs/rust-rewrite/software-acceptance.md):
+
+| Check | Result |
 | --- | --- |
-| A | Arm with zero thrust |
-| Space | Disarm and reset controls |
-| W / S | Increase / decrease thrust by 2% |
-| I / K | Pitch |
-| J / L | Roll |
-| Q / E | Yaw |
-| C | Disarm and request explicit latched-fault clear |
-| X / Ctrl+C | Exit and disarm |
+| Formatting, generated contracts, and Clippy | Passed |
+| Rust / Python tests | 49 / 34 passed |
+| Legacy scalar oracle | 400 cases passed |
+| Simulator ABI safety scenarios | 14 passed |
+| Actual Gazebo scenarios | 20 passed with complete final traces |
+| ESP32-S3 SDK builds | Default flight, ESP-NOW flight, and proxy passed |
+| QGroundControl v5.0.8 | Signed discovery, protocol negotiation, and all 96 parameters verified |
+| Clean source build, local package installation, and rollback | Passed |
+| Full C++/Rust plant parity | Failed under the original comparison limits |
+| Manual QGroundControl flight controls | Unverified |
+| Physical sensor, output, radio, timing, and flight qualification | Open |
 
-Attitude/yaw inputs recenter after 150 ms unless repeated. The client sends fresh
-setpoints while running. Use one control client at a time; do not run the automated
-check concurrently. Keyboard control is restricted to the local simulation.
-The simulator enforces its normal source, arming, fault and expiry rules.
+Scalar agreement and finite simulator scenarios have different scopes from full plant equivalence. The failed comparisons are preserved with their original thresholds. The next parity work is identical-input replay and estimator-state comparison; no controller gains or tolerances were changed to turn those failures into passes.
 
-### Flight controls in the browser
+## Documentation
 
-Open http://127.0.0.1:8765/?v=5. Press **Arm**, gradually increase **Thrust**,
-then hold the direction or yaw buttons. **Disarm** stops output. Use WASD for
-tilt, Q/E for yaw, arrow up/down for thrust, and Space to disarm. The viewer
-must remain focused and visible; changing tabs/windows requests disarm. Input
-loss expires the browser control lease after 500 ms and requests disarm.
+| Document | Purpose |
+| --- | --- |
+| [Software acceptance report](docs/rust-rewrite/software-acceptance.md) | Latest measurements, failed comparisons, and delivery evidence |
+| [Evidence index](docs/rust-rewrite/evidence/software-five/index.json) | Raw trace and log inventory with hashes |
+| [Completion report](docs/rust-rewrite/completion-report.md) | Implemented scope and remaining gates |
+| [Remaining plan](docs/rust-rewrite/remaining-plan.md) | Outstanding software and hardware work |
+| [Architecture](docs/rust-rewrite/architecture.md) | Ownership, execution, and component boundaries |
+| [Specification](docs/rust-rewrite-spec.md) / [phase plan](docs/rust-rewrite-plan.md) | Requirements and implementation sequence |
+| [Protocol contract](docs/rust-rewrite/protocol.md) | Authentication, supported messages, and client behavior |
+| [Compatibility](docs/rust-rewrite/compatibility.md) | Preserved behavior and intentional differences |
+| [Development runbook](docs/rust-rewrite/development-runbook.md) | Build, package, install, and recovery procedures |
+| [Acceptance matrix](docs/rust-rewrite/acceptance-matrix.md) | Requirement gates and verification scope |
+| [Legacy review](docs/architecture-review.md) / [source provenance](docs/legacy-source.md) | Original design and immutable reference revision |
 
-If the drone flips or crashes, press **Reset drone**. This stops control and
-restarts the local Gazebo container, restoring the drone upright at its initial
-position and resetting controller faults. Wait for **Ready**, then arm explicitly.
-It resets the whole simulated world; **Reset view** changes only the camera.
+## Engineering and provenance
 
-This profile controls only the localhost Gazebo simulation. The HTTP control
-API requires the viewer session token and matching localhost Origin. Do not run
-another flight client at the same time. The separate Rust owner continues to
-validate arming, freshness, sensor state and final motor authority. No hardware
-qualification is inferred from browser controls.
+Changes follow [`AGENTS.md`](AGENTS.md): explicit ownership, bounded work, measurable acceptance criteria, preserved safety contracts, and factual reporting of verification limits. Read the relevant implementation and specification before changing flight behavior.
 
-## Simulator acceptance probes
-
-Run `make sim-scenarios` for isolated, finite level-thrust and pitch-pulse physics
-probes. Inputs and thresholds are declared in `fixtures/simulator/acceptance.json`.
-Raw per-tick JSONL, command observations, results and logs go to
-`.local/qualification/`. The viewer's live container is unaffected.
-
-Tracing is opt-in through the model SDF `trace_port`; default simulation behavior
-and gains are unchanged. The collector writes files outside the controller.
-Dropped packets invalidate timing conclusions. These finite probes do not
-qualify sustained flight. Read the [acceptance matrix](docs/rust-rewrite/acceptance-matrix.md).
-
-The optional [provisioned serial / ESP-NOW proxy](apps/proxy/README.md) now has
-a separate Rust application and signed serial host integration. See its
-[verification report](docs/rust-rewrite/proxy-integration.md); physical radio
-qualification remains open.
+The original Flix design is credited to [its upstream project](https://github.com/okalachev/flix). The reviewed baseline is revision `1f5b268271536e45a9377d1c5317d3eb6f3c3bba`. Legacy assets and reference material retain their upstream provenance; consult the [source record](docs/legacy-source.md) before redistributing them.
