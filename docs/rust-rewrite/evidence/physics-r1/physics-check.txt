@@ -1,0 +1,713 @@
+docker build -t flix-rust-gazebo:local -f adapters/gazebo/Dockerfile .
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 466B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:22.04
+#2 DONE 1.7s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 122B done
+#3 DONE 0.0s
+
+#4 [1/4] FROM docker.io/library/ubuntu:22.04@sha256:5ec03bb3441e8b0bf3b4f9cd4629a1ae763010dc3035bb8da3ae6cf026486401
+#4 DONE 0.0s
+
+#5 [2/4] RUN apt-get update && apt-get install -y --no-install-recommends build-essential cmake pkg-config libgazebo-dev gazebo python3 curl ca-certificates && rm -rf /var/lib/apt/lists/*
+#5 CACHED
+
+#6 [3/4] RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh && sh /tmp/rustup.sh -y --default-toolchain 1.92.0 --profile minimal
+#6 CACHED
+
+#7 [4/4] WORKDIR /work
+#7 CACHED
+
+#8 exporting to image
+#8 exporting layers done
+#8 writing image sha256:582ab6af0ba97ae2d541cb5718a27df64971eb4d8a9bf5fc34222401f6d928a9 done
+#8 naming to docker.io/library/flix-rust-gazebo:local done
+#8 DONE 0.0s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/f4ukfwuruth12sf5uvn2wglgr
+docker run --rm --init -v "/Users/abuhamzah/Dev/erik/flix-rust:/work" -v "/Users/abuhamzah/Dev/erik/flix-rust/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-scenario.sh level-thrust /work/.local/qualification/level-thrust
+info: syncing channel updates for 1.92.0-x86_64-unknown-linux-gnu
+info: latest update on 2025-12-11 for version 1.92.0 (ded5c06cf 2025-12-08)
+info: downloading 2 components
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded digest v0.10.7
+  Downloaded version_check v0.9.5
+  Downloaded cfg-if v1.0.5
+  Downloaded cpufeatures v0.2.17
+  Downloaded sha2 v0.10.9
+  Downloaded generic-array v0.14.7
+  Downloaded crypto-common v0.1.7
+  Downloaded block-buffer v0.10.4
+  Downloaded libm v0.2.16
+  Downloaded typenum v1.20.1
+    Finished `release` profile [optimized] target(s) in 5.50s
+CMake Warning (dev) at /usr/share/cmake-3.22/Modules/FindPackageHandleStandardArgs.cmake:438 (message):
+  The package name passed to `find_package_handle_standard_args` (PkgConfig)
+  does not match the name of the calling package (gazebo).  This can lead to
+  problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  /usr/share/cmake-3.22/Modules/FindPkgConfig.cmake:99 (find_package_handle_standard_args)
+  /usr/lib/x86_64-linux-gnu/cmake/gazebo/gazebo-config.cmake:72 (include)
+  CMakeLists.txt:3 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found DART: /usr/include (Required is at least version "6.6") found components: dart 
+-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.12.4") 
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Searching for dependencies of ignition-math6
+-- Looking for OGRE...
+-- Found Ogre Ghadamon (1.9.0)
+-- Found OGRE: optimized;/usr/lib/x86_64-linux-gnu/libOgreMain.so;debug;/usr/lib/x86_64-linux-gnu/libOgreMain.so
+-- Looking for OGRE_Paging...
+-- Found OGRE_Paging: optimized;/usr/lib/x86_64-linux-gnu/libOgrePaging.so;debug;/usr/lib/x86_64-linux-gnu/libOgrePaging.so
+-- Looking for OGRE_Terrain...
+-- Found OGRE_Terrain: optimized;/usr/lib/x86_64-linux-gnu/libOgreTerrain.so;debug;/usr/lib/x86_64-linux-gnu/libOgreTerrain.so
+-- Looking for OGRE_Property...
+-- Found OGRE_Property: optimized;/usr/lib/x86_64-linux-gnu/libOgreProperty.so;debug;/usr/lib/x86_64-linux-gnu/libOgreProperty.so
+-- Looking for OGRE_RTShaderSystem...
+-- Found OGRE_RTShaderSystem: optimized;/usr/lib/x86_64-linux-gnu/libOgreRTShaderSystem.so;debug;/usr/lib/x86_64-linux-gnu/libOgreRTShaderSystem.so
+-- Looking for OGRE_Volume...
+-- Found OGRE_Volume: optimized;/usr/lib/x86_64-linux-gnu/libOgreVolume.so;debug;/usr/lib/x86_64-linux-gnu/libOgreVolume.so
+-- Looking for OGRE_Overlay...
+-- Found OGRE_Overlay: optimized;/usr/lib/x86_64-linux-gnu/libOgreOverlay.so;debug;/usr/lib/x86_64-linux-gnu/libOgreOverlay.so
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Looking for ignition-transport8 -- found version 8.2.1
+-- Searching for dependencies of ignition-transport8
+-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found suitable version "3.12.4", minimum required is "3") 
+-- Config-file not installed for ZeroMQ -- checking for pkg-config
+-- Checking for module 'libzmq >= 4'
+--   Found libzmq , version 4.3.4
+-- Checking for module 'uuid'
+--   Found uuid, version 2.37.2
+-- Looking for ignition-msgs5 -- found version 5.8.1
+-- Searching for dependencies of ignition-msgs5
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Checking for module 'tinyxml2'
+--   Found tinyxml2, version 9.0.0
+-- Looking for ignition-msgs5 -- found version 5.8.1
+-- Looking for ignition-common3 -- found version 3.14.0
+-- Searching for dependencies of ignition-common3
+-- Looking for dlfcn.h - found
+-- Looking for libdl - found
+-- Searching for <ignition-common3> component [graphics]
+-- Looking for ignition-common3-graphics -- found version 3.14.0
+-- Searching for dependencies of ignition-common3-graphics
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Looking for ignition-fuel_tools4 -- found version 4.4.0
+-- Searching for dependencies of ignition-fuel_tools4
+-- Checking for module 'jsoncpp'
+--   Found jsoncpp, version 1.9.5
+-- Checking for module 'yaml-0.1'
+--   Found yaml-0.1, version 0.2.2
+-- Checking for module 'libzip'
+--   Found libzip, version 1.7.3
+-- Looking for ignition-common3 -- found version 3.14.0
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Looking for ignition-msgs5 -- found version 5.8.1
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /work/target/gazebo-plugin
+Consolidate compiler generated dependencies of target flix-world-reset
+[ 50%] Built target flix-world-reset
+Consolidate compiler generated dependencies of target flix_rust
+[100%] Built target flix_rust
+{
+  "version": 1,
+  "native_reset": false,
+  "reset_seen": false,
+  "native_recovery_status": null,
+  "reset_error": null,
+  "engine": "rust",
+  "scenario": "level-thrust",
+  "profile": "gazebo11-legacy-65g-ground-start",
+  "requirements": [
+    "P6-02",
+    "P6-05",
+    "SAF-08"
+  ],
+  "status": "pass",
+  "failures": [],
+  "ticks": 7504,
+  "command_events": 180,
+  "dropped_ticks": 0,
+  "invalid_packets": 0,
+  "max_tilt_degrees": 4.493624837294354,
+  "max_lift_m": 5.095776702277362,
+  "first_fault": null,
+  "first_inverted": null,
+  "post_stop_fault": {
+    "kind": "tick",
+    "version": 1,
+    "sim_us": 6932000,
+    "generation": 6,
+    "state": 5,
+    "reason": 5,
+    "source": 0,
+    "target_attitude_valid": false,
+    "sequence": 6931,
+    "numeric_valid": true,
+    "position_world_m": [
+      -1.1301913261413574,
+      2.181901693344116,
+      0.013800845481455326
+    ],
+    "pose_wxyz": [
+      0.9999868869781494,
+      -6.381190360116307e-06,
+      -2.5388881113030948e-06,
+      0.005126536823809147
+    ],
+    "velocity_world_m_s": [
+      2.5172884221547065e-08,
+      -2.274420118908438e-08,
+      0.00019968836568295956
+    ],
+    "gyro_body_rad_s": [
+      -0.00034633890027180314,
+      0.0005698096356354654,
+      0.0019888379611074924
+    ],
+    "acceleration_body_m_s2": [
+      309.4510803222656,
+      -632.0157470703125,
+      10581.3232421875
+    ],
+    "estimate_wxyz": [
+      0.999987006187439,
+      0.0002625374181661755,
+      0.00016439231694675982,
+      0.005099387839436531
+    ],
+    "estimated_rates_rad_s": [
+      -0.00040851091034710407,
+      0.0007925871759653091,
+      -0.0008102516294457018
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "final_tick": {
+    "kind": "tick",
+    "version": 1,
+    "sim_us": 7504000,
+    "generation": 6,
+    "state": 5,
+    "reason": 5,
+    "source": 0,
+    "target_attitude_valid": false,
+    "sequence": 7503,
+    "numeric_valid": true,
+    "position_world_m": [
+      -1.1301910877227783,
+      2.181901693344116,
+      0.013799999840557575
+    ],
+    "pose_wxyz": [
+      0.9999868273735046,
+      -1.862568693028477e-12,
+      1.2873677818214802e-12,
+      0.005127324722707272
+    ],
+    "velocity_world_m_s": [
+      0.00034796749241650105,
+      -0.00042764769750647247,
+      0.002466542413458228
+    ],
+    "gyro_body_rad_s": [
+      -0.03121487982571125,
+      -0.02398599311709404,
+      0.0008547393954358995
+    ],
+    "acceleration_body_m_s2": [
+      -0.10394375026226044,
+      -0.03546436131000519,
+      0.010693684220314026
+    ],
+    "estimate_wxyz": [
+      0.999987006187439,
+      0.0002625374181661755,
+      0.00016439231694675982,
+      0.005099387839436531
+    ],
+    "estimated_rates_rad_s": [
+      -0.00040851091034710407,
+      0.0007925871759653091,
+      -0.0008102516294457018
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "stop_latency_sim_us": 0,
+  "hardware_test": false,
+  "source": "uncommitted; attach source manifest"
+}
+docker run --rm --init -v "/Users/abuhamzah/Dev/erik/flix-rust:/work" -v "/Users/abuhamzah/Dev/erik/flix-rust/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-scenario.sh pitch-pulse /work/.local/qualification/pitch-pulse
+info: syncing channel updates for 1.92.0-x86_64-unknown-linux-gnu
+info: latest update on 2025-12-11 for version 1.92.0 (ded5c06cf 2025-12-08)
+info: downloading 2 components
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded crypto-common v0.1.7
+  Downloaded cpufeatures v0.2.17
+  Downloaded block-buffer v0.10.4
+  Downloaded generic-array v0.14.7
+  Downloaded cfg-if v1.0.5
+  Downloaded digest v0.10.7
+  Downloaded version_check v0.9.5
+  Downloaded sha2 v0.10.9
+  Downloaded libm v0.2.16
+  Downloaded typenum v1.20.1
+    Finished `release` profile [optimized] target(s) in 0.61s
+CMake Warning (dev) at /usr/share/cmake-3.22/Modules/FindPackageHandleStandardArgs.cmake:438 (message):
+  The package name passed to `find_package_handle_standard_args` (PkgConfig)
+  does not match the name of the calling package (gazebo).  This can lead to
+  problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  /usr/share/cmake-3.22/Modules/FindPkgConfig.cmake:99 (find_package_handle_standard_args)
+  /usr/lib/x86_64-linux-gnu/cmake/gazebo/gazebo-config.cmake:72 (include)
+  CMakeLists.txt:3 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found DART: /usr/include (Required is at least version "6.6") found components: dart 
+-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.12.4") 
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Searching for dependencies of ignition-math6
+-- Looking for OGRE...
+-- Found Ogre Ghadamon (1.9.0)
+-- Found OGRE: optimized;/usr/lib/x86_64-linux-gnu/libOgreMain.so;debug;/usr/lib/x86_64-linux-gnu/libOgreMain.so
+-- Looking for OGRE_Paging...
+-- Found OGRE_Paging: optimized;/usr/lib/x86_64-linux-gnu/libOgrePaging.so;debug;/usr/lib/x86_64-linux-gnu/libOgrePaging.so
+-- Looking for OGRE_Terrain...
+-- Found OGRE_Terrain: optimized;/usr/lib/x86_64-linux-gnu/libOgreTerrain.so;debug;/usr/lib/x86_64-linux-gnu/libOgreTerrain.so
+-- Looking for OGRE_Property...
+-- Found OGRE_Property: optimized;/usr/lib/x86_64-linux-gnu/libOgreProperty.so;debug;/usr/lib/x86_64-linux-gnu/libOgreProperty.so
+-- Looking for OGRE_RTShaderSystem...
+-- Found OGRE_RTShaderSystem: optimized;/usr/lib/x86_64-linux-gnu/libOgreRTShaderSystem.so;debug;/usr/lib/x86_64-linux-gnu/libOgreRTShaderSystem.so
+-- Looking for OGRE_Volume...
+-- Found OGRE_Volume: optimized;/usr/lib/x86_64-linux-gnu/libOgreVolume.so;debug;/usr/lib/x86_64-linux-gnu/libOgreVolume.so
+-- Looking for OGRE_Overlay...
+-- Found OGRE_Overlay: optimized;/usr/lib/x86_64-linux-gnu/libOgreOverlay.so;debug;/usr/lib/x86_64-linux-gnu/libOgreOverlay.so
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Looking for ignition-transport8 -- found version 8.2.1
+-- Searching for dependencies of ignition-transport8
+-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found suitable version "3.12.4", minimum required is "3") 
+-- Config-file not installed for ZeroMQ -- checking for pkg-config
+-- Checking for module 'libzmq >= 4'
+--   Found libzmq , version 4.3.4
+-- Checking for module 'uuid'
+--   Found uuid, version 2.37.2
+-- Looking for ignition-msgs5 -- found version 5.8.1
+-- Searching for dependencies of ignition-msgs5
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Checking for module 'tinyxml2'
+--   Found tinyxml2, version 9.0.0
+-- Looking for ignition-msgs5 -- found version 5.8.1
+-- Looking for ignition-common3 -- found version 3.14.0
+-- Searching for dependencies of ignition-common3
+-- Looking for dlfcn.h - found
+-- Looking for libdl - found
+-- Searching for <ignition-common3> component [graphics]
+-- Looking for ignition-common3-graphics -- found version 3.14.0
+-- Searching for dependencies of ignition-common3-graphics
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Looking for ignition-fuel_tools4 -- found version 4.4.0
+-- Searching for dependencies of ignition-fuel_tools4
+-- Checking for module 'jsoncpp'
+--   Found jsoncpp, version 1.9.5
+-- Checking for module 'yaml-0.1'
+--   Found yaml-0.1, version 0.2.2
+-- Checking for module 'libzip'
+--   Found libzip, version 1.7.3
+-- Looking for ignition-common3 -- found version 3.14.0
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Looking for ignition-msgs5 -- found version 5.8.1
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /work/target/gazebo-plugin
+Consolidate compiler generated dependencies of target flix-world-reset
+[ 50%] Built target flix-world-reset
+Consolidate compiler generated dependencies of target flix_rust
+[100%] Built target flix_rust
+{
+  "version": 1,
+  "native_reset": false,
+  "reset_seen": false,
+  "native_recovery_status": null,
+  "reset_error": null,
+  "engine": "rust",
+  "scenario": "pitch-pulse",
+  "profile": "gazebo11-legacy-65g-ground-start",
+  "requirements": [
+    "P6-02",
+    "P6-05",
+    "SAF-01",
+    "SAF-08"
+  ],
+  "status": "pass",
+  "failures": [],
+  "ticks": 7154,
+  "command_events": 163,
+  "dropped_ticks": 0,
+  "invalid_packets": 0,
+  "max_tilt_degrees": 4.24606886692007,
+  "max_lift_m": 5.619976188056171,
+  "first_fault": null,
+  "first_inverted": null,
+  "post_stop_fault": {
+    "kind": "tick",
+    "version": 1,
+    "sim_us": 6653000,
+    "generation": 6,
+    "state": 5,
+    "reason": 5,
+    "source": 0,
+    "target_attitude_valid": false,
+    "sequence": 6652,
+    "numeric_valid": true,
+    "position_world_m": [
+      -0.43337494134902954,
+      2.0519444942474365,
+      0.013800672255456448
+    ],
+    "pose_wxyz": [
+      0.9999837279319763,
+      -4.31321086580283e-06,
+      -2.927518778506055e-07,
+      0.005700935143977404
+    ],
+    "velocity_world_m_s": [
+      4.829377453496875e-10,
+      1.639357427585253e-09,
+      0.00019964264356531203
+    ],
+    "gyro_body_rad_s": [
+      0.0018933626124635339,
+      -0.0010987113928422332,
+      -3.5088462027488276e-05
+    ],
+    "acceleration_body_m_s2": [
+      69.55044555664062,
+      -555.0205078125,
+      11106.7978515625
+    ],
+    "estimate_wxyz": [
+      0.999983549118042,
+      -0.0004871872952207923,
+      4.512297527980991e-05,
+      0.005724435672163963
+    ],
+    "estimated_rates_rad_s": [
+      -0.0008242088952101767,
+      -0.00048136734403669834,
+      0.000917868223041296
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "final_tick": {
+    "kind": "tick",
+    "version": 1,
+    "sim_us": 7154000,
+    "generation": 6,
+    "state": 5,
+    "reason": 5,
+    "source": 0,
+    "target_attitude_valid": false,
+    "sequence": 7153,
+    "numeric_valid": true,
+    "position_world_m": [
+      -0.43337494134902954,
+      2.0519442558288574,
+      0.013799999840557575
+    ],
+    "pose_wxyz": [
+      0.9999837279319763,
+      9.735462117726763e-16,
+      9.433524518183758e-16,
+      0.005700935143977404
+    ],
+    "velocity_world_m_s": [
+      5.227348298685909e-14,
+      2.271769363711227e-16,
+      3.1848757572200403e-12
+    ],
+    "gyro_body_rad_s": [
+      0.00019040191546082497,
+      0.00018585455836728215,
+      -0.00042997219134122133
+    ],
+    "acceleration_body_m_s2": [
+      -0.009437895379960537,
+      -0.15390874445438385,
+      9.803380966186523
+    ],
+    "estimate_wxyz": [
+      0.999983549118042,
+      -0.0004871872952207923,
+      4.512297527980991e-05,
+      0.005724435672163963
+    ],
+    "estimated_rates_rad_s": [
+      -0.0008242088952101767,
+      -0.00048136734403669834,
+      0.000917868223041296
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "stop_latency_sim_us": 0,
+  "hardware_test": false,
+  "source": "uncommitted; attach source manifest"
+}
+docker run --rm --init -v "/Users/abuhamzah/Dev/erik/flix-rust:/work" -v "/Users/abuhamzah/Dev/erik/flix-rust/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-scenario.sh level-thrust /work/.local/qualification/native-reset native
+info: syncing channel updates for 1.92.0-x86_64-unknown-linux-gnu
+info: latest update on 2025-12-11 for version 1.92.0 (ded5c06cf 2025-12-08)
+info: downloading 2 components
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded crypto-common v0.1.7
+  Downloaded block-buffer v0.10.4
+  Downloaded cpufeatures v0.2.17
+  Downloaded generic-array v0.14.7
+  Downloaded cfg-if v1.0.5
+  Downloaded version_check v0.9.5
+  Downloaded digest v0.10.7
+  Downloaded sha2 v0.10.9
+  Downloaded typenum v1.20.1
+  Downloaded libm v0.2.16
+    Finished `release` profile [optimized] target(s) in 0.62s
+CMake Warning (dev) at /usr/share/cmake-3.22/Modules/FindPackageHandleStandardArgs.cmake:438 (message):
+  The package name passed to `find_package_handle_standard_args` (PkgConfig)
+  does not match the name of the calling package (gazebo).  This can lead to
+  problems in calling code that expects `find_package` result variables
+  (e.g., `_FOUND`) to follow a certain pattern.
+Call Stack (most recent call first):
+  /usr/share/cmake-3.22/Modules/FindPkgConfig.cmake:99 (find_package_handle_standard_args)
+  /usr/lib/x86_64-linux-gnu/cmake/gazebo/gazebo-config.cmake:72 (include)
+  CMakeLists.txt:3 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found DART: /usr/include (Required is at least version "6.6") found components: dart 
+-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.12.4") 
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Searching for dependencies of ignition-math6
+-- Looking for OGRE...
+-- Found Ogre Ghadamon (1.9.0)
+-- Found OGRE: optimized;/usr/lib/x86_64-linux-gnu/libOgreMain.so;debug;/usr/lib/x86_64-linux-gnu/libOgreMain.so
+-- Looking for OGRE_Paging...
+-- Found OGRE_Paging: optimized;/usr/lib/x86_64-linux-gnu/libOgrePaging.so;debug;/usr/lib/x86_64-linux-gnu/libOgrePaging.so
+-- Looking for OGRE_Terrain...
+-- Found OGRE_Terrain: optimized;/usr/lib/x86_64-linux-gnu/libOgreTerrain.so;debug;/usr/lib/x86_64-linux-gnu/libOgreTerrain.so
+-- Looking for OGRE_Property...
+-- Found OGRE_Property: optimized;/usr/lib/x86_64-linux-gnu/libOgreProperty.so;debug;/usr/lib/x86_64-linux-gnu/libOgreProperty.so
+-- Looking for OGRE_RTShaderSystem...
+-- Found OGRE_RTShaderSystem: optimized;/usr/lib/x86_64-linux-gnu/libOgreRTShaderSystem.so;debug;/usr/lib/x86_64-linux-gnu/libOgreRTShaderSystem.so
+-- Looking for OGRE_Volume...
+-- Found OGRE_Volume: optimized;/usr/lib/x86_64-linux-gnu/libOgreVolume.so;debug;/usr/lib/x86_64-linux-gnu/libOgreVolume.so
+-- Looking for OGRE_Overlay...
+-- Found OGRE_Overlay: optimized;/usr/lib/x86_64-linux-gnu/libOgreOverlay.so;debug;/usr/lib/x86_64-linux-gnu/libOgreOverlay.so
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Looking for ignition-transport8 -- found version 8.2.1
+-- Searching for dependencies of ignition-transport8
+-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found suitable version "3.12.4", minimum required is "3") 
+-- Config-file not installed for ZeroMQ -- checking for pkg-config
+-- Checking for module 'libzmq >= 4'
+--   Found libzmq , version 4.3.4
+-- Checking for module 'uuid'
+--   Found uuid, version 2.37.2
+-- Looking for ignition-msgs5 -- found version 5.8.1
+-- Searching for dependencies of ignition-msgs5
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Checking for module 'tinyxml2'
+--   Found tinyxml2, version 9.0.0
+-- Looking for ignition-msgs5 -- found version 5.8.1
+-- Looking for ignition-common3 -- found version 3.14.0
+-- Searching for dependencies of ignition-common3
+-- Looking for dlfcn.h - found
+-- Looking for libdl - found
+-- Searching for <ignition-common3> component [graphics]
+-- Looking for ignition-common3-graphics -- found version 3.14.0
+-- Searching for dependencies of ignition-common3-graphics
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Looking for ignition-fuel_tools4 -- found version 4.4.0
+-- Searching for dependencies of ignition-fuel_tools4
+-- Checking for module 'jsoncpp'
+--   Found jsoncpp, version 1.9.5
+-- Checking for module 'yaml-0.1'
+--   Found yaml-0.1, version 0.2.2
+-- Checking for module 'libzip'
+--   Found libzip, version 1.7.3
+-- Looking for ignition-common3 -- found version 3.14.0
+-- Looking for ignition-math6 -- found version 6.10.0
+-- Looking for ignition-msgs5 -- found version 5.8.1
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /work/target/gazebo-plugin
+Consolidate compiler generated dependencies of target flix-world-reset
+[ 50%] Built target flix-world-reset
+Consolidate compiler generated dependencies of target flix_rust
+[100%] Built target flix_rust
+{
+  "version": 1,
+  "native_reset": true,
+  "reset_seen": true,
+  "native_recovery_status": "latched-fault-needs-explicit-clear",
+  "reset_error": null,
+  "engine": "rust",
+  "scenario": "level-thrust",
+  "profile": "gazebo11-legacy-65g-ground-start",
+  "requirements": [
+    "P6-02",
+    "P6-05",
+    "SAF-08"
+  ],
+  "status": "pass",
+  "failures": [],
+  "ticks": 7681,
+  "command_events": 179,
+  "dropped_ticks": 0,
+  "invalid_packets": 0,
+  "max_tilt_degrees": 5.002211141170003,
+  "max_lift_m": 5.085674430243671,
+  "first_fault": null,
+  "first_inverted": null,
+  "post_stop_fault": null,
+  "final_tick": {
+    "kind": "tick",
+    "version": 1,
+    "sim_us": 2001000,
+    "generation": 6,
+    "state": 5,
+    "reason": 5,
+    "source": null,
+    "target_attitude_valid": false,
+    "sequence": 7680,
+    "numeric_valid": true,
+    "position_world_m": [
+      1.1261978443144471e-06,
+      -4.407572760101175e-06,
+      0.013784852810204029
+    ],
+    "pose_wxyz": [
+      1.0,
+      0.00015946212806738913,
+      1.4132811365641373e-08,
+      4.693195276850304e-10
+    ],
+    "velocity_world_m_s": [
+      6.322711101347522e-07,
+      -0.004362460691481829,
+      -0.004997812211513519
+    ],
+    "gyro_body_rad_s": [
+      -0.3192356824874878,
+      -0.002870183903723955,
+      0.0031259842216968536
+    ],
+    "acceleration_body_m_s2": [
+      -0.05771566182374954,
+      8.740983963012695,
+      9.76311206817627
+    ],
+    "estimate_wxyz": [
+      1.0,
+      -3.231270966352895e-06,
+      -4.376667220640229e-06,
+      1.3275043784233276e-06
+    ],
+    "estimated_rates_rad_s": [
+      4.2868778109550476e-05,
+      0.0001991430763155222,
+      0.0013266695896163583
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "stop_latency_sim_us": null,
+  "hardware_test": false,
+  "source": "uncommitted; attach source manifest"
+}
