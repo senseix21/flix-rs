@@ -1,0 +1,215 @@
+    Checking flight-replay v0.1.0 (/Users/abuhamzah/Dev/erik/flix-rust/apps/replay)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.63s
+   Compiling flight-replay v0.1.0 (/Users/abuhamzah/Dev/erik/flix-rust/apps/replay)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.08s
+     Running unittests src/lib.rs (target/debug/deps/flight_config-ce47490e07b9d31c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/persistence.rs (target/debug/deps/persistence-9504edf76940dbd8)
+
+running 5 tests
+test flash_requires_stopped_exclusive_maintenance ... ok
+test only_absent_storage_can_initialize_defaults ... ok
+test invalid_values_and_config_aliasing_are_rejected_atomically ... ok
+test schema_inventory_and_crc_corruption_contract ... ok
+test every_interruption_retains_the_last_committed_record ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.07s
+
+     Running unittests src/lib.rs (target/debug/deps/flight_core-5394b74548c06f21)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/allocation.rs (target/debug/deps/allocation-4020c9e0d2fabf04)
+
+running 1 test
+test flight_ticks_do_not_allocate ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+     Running tests/authority.rs (target/debug/deps/authority-a1b26efdc27f07d1)
+
+running 2 tests
+test replacing_diagnostics_revokes_the_previous_frame ... ok
+test a_frame_from_another_live_or_replaced_owner_cannot_apply ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rc_and_log.rs (target/debug/deps/rc_and_log-63c4a01c93f5a220)
+
+running 2 tests
+test sbus_calibration_flags_and_channel_bounds ... ok
+test ring_order_partial_offsets_and_zero_capacity ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/safety_contract.rs (target/debug/deps/safety_contract-35ecc6b038df115a)
+
+running 9 tests
+test diagnostic_is_exclusive_bounded_and_expires ... ok
+test disarm_invalidates_cached_and_invalid_intents ... ok
+test arm_requires_source_calibration_freshness_and_low_thrust ... ok
+test invalid_sensor_clock_and_reset_never_preserve_output ... ok
+test quaternion_rotation_and_clock_wrap_contract ... ok
+test every_supported_intent_obeys_frame_expiry_and_disarm ... ok
+test leases_expire_without_heartbeat_or_implicit_rearm ... ok
+test bounded_outputs_property_and_mixer_signs ... ok
+test transition_stress_stop_dominates_at_every_seeded_step ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running unittests src/lib.rs (target/debug/deps/flight_esp32-3eb5387b9b85c220)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/maintenance.rs (target/debug/deps/maintenance-37d4902e4cb346c2)
+
+running 3 tests
+test invalid_storage_fault_is_not_cleared_by_console_acknowledgement ... ok
+test diagnostics_require_maintenance_and_expire_through_the_owner ... ok
+test pending_driver_change_cannot_be_erased_by_another_parameter_or_exit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/runtime.rs (target/debug/deps/runtime-d37b40a9f3d01d24)
+
+running 3 tests
+test maintenance_transfer_is_denied_armed_and_snapshot_offsets_work ... ok
+test owner_roundtrip_arm_manual_disarm_and_ack ... ok
+test imu_readback_identity_and_stationary_calibration_are_required ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (target/debug/deps/flight_gazebo-d836357e0cba04f4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/abi.rs (target/debug/deps/abi-2e857c72b64389ef)
+
+running 1 test
+test handles_instances_nulls_versions_and_reset_contract ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/flight_protocol-8d808d612d37edd1)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/contracts.rs (target/debug/deps/contracts-a132ef9f16963f4c)
+
+running 6 tests
+test stop_survives_full_queue_and_discards_pending_arm ... ok
+test peers_are_bounded_and_require_unicast_nonzero_keys ... ok
+test truncated_zero_tail_and_concatenated_streams_are_safe ... ok
+test bad_masks_destinations_counts_and_numbers_rejected ... ok
+test crc_signature_replay_and_source_are_enforced ... ok
+test seeded_packet_mutation_and_arbitrary_stream_corpus_never_panics ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+     Running tests/fuzz_valid_frames.rs (target/debug/deps/fuzz_valid_frames-a0fff9901464ac95)
+
+running 2 tests
+test advancing_signature_floor_rejects_unseen_old_packets ... ok
+test valid_crc_arbitrary_payloads_exercise_all_ingress_decoders ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+     Running unittests src/bin/bench.rs (target/debug/deps/bench-322d48b1bf0605ad)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/flight_replay-0d83d649832f67f6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/settings.rs (target/debug/deps/settings-be2724cfbebb5bf9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flight_config
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flight_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flight_esp32
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flight_gazebo
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flight_protocol
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Blocking waiting for file lock on package cache
+   Compiling flight-replay v0.1.0 (/Users/abuhamzah/Dev/erik/flix-rust/apps/replay)
+    Finished `release` profile [optimized] target(s) in 1m 30s
+    Finished `release` profile [optimized] target(s) in 0.31s
+test_actual_rust_owner_roundtrip (test_client.ClientTests.test_actual_rust_owner_roundtrip) ... ok
+test_close_wakes_pending_request (test_client.ClientTests.test_close_wakes_pending_request) ... ok
+test_duplicate_request_key_is_rejected (test_client.ClientTests.test_duplicate_request_key_is_rejected) ... ok
+test_immediate_ack_and_slow_callback (test_client.ClientTests.test_immediate_ack_and_slow_callback) ... ok
+test_udp_requires_signing_except_explicit_loopback_simulation (test_client.ClientTests.test_udp_requires_signing_except_explicit_loopback_simulation) ... ok
+test_missing_chunk_and_nonfinite_rejected (test_log.LogTests.test_missing_chunk_and_nonfinite_rejected) ... ok
+test_offsets_and_roundtrip (test_log.LogTests.test_offsets_and_roundtrip) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 4.981s
+
+OK
+Disarmed + invalid torque: motor remains 0.40
+AUTO + unset controlTime: thrust remains 0.60
+Direct output + expired controlTime: target 0.5999, motor 0.40
+Rate after clock rollback: blocked (last=4294.0, now=0.001)
+{"legacy": "1f5b268271536e45a9377d1c5317d3eb6f3c3bba", "cases": 400, "tolerance": 5e-06, "max_absolute_error": 4.769999999432173e-07, "seed": 24301}
+C ABI: independent layout, stopped output, stale handle passed
+   Compiling typenum v1.20.1
+   Compiling cpufeatures v0.2.17
+   Compiling cfg-if v1.0.5
+   Compiling libm v0.2.16
+   Compiling generic-array v0.14.7
+   Compiling flight-core v0.1.0 (/Users/abuhamzah/Dev/erik/flix-rust/crates/flight-core)
+   Compiling flight-config v0.1.0 (/Users/abuhamzah/Dev/erik/flix-rust/crates/flight-config)
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling flight-protocol v0.1.0 (/Users/abuhamzah/Dev/erik/flix-rust/crates/flight-protocol)
+   Compiling flight-esp32 v0.1.0 (/Users/abuhamzah/Dev/erik/flix-rust/apps/esp32)
+   Compiling flight-replay v0.1.0 (/Users/abuhamzah/Dev/erik/flix-rust/apps/replay)
+    Finished `release` profile [optimized] target(s) in 26.25s
+     Running `target/release/flight-replay --benchmark`
+host_only armed_stabilized_ticks=100000 elapsed_us=82967 core_bytes=496 owner_bytes=66816
