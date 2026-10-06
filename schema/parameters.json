@@ -1,0 +1,774 @@
+{
+  "version": 1,
+  "profile": "esp32s3-mpu6050-bench-unwired",
+  "parameters": [
+    {
+      "name": "CTL_RATE_R_P",
+      "default": 0.05,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_R_I",
+      "default": 0.2,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_R_D",
+      "default": 0.001,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_R_WU",
+      "default": 0.3,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_R_D_A",
+      "default": 0.2,
+      "minimum": 0,
+      "maximum": 1,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_P_P",
+      "default": 0.05,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_P_I",
+      "default": 0.2,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_P_D",
+      "default": 0.001,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_P_WU",
+      "default": 0.3,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_P_D_A",
+      "default": 0.2,
+      "minimum": 0,
+      "maximum": 1,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_Y_P",
+      "default": 0.3,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_Y_I",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_Y_D",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_Y_WU",
+      "default": 0.3,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_Y_D_A",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 1,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_P_MAX",
+      "default": 6.283185307179586,
+      "minimum": 0,
+      "maximum": 40,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_R_MAX",
+      "default": 6.283185307179586,
+      "minimum": 0,
+      "maximum": 40,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_RATE_Y_MAX",
+      "default": 6.283185307179586,
+      "minimum": 0,
+      "maximum": 40,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_ATT_R_P",
+      "default": 6,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_ATT_P_P",
+      "default": 6,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_ATT_Y_P",
+      "default": 3,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_ATT_MAX",
+      "default": 0.5235987755982988,
+      "minimum": 0,
+      "maximum": 1.5707963267948966,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "CTL_FLT_MODE_0",
+      "default": 2,
+      "minimum": 1,
+      "maximum": 3,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "CTL_FLT_MODE_1",
+      "default": 2,
+      "minimum": 1,
+      "maximum": 3,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "CTL_FLT_MODE_2",
+      "default": 2,
+      "minimum": 1,
+      "maximum": 3,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "IMU_MODEL",
+      "default": 3,
+      "minimum": 3,
+      "maximum": 3,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "IMU_BUS",
+      "default": 1,
+      "minimum": 1,
+      "maximum": 1,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "IMU_PIN_SCK",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "IMU_PIN_MISO",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "IMU_PIN_MOSI",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "IMU_PIN_CS",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "IMU_PIN_SDA",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "IMU_PIN_SCL",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "IMU_PIN_INT",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "IMU_ROT_ROLL",
+      "default": 0,
+      "minimum": -3.141592653589793,
+      "maximum": 3.141592653589793,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "IMU_ROT_PITCH",
+      "default": 0,
+      "minimum": -3.141592653589793,
+      "maximum": 3.141592653589793,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "IMU_ROT_YAW",
+      "default": 1.5707963267948966,
+      "minimum": -3.141592653589793,
+      "maximum": 3.141592653589793,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "IMU_ACC_BIAS_X",
+      "default": 0,
+      "minimum": -20,
+      "maximum": 20,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "IMU_ACC_BIAS_Y",
+      "default": 0,
+      "minimum": -20,
+      "maximum": 20,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "IMU_ACC_BIAS_Z",
+      "default": 0,
+      "minimum": -20,
+      "maximum": 20,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "IMU_ACC_SCALE_X",
+      "default": 1,
+      "minimum": 0.1,
+      "maximum": 10,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "IMU_ACC_SCALE_Y",
+      "default": 1,
+      "minimum": 0.1,
+      "maximum": 10,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "IMU_ACC_SCALE_Z",
+      "default": 1,
+      "minimum": 0.1,
+      "maximum": 10,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "IMU_GYRO_BIAS_A",
+      "default": 0.001,
+      "minimum": 0,
+      "maximum": 1,
+      "integer": false,
+      "status": "obsolete"
+    },
+    {
+      "name": "EST_ACC_WEIGHT",
+      "default": 0.003,
+      "minimum": 0,
+      "maximum": 1,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "EST_LVL_WEIGHT",
+      "default": 0.0002,
+      "minimum": 0,
+      "maximum": 1,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "EST_RATES_LPF_A",
+      "default": 0.2,
+      "minimum": 0,
+      "maximum": 1,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "MOT_PIN_FL",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "MOT_PIN_FR",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "MOT_PIN_RL",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "MOT_PIN_RR",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "MOT_PWM_FREQ",
+      "default": 38000,
+      "minimum": 0,
+      "maximum": 78000,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "MOT_PWM_RES",
+      "default": 10,
+      "minimum": 0,
+      "maximum": 14,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "MOT_PWM_STOP",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 16383,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "MOT_PWM_MIN",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 16383,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "MOT_PWM_MAX",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 16383,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "RC_RX_PIN",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "RC_ZERO_0",
+      "default": 172,
+      "minimum": 0,
+      "maximum": 2046,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_ZERO_1",
+      "default": 172,
+      "minimum": 0,
+      "maximum": 2046,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_ZERO_2",
+      "default": 172,
+      "minimum": 0,
+      "maximum": 2046,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_ZERO_3",
+      "default": 172,
+      "minimum": 0,
+      "maximum": 2046,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_ZERO_4",
+      "default": 172,
+      "minimum": 0,
+      "maximum": 2046,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_ZERO_5",
+      "default": 172,
+      "minimum": 0,
+      "maximum": 2046,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_ZERO_6",
+      "default": 172,
+      "minimum": 0,
+      "maximum": 2046,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_ZERO_7",
+      "default": 172,
+      "minimum": 0,
+      "maximum": 2046,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_MAX_0",
+      "default": 1811,
+      "minimum": 1,
+      "maximum": 2047,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_MAX_1",
+      "default": 1811,
+      "minimum": 1,
+      "maximum": 2047,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_MAX_2",
+      "default": 1811,
+      "minimum": 1,
+      "maximum": 2047,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_MAX_3",
+      "default": 1811,
+      "minimum": 1,
+      "maximum": 2047,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_MAX_4",
+      "default": 1811,
+      "minimum": 1,
+      "maximum": 2047,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_MAX_5",
+      "default": 1811,
+      "minimum": 1,
+      "maximum": 2047,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_MAX_6",
+      "default": 1811,
+      "minimum": 1,
+      "maximum": 2047,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_MAX_7",
+      "default": 1811,
+      "minimum": 1,
+      "maximum": 2047,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_ROLL",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 15,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_PITCH",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 15,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_THROTTLE",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 15,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_YAW",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 15,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "RC_MODE",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 15,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "WIFI_MODE",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 2,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "WIFI_PORT_LOC",
+      "default": 14550,
+      "minimum": 0,
+      "maximum": 65535,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "WIFI_PORT_REM",
+      "default": 14550,
+      "minimum": 0,
+      "maximum": 65535,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "WIFI_LONG_RANGE",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 2,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "WIFI_BROADCAST",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 2,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "ESPNOW_CHANNEL",
+      "default": 6,
+      "minimum": 1,
+      "maximum": 14,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "MAV_SYS_ID",
+      "default": 1,
+      "minimum": 1,
+      "maximum": 255,
+      "integer": true,
+      "status": "implemented"
+    },
+    {
+      "name": "MAV_RATE_SLOW",
+      "default": 2,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "MAV_RATE_ATT",
+      "default": 20,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "MAV_RATE_RC",
+      "default": 10,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "MAV_RATE_MOT",
+      "default": 10,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "MAV_RATE_IMU",
+      "default": 15,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "PWR_VOLT_PIN",
+      "default": -1,
+      "minimum": -1,
+      "maximum": 48,
+      "integer": true,
+      "status": "deferred"
+    },
+    {
+      "name": "PWR_VOLT_SCALE",
+      "default": 1,
+      "minimum": 0,
+      "maximum": 100,
+      "integer": false,
+      "status": "deferred"
+    },
+    {
+      "name": "PWR_VOLT_LPF_A",
+      "default": 0.01,
+      "minimum": 0,
+      "maximum": 1,
+      "integer": false,
+      "status": "deferred"
+    },
+    {
+      "name": "SF_RC_LOSS_TIME",
+      "default": 1,
+      "minimum": 0.001,
+      "maximum": 1,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "SF_DESCEND_TIME",
+      "default": 10,
+      "minimum": 0.001,
+      "maximum": 60,
+      "integer": false,
+      "status": "obsolete"
+    },
+    {
+      "name": "SF_DISARM_TILT",
+      "default": 2.094395102,
+      "minimum": 0.1,
+      "maximum": 3.141592653589793,
+      "integer": false,
+      "status": "implemented"
+    }
+  ]
+}
