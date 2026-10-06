@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 
 <p align="center">
-  <img src="docs/img/flix-rs-logo.png" width="240" alt="Flix RS quadcopter logo"><br>
+  <img src="docs/img/flix-rs-logo-v2.png" width="360" alt="Flix RS wordmark with orange quadcopter rotor rings"><br>
   <strong>Flix RS</strong><br>
   A Rust flight controller for the Flix ESP32 quadcopter.<br>
   Deterministic control · Bounded communication · Gazebo simulation
