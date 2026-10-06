@@ -1,0 +1,19 @@
+test_actual_rust_owner_roundtrip (test_client.ClientTests.test_actual_rust_owner_roundtrip) ... ok
+test_close_wakes_pending_request (test_client.ClientTests.test_close_wakes_pending_request) ... ok
+test_duplicate_request_key_is_rejected (test_client.ClientTests.test_duplicate_request_key_is_rejected) ... ok
+test_immediate_ack_and_slow_callback (test_client.ClientTests.test_immediate_ack_and_slow_callback) ... ok
+test_udp_requires_signing_except_explicit_loopback_simulation (test_client.ClientTests.test_udp_requires_signing_except_explicit_loopback_simulation) ... ok
+test_missing_chunk_and_nonfinite_rejected (test_log.LogTests.test_missing_chunk_and_nonfinite_rejected) ... ok
+test_offsets_and_roundtrip (test_log.LogTests.test_offsets_and_roundtrip) ... ok
+test_input_validation_is_atomic_and_rejects_nonfinite_or_out_of_bounds (test_viewer.BrowserControlTests.test_input_validation_is_atomic_and_rejects_nonfinite_or_out_of_bounds) ... ok
+test_reserved_disarm_revokes_input_even_when_command_queue_full (test_viewer.BrowserControlTests.test_reserved_disarm_revokes_input_even_when_command_queue_full) ... ok
+test_zero_thrust_arm_expiring_stick_and_explicit_stop (test_viewer.ControlTests.test_zero_thrust_arm_expiring_stick_and_explicit_stop) ... ok
+test_malformed_pose_does_not_replace_live_state (test_viewer.ViewerTests.test_malformed_pose_does_not_replace_live_state) ... ok
+test_observation_io_failure_does_not_interrupt_transport (test_viewer.ViewerTests.test_observation_io_failure_does_not_interrupt_transport) ... ok
+test_observer_reads_valid_motor_frames_and_rejects_invalid_values (test_viewer.ViewerTests.test_observer_reads_valid_motor_frames_and_rejects_invalid_values) ... ok
+test_pose_uses_model_world_frame_not_relative_link_frame (test_viewer.ViewerTests.test_pose_uses_model_world_frame_not_relative_link_frame) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.836s
+
+OK
