@@ -1,0 +1,18 @@
+[package]
+name = "flight-proxy"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+[features]
+default = []
+host = []
+[dependencies]
+flight-protocol.workspace = true
+[[bin]]
+name = "proxy-bench"
+path = "src/bin/bench.rs"
+required-features = ["host"]
+
+[dev-dependencies]
+flight-core.workspace = true
+flight-esp32 = { path = "../esp32" }
