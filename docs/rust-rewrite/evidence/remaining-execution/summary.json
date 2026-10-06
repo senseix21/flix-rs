@@ -1,0 +1,139 @@
+{
+  "date": "2026-10-05",
+  "status": "unqualified-development",
+  "flight_qualified": false,
+  "source": "uncommitted; see development-manifest.json",
+  "tests": {
+    "rust": 41,
+    "python": 24,
+    "cpp_scalar_cases": 400,
+    "cpp_tolerance": 5e-06,
+    "abi_scenarios": 14
+  },
+  "gazebo": {
+    "level-thrust": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 7504,
+      "dropped_ticks": 0,
+      "invalid_packets": 0,
+      "stop_latency_sim_us": 0,
+      "loss_zero_at_us": null,
+      "reconnect_without_arm_checked": false,
+      "explicit_reset_recovery": false,
+      "max_tilt_degrees": 4.59371690933232,
+      "max_lift_m": 5.094278479926288
+    },
+    "pitch-pulse": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 7154,
+      "dropped_ticks": 0,
+      "invalid_packets": 0,
+      "stop_latency_sim_us": 0,
+      "loss_zero_at_us": null,
+      "reconnect_without_arm_checked": false,
+      "explicit_reset_recovery": false,
+      "max_tilt_degrees": 4.039079569735947,
+      "max_lift_m": 5.625235225073993
+    },
+    "native-reset": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 8243,
+      "dropped_ticks": 0,
+      "invalid_packets": 0,
+      "stop_latency_sim_us": null,
+      "loss_zero_at_us": null,
+      "reconnect_without_arm_checked": false,
+      "explicit_reset_recovery": true,
+      "max_tilt_degrees": 4.545754480378477,
+      "max_lift_m": 5.097723628394306
+    },
+    "acro-level": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 5509,
+      "dropped_ticks": 0,
+      "invalid_packets": 0,
+      "stop_latency_sim_us": 0,
+      "loss_zero_at_us": null,
+      "reconnect_without_arm_checked": false,
+      "explicit_reset_recovery": false,
+      "max_tilt_degrees": 11.643496884075926,
+      "max_lift_m": 0.1420354349538684
+    },
+    "auto-level": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 5512,
+      "dropped_ticks": 0,
+      "invalid_packets": 0,
+      "stop_latency_sim_us": 0,
+      "loss_zero_at_us": null,
+      "reconnect_without_arm_checked": false,
+      "explicit_reset_recovery": false,
+      "max_tilt_degrees": 3.9695043206493903,
+      "max_lift_m": 0.26323338877409697
+    },
+    "lease-loss-reconnect": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 6208,
+      "dropped_ticks": 0,
+      "invalid_packets": 0,
+      "stop_latency_sim_us": 0,
+      "loss_zero_at_us": 3991000,
+      "reconnect_without_arm_checked": true,
+      "explicit_reset_recovery": false,
+      "max_tilt_degrees": 4.19397825502539,
+      "max_lift_m": 0.4630182636901736
+    },
+    "failed-native-load": {
+      "status": "fail",
+      "failures": [
+        "trace incomplete"
+      ],
+      "ticks": 8451,
+      "dropped_ticks": 210,
+      "invalid_packets": 0,
+      "stop_latency_sim_us": null,
+      "loss_zero_at_us": null,
+      "reconnect_without_arm_checked": false,
+      "explicit_reset_recovery": true,
+      "max_tilt_degrees": 4.763330645247655,
+      "max_lift_m": 5.090553428046405
+    },
+    "failed-native-blocking": {
+      "status": "fail",
+      "failures": [
+        "trace incomplete"
+      ],
+      "ticks": 8450,
+      "dropped_ticks": 518,
+      "invalid_packets": 0,
+      "stop_latency_sim_us": null,
+      "loss_zero_at_us": null,
+      "reconnect_without_arm_checked": false,
+      "explicit_reset_recovery": true,
+      "max_tilt_degrees": 5.155326948683329,
+      "max_lift_m": 5.074838305823505
+    }
+  },
+  "hardware_profile": "awaiting-inspection",
+  "hardware_test": false,
+  "qgroundcontrol_test": false,
+  "commands": [
+    "sh scripts/check.sh",
+    "cargo check --manifest-path apps/esp32/firmware/Cargo.toml --target thumbv7em-none-eabihf --locked",
+    "sh scripts/build-esp32.sh",
+    "idf.py -C apps/esp32/idf -B /private/tmp/flix-execution-idf-enabled-build -D SDKCONFIG=/private/tmp/flix-execution-enabled-sdkconfig -D SDKCONFIG_DEFAULTS=/private/tmp/flix-compile-profile.defaults build",
+    "make sim-scenarios"
+  ],
+  "sdk": {
+    "version": "v5.4.2",
+    "rust": "esp 1.88.0.0",
+    "default_bytes": 439088,
+    "enabled_compile_only_bytes": 999344
+  }
+}
