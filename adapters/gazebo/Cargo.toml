@@ -1,0 +1,12 @@
+[package]
+name = "flight-gazebo"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+[lib]
+crate-type = ["rlib", "staticlib", "cdylib"]
+[dependencies]
+flight-core.workspace = true
+flight-protocol.workspace = true
+flight-esp32 = {path = "../../apps/esp32"}
+
