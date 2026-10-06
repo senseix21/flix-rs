@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "flight_qualified": false,
+  "status": "development-only",
+  "profiles": [
+    "proxy",
+    "flight-default",
+    "flight-espnow"
+  ],
+  "files": {
+    "source.tar.gz": "0dcbc079f2aa1a7e05f7bf4117b256789aefa80eea0706a64a4fa400b6567026",
+    "INSTALL.md": "899d31ef6afece96d099d753c1cd2f1666e7303dbda012dcf4a6161835c03ebb",
+    "source-files.json": "68a6221f79ca99783dca59cf914ab9ad5dc2f97feb97b751257e96784c970d7f",
+    "profiles/flight-espnow/sdkconfig": "f2020d328df839f2c40d751e051d05fe57cdea046f8b5416c6ed8bb6420655f5",
+    "profiles/flight-espnow/flasher_args.json": "7892e18f804252df807ec5e2209b1a4cbf53130b29afbe79f520f8bc33dbebb3",
+    "profiles/flight-espnow/flix_rust.bin": "063f8f45fcb056b59847bd4835f3a2123288d7fba42079635f27592f34018e69",
+    "profiles/flight-espnow/flash_args": "0964110ff03490933ae648678177a30a1a6682abf60a0a103e995873d7658b5b",
+    "profiles/proxy/sdkconfig": "a0f61c18869b39a7ae4b98d22c371b600ac1b950e9da78d85fb30098356762ec",
+    "profiles/proxy/flasher_args.json": "3623e382e132a376979b72f6d302cbf17eba3b89bee55857950c939889604268",
+    "profiles/proxy/flash_args": "19a27200f0e3f37e6dd82f950d93b5a992283ce9c2c03baa46f0a7b475487c25",
+    "profiles/proxy/flix_proxy.bin": "c4bc81e8045ddac179cdc7847cbad8f3b480fbe94fe4c7dfa6d1a271cb8fbcdb",
+    "profiles/flight-default/sdkconfig": "e8fccfbb19cc07b83a2af334eae3f1d7035843eb9bb2c4c5c8a51318afe7786a",
+    "profiles/flight-default/flasher_args.json": "7892e18f804252df807ec5e2209b1a4cbf53130b29afbe79f520f8bc33dbebb3",
+    "profiles/flight-default/flix_rust.bin": "8a0e160a4567c48da55fb13d6c1cd00d698b53174dfed1365cb3fd633224d2d1",
+    "profiles/flight-default/flash_args": "0964110ff03490933ae648678177a30a1a6682abf60a0a103e995873d7658b5b",
+    "profiles/flight-default/partition_table/partition-table.bin": "7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820",
+    "profiles/flight-default/bootloader/bootloader.bin": "80ca0d86da05b969d417a80e700f3fc482d7a4379e6c069907a53f3b027a186a",
+    "profiles/proxy/partition_table/partition-table.bin": "7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820",
+    "profiles/proxy/bootloader/bootloader.bin": "810b559a240c65055aab73fefa7403c3462d508557b1a6720c9de4f879af55ba",
+    "profiles/flight-espnow/partition_table/partition-table.bin": "7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820",
+    "profiles/flight-espnow/bootloader/bootloader.bin": "c620fae0a339b3d7d0774252285dc095dace00275ac85b4a41a5155fd866f9d7"
+  },
+  "sdk": "ESP-IDF v5.4.2",
+  "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)"
+}
