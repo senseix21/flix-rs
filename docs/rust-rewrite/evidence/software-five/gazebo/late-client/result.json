@@ -1,0 +1,223 @@
+{
+  "version": 1,
+  "status": "pass",
+  "failures": [],
+  "requirements": [
+    "P4-05",
+    "P6-05",
+    "SAF-01",
+    "SAF-05"
+  ],
+  "ticks": 2700,
+  "dropped_ticks": 0,
+  "seen_armed_output": true,
+  "metrics": {
+    "version": 1,
+    "hardware_qualified": false,
+    "histograms": {
+      "acquisition": {
+        "count": 0,
+        "maximum_us": 0,
+        "buckets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "upper_us": [
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2000,
+          5000,
+          null
+        ]
+      },
+      "sample_age": {
+        "count": 2147,
+        "maximum_us": 0,
+        "buckets": [
+          2147,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "upper_us": [
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2000,
+          5000,
+          null
+        ]
+      },
+      "owner_tick": {
+        "count": 0,
+        "maximum_us": 0,
+        "buckets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "upper_us": [
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2000,
+          5000,
+          null
+        ]
+      },
+      "acquisition_and_owner": {
+        "count": 0,
+        "maximum_us": 0,
+        "buckets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "upper_us": [
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2000,
+          5000,
+          null
+        ]
+      },
+      "schedule_jitter": {
+        "count": 2146,
+        "maximum_us": 1,
+        "buckets": [
+          2146,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "upper_us": [
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2000,
+          5000,
+          null
+        ]
+      }
+    },
+    "invalid_sample_age": 0
+  },
+  "final_tick": {
+    "kind": "tick",
+    "version": 3,
+    "sim_us": 2700000,
+    "generation": 7,
+    "state": 1,
+    "reason": 1,
+    "source": 0,
+    "target_attitude_valid": false,
+    "sequence": 2699,
+    "numeric_valid": true,
+    "sample_us": 2700000,
+    "sample_time_provenance": "input-v2",
+    "position_world_m": [
+      5.820339083584258e-06,
+      -1.1007789908035193e-05,
+      0.013784852810204029
+    ],
+    "pose_wxyz": [
+      1.0,
+      0.00015946212806738913,
+      2.3530258630444223e-08,
+      5.926075027673505e-05
+    ],
+    "velocity_world_m_s": [
+      1.1469674063846469e-06,
+      -0.004362460691481829,
+      -0.004997812211513519
+    ],
+    "gyro_body_rad_s": [
+      -0.3168237507343292,
+      0.00018200234626419842,
+      -4.043506851303391e-05
+    ],
+    "acceleration_body_m_s2": [
+      0.16614004969596863,
+      8.699834823608398,
+      9.842242240905762
+    ],
+    "estimate_wxyz": [
+      0.9999986290931702,
+      -0.0016251917695626616,
+      0.0003334810899104923,
+      -8.39972108224174e-06
+    ],
+    "estimated_rates_rad_s": [
+      -0.03938145190477371,
+      0.0002379179059062153,
+      0.0005563998129218817
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "raw_gyro_body_rad_s": [
+      -0.3168237507343292,
+      0.00018200234626419842,
+      -4.043506851303391e-05
+    ],
+    "raw_acceleration_body_m_s2": [
+      0.16614004969596863,
+      8.699834823608398,
+      9.842242240905762
+    ],
+    "sensor_limit_mask": 0
+  },
+  "hardware_test": false,
+  "client": "repository pyflix; unsigned loopback simulation",
+  "source": "uncommitted; attach source manifest"
+}
