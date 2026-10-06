@@ -1,0 +1,13 @@
+    Checking typenum v1.20.1
+   Compiling generic-array v0.14.7
+    Checking cfg-if v1.0.5
+   Compiling libm v0.2.16
+    Checking crypto-common v0.1.7
+    Checking block-buffer v0.10.4
+    Checking flight-core v0.1.0 (/private/tmp/flix-rust-implementation/crates/flight-core)
+    Checking digest v0.10.7
+    Checking sha2 v0.10.9
+    Checking flight-config v0.1.0 (/private/tmp/flix-rust-implementation/crates/flight-config)
+    Checking flight-protocol v0.1.0 (/private/tmp/flix-rust-implementation/crates/flight-protocol)
+    Checking flight-esp32 v0.1.0 (/private/tmp/flix-rust-implementation/apps/esp32)
+    Finished `release` profile [optimized] target(s) in 6.71s
