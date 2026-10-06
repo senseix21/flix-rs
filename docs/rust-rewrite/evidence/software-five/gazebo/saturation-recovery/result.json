@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "limited_ticks": 1,
+  "max_raw_acceleration_m_s2": 954.776201615941,
+  "contact_fault": null,
+  "gap_zero_ticks": 0,
+  "mode_rearmed": false,
+  "diagnostic_seen": false,
+  "saturated": true,
+  "recovered_output": true,
+  "queued_frames": [],
+  "queued_controls_before_reset": false,
+  "reset_kind": "all",
+  "explicit_reset_recovery": false,
+  "reset_fault": null,
+  "loss_zero_at_us": null,
+  "reconnect_without_arm_checked": false,
+  "native_reset": false,
+  "reset_seen": false,
+  "native_recovery_status": null,
+  "reset_error": null,
+  "engine": "rust",
+  "scenario": "saturation-recovery",
+  "profile": "gazebo11-legacy-65g-ground-start",
+  "requirements": [
+    "P6-05",
+    "SAF-01"
+  ],
+  "status": "pass",
+  "failures": [],
+  "ticks": 5027,
+  "command_events": 56,
+  "dropped_ticks": 0,
+  "invalid_packets": 0,
+  "max_tilt_degrees": 4.080018673852239,
+  "max_lift_m": 0.16966366302222013,
+  "first_fault": null,
+  "first_inverted": null,
+  "post_stop_fault": null,
+  "final_tick": {
+    "kind": "tick",
+    "version": 3,
+    "sim_us": 5027000,
+    "generation": 5,
+    "state": 1,
+    "reason": 1,
+    "source": 0,
+    "target_attitude_valid": false,
+    "sequence": 5026,
+    "numeric_valid": true,
+    "sample_us": 5027000,
+    "sample_time_provenance": "input-v2",
+    "position_world_m": [
+      -0.09702758491039276,
+      0.2931419909000397,
+      0.013799999840557575
+    ],
+    "pose_wxyz": [
+      0.9999870657920837,
+      -1.7015811773924555e-13,
+      7.88170798158433e-14,
+      0.0050882622599601746
+    ],
+    "velocity_world_m_s": [
+      4.162523964623688e-06,
+      -0.00018331219325773418,
+      0.008354730904102325
+    ],
+    "gyro_body_rad_s": [
+      -0.014017774723470211,
+      0.0005383979296311736,
+      0.002589273964986205
+    ],
+    "acceleration_body_m_s2": [
+      0.003828194458037615,
+      0.026443272829055786,
+      -0.03770795464515686
+    ],
+    "estimate_wxyz": [
+      0.9999875426292419,
+      -9.777190280146897e-05,
+      -0.0004233525542076677,
+      0.004976887721568346
+    ],
+    "estimated_rates_rad_s": [
+      -0.0025439143646508455,
+      -0.00025664683198556304,
+      -0.00012848596088588238
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "raw_gyro_body_rad_s": [
+      -0.014017774723470211,
+      0.0005383979296311736,
+      0.002589273964986205
+    ],
+    "raw_acceleration_body_m_s2": [
+      0.003828194458037615,
+      0.026443272829055786,
+      -0.03770795464515686
+    ],
+    "sensor_limit_mask": 0
+  },
+  "stop_latency_sim_us": 0,
+  "hardware_test": false,
+  "source": "uncommitted; attach source manifest"
+}
