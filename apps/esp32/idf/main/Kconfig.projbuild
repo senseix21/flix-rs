@@ -1,0 +1,42 @@
+menu "Flix bench profile"
+config FLIX_I2C_SDA
+    int "Verified MPU6050 SDA GPIO (-1 disables acquisition)"
+    default -1
+config FLIX_I2C_SCL
+    int "Verified MPU6050 SCL GPIO"
+    default -1
+config FLIX_PWM_ENABLE
+    bool "Enable verified motor pins and external active-high gate"
+    default n
+config FLIX_MOTOR_RL
+    int "Rear-left GPIO"
+    default -1
+config FLIX_MOTOR_RR
+    int "Rear-right GPIO"
+    default -1
+config FLIX_MOTOR_FR
+    int "Front-right GPIO"
+    default -1
+config FLIX_MOTOR_FL
+    int "Front-left GPIO"
+    default -1
+config FLIX_GATE_PIN
+    int "External active-high motor enable GPIO; external pull-down required"
+    default -1
+config FLIX_RC_PIN
+    int "SBUS RX pin (-1 disables RC)"
+    default -1
+config FLIX_WIFI_ENABLE
+    bool "Enable bench Wi-Fi station (commands denied until signed provisioning)"
+    default n
+config FLIX_ESPNOW_ENABLE
+    bool "Enable provisioned ESP-NOW bench profile (separate from Wi-Fi station)"
+    depends on !FLIX_WIFI_ENABLE
+    default n
+config FLIX_WIFI_SSID
+    string "Station SSID"
+    default ""
+config FLIX_WIFI_PASSWORD
+    string "Station password (keep sdkconfig private)"
+    default ""
+endmenu
