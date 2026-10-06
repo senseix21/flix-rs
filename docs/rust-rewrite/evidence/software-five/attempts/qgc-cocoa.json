@@ -1,0 +1,10 @@
+{
+  "client": "QGroundControl v5.0.8",
+  "bench_endpoint": "127.0.0.1:64591",
+  "executable_sha256": "1700a82754c47e77cdd1a562267524c85ac021572319eddf7d2ed8287483fce0",
+  "owner_returncode": 0,
+  "qgc_early_returncode": null,
+  "owner_summary": "admitted={} rejected=0 state=Standby\n",
+  "physical_hardware": false,
+  "manual_ui_commands_verified": false
+}
