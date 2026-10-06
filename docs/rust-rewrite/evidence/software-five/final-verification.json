@@ -1,0 +1,63 @@
+{
+  "clean_source_host_suite": "pass",
+  "rust_tests": 49,
+  "python_tests": 34,
+  "factory_package_verify_install_replace_rollback": "pass",
+  "latest_package_reactivated": true,
+  "package_manifest_sha256": "3cd33d70a04dab18a30f2dc44bfda3c5bd805518fdbb6eb92688b4e456ec60c2",
+  "source_archive_sha256": "0dcbc079f2aa1a7e05f7bf4117b256789aefa80eea0706a64a4fa400b6567026",
+  "profiles": {
+    "proxy": {
+      "app_bytes": 696224,
+      "app_sha256": "c4bc81e8045ddac179cdc7847cbad8f3b480fbe94fe4c7dfa6d1a271cb8fbcdb",
+      "sdkconfig_sha256": "a0f61c18869b39a7ae4b98d22c371b600ac1b950e9da78d85fb30098356762ec",
+      "chip": "esp32s3",
+      "flash_files": {
+        "0x0": "bootloader/bootloader.bin",
+        "0x10000": "flix_proxy.bin",
+        "0x8000": "partition_table/partition-table.bin"
+      }
+    },
+    "flight-default": {
+      "app_bytes": 441568,
+      "app_sha256": "8a0e160a4567c48da55fb13d6c1cd00d698b53174dfed1365cb3fd633224d2d1",
+      "sdkconfig_sha256": "e8fccfbb19cc07b83a2af334eae3f1d7035843eb9bb2c4c5c8a51318afe7786a",
+      "chip": "esp32s3",
+      "flash_files": {
+        "0x0": "bootloader/bootloader.bin",
+        "0x10000": "flix_rust.bin",
+        "0x8000": "partition_table/partition-table.bin"
+      }
+    },
+    "flight-espnow": {
+      "app_bytes": 940832,
+      "app_sha256": "063f8f45fcb056b59847bd4835f3a2123288d7fba42079635f27592f34018e69",
+      "sdkconfig_sha256": "f2020d328df839f2c40d751e051d05fe57cdea046f8b5416c6ed8bb6420655f5",
+      "chip": "esp32s3",
+      "flash_files": {
+        "0x0": "bootloader/bootloader.bin",
+        "0x10000": "flix_rust.bin",
+        "0x8000": "partition_table/partition-table.bin"
+      }
+    }
+  },
+  "viewer_after_restart": {
+    "armed": false,
+    "fault": false,
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "position": [
+      0.00012628234645689347,
+      4.404424317470387e-06,
+      0.013784853191039965
+    ],
+    "telemetry_age_s": 1.2114026546478271
+  },
+  "hardware_flashed": false,
+  "full_plant_parity": "fail",
+  "manual_qgc_ui": "unverified"
+}
