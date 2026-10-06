@@ -1,0 +1,11 @@
+{
+  "browser": "Firefox",
+  "arm_button": true,
+  "throttle_changes_actual_motors": true,
+  "held_direction_releases_to_zero": true,
+  "disarm_stops_actual_motors": true,
+  "unauthenticated_control_rejected": true,
+  "input_loss_stops_motors": true,
+  "actual_world_lift_m": 0.02619316779112771,
+  "page_errors": []
+}
