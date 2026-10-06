@@ -1,0 +1,869 @@
+{
+  "version": 1,
+  "parameters": [
+    {
+      "name": "CTL_RATE_R_P",
+      "type": "Float",
+      "default": 0.05,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_R_I",
+      "type": "Float",
+      "default": 0.2,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_R_D",
+      "type": "Float",
+      "default": 0.001,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_R_WU",
+      "type": "Float",
+      "default": 0.3,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_R_D_A",
+      "type": "Float",
+      "default": 0.2,
+      "min": 0,
+      "max": 1,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_P_P",
+      "type": "Float",
+      "default": 0.05,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_P_I",
+      "type": "Float",
+      "default": 0.2,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_P_D",
+      "type": "Float",
+      "default": 0.001,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_P_WU",
+      "type": "Float",
+      "default": 0.3,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_P_D_A",
+      "type": "Float",
+      "default": 0.2,
+      "min": 0,
+      "max": 1,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_Y_P",
+      "type": "Float",
+      "default": 0.3,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_Y_I",
+      "type": "Float",
+      "default": 0,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_Y_D",
+      "type": "Float",
+      "default": 0,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_Y_WU",
+      "type": "Float",
+      "default": 0.3,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_Y_D_A",
+      "type": "Float",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_P_MAX",
+      "type": "Float",
+      "default": 6.283185307179586,
+      "min": 0,
+      "max": 40,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_R_MAX",
+      "type": "Float",
+      "default": 6.283185307179586,
+      "min": 0,
+      "max": 40,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_RATE_Y_MAX",
+      "type": "Float",
+      "default": 6.283185307179586,
+      "min": 0,
+      "max": 40,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_ATT_R_P",
+      "type": "Float",
+      "default": 6,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_ATT_P_P",
+      "type": "Float",
+      "default": 6,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_ATT_Y_P",
+      "type": "Float",
+      "default": 3,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_ATT_MAX",
+      "type": "Float",
+      "default": 0.5235987755982988,
+      "min": 0,
+      "max": 1.5707963267948966,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_FLT_MODE_0",
+      "type": "Float",
+      "default": 2,
+      "min": 1,
+      "max": 3,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_FLT_MODE_1",
+      "type": "Float",
+      "default": 2,
+      "min": 1,
+      "max": 3,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "CTL_FLT_MODE_2",
+      "type": "Float",
+      "default": 2,
+      "min": 1,
+      "max": 3,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_MODEL",
+      "type": "Float",
+      "default": 3,
+      "min": 3,
+      "max": 3,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_BUS",
+      "type": "Float",
+      "default": 1,
+      "min": 1,
+      "max": 1,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_PIN_SCK",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_PIN_MISO",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_PIN_MOSI",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_PIN_CS",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_PIN_SDA",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_PIN_SCL",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_PIN_INT",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_ROT_ROLL",
+      "type": "Float",
+      "default": 0,
+      "min": -3.141592653589793,
+      "max": 3.141592653589793,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_ROT_PITCH",
+      "type": "Float",
+      "default": 0,
+      "min": -3.141592653589793,
+      "max": 3.141592653589793,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_ROT_YAW",
+      "type": "Float",
+      "default": 1.5707963267948966,
+      "min": -3.141592653589793,
+      "max": 3.141592653589793,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_ACC_BIAS_X",
+      "type": "Float",
+      "default": 0,
+      "min": -20,
+      "max": 20,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_ACC_BIAS_Y",
+      "type": "Float",
+      "default": 0,
+      "min": -20,
+      "max": 20,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_ACC_BIAS_Z",
+      "type": "Float",
+      "default": 0,
+      "min": -20,
+      "max": 20,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_ACC_SCALE_X",
+      "type": "Float",
+      "default": 1,
+      "min": 0.1,
+      "max": 10,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_ACC_SCALE_Y",
+      "type": "Float",
+      "default": 1,
+      "min": 0.1,
+      "max": 10,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_ACC_SCALE_Z",
+      "type": "Float",
+      "default": 1,
+      "min": 0.1,
+      "max": 10,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "IMU_GYRO_BIAS_A",
+      "type": "Float",
+      "default": 0.001,
+      "min": 0,
+      "max": 1,
+      "shortDesc": "obsolete",
+      "rebootRequired": true
+    },
+    {
+      "name": "EST_ACC_WEIGHT",
+      "type": "Float",
+      "default": 0.003,
+      "min": 0,
+      "max": 1,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "EST_LVL_WEIGHT",
+      "type": "Float",
+      "default": 0.0002,
+      "min": 0,
+      "max": 1,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "EST_RATES_LPF_A",
+      "type": "Float",
+      "default": 0.2,
+      "min": 0,
+      "max": 1,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "MOT_PIN_FL",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "MOT_PIN_FR",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "MOT_PIN_RL",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "MOT_PIN_RR",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "MOT_PWM_FREQ",
+      "type": "Float",
+      "default": 38000,
+      "min": 0,
+      "max": 78000,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "MOT_PWM_RES",
+      "type": "Float",
+      "default": 10,
+      "min": 0,
+      "max": 14,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "MOT_PWM_STOP",
+      "type": "Float",
+      "default": 0,
+      "min": 0,
+      "max": 16383,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "MOT_PWM_MIN",
+      "type": "Float",
+      "default": 0,
+      "min": 0,
+      "max": 16383,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "MOT_PWM_MAX",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 16383,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_RX_PIN",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_ZERO_0",
+      "type": "Float",
+      "default": 172,
+      "min": 0,
+      "max": 2046,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_ZERO_1",
+      "type": "Float",
+      "default": 172,
+      "min": 0,
+      "max": 2046,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_ZERO_2",
+      "type": "Float",
+      "default": 172,
+      "min": 0,
+      "max": 2046,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_ZERO_3",
+      "type": "Float",
+      "default": 172,
+      "min": 0,
+      "max": 2046,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_ZERO_4",
+      "type": "Float",
+      "default": 172,
+      "min": 0,
+      "max": 2046,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_ZERO_5",
+      "type": "Float",
+      "default": 172,
+      "min": 0,
+      "max": 2046,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_ZERO_6",
+      "type": "Float",
+      "default": 172,
+      "min": 0,
+      "max": 2046,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_ZERO_7",
+      "type": "Float",
+      "default": 172,
+      "min": 0,
+      "max": 2046,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_MAX_0",
+      "type": "Float",
+      "default": 1811,
+      "min": 1,
+      "max": 2047,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_MAX_1",
+      "type": "Float",
+      "default": 1811,
+      "min": 1,
+      "max": 2047,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_MAX_2",
+      "type": "Float",
+      "default": 1811,
+      "min": 1,
+      "max": 2047,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_MAX_3",
+      "type": "Float",
+      "default": 1811,
+      "min": 1,
+      "max": 2047,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_MAX_4",
+      "type": "Float",
+      "default": 1811,
+      "min": 1,
+      "max": 2047,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_MAX_5",
+      "type": "Float",
+      "default": 1811,
+      "min": 1,
+      "max": 2047,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_MAX_6",
+      "type": "Float",
+      "default": 1811,
+      "min": 1,
+      "max": 2047,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_MAX_7",
+      "type": "Float",
+      "default": 1811,
+      "min": 1,
+      "max": 2047,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_ROLL",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 15,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_PITCH",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 15,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_THROTTLE",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 15,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_YAW",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 15,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "RC_MODE",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 15,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "WIFI_MODE",
+      "type": "Float",
+      "default": 0,
+      "min": 0,
+      "max": 2,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "WIFI_PORT_LOC",
+      "type": "Float",
+      "default": 14550,
+      "min": 0,
+      "max": 65535,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "WIFI_PORT_REM",
+      "type": "Float",
+      "default": 14550,
+      "min": 0,
+      "max": 65535,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "WIFI_LONG_RANGE",
+      "type": "Float",
+      "default": 0,
+      "min": 0,
+      "max": 2,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "WIFI_BROADCAST",
+      "type": "Float",
+      "default": 0,
+      "min": 0,
+      "max": 2,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "ESPNOW_CHANNEL",
+      "type": "Float",
+      "default": 6,
+      "min": 1,
+      "max": 14,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "MAV_SYS_ID",
+      "type": "Float",
+      "default": 1,
+      "min": 1,
+      "max": 255,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "MAV_RATE_SLOW",
+      "type": "Float",
+      "default": 2,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "MAV_RATE_ATT",
+      "type": "Float",
+      "default": 20,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "MAV_RATE_RC",
+      "type": "Float",
+      "default": 10,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "MAV_RATE_MOT",
+      "type": "Float",
+      "default": 10,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "MAV_RATE_IMU",
+      "type": "Float",
+      "default": 15,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "PWR_VOLT_PIN",
+      "type": "Float",
+      "default": -1,
+      "min": -1,
+      "max": 48,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "PWR_VOLT_SCALE",
+      "type": "Float",
+      "default": 1,
+      "min": 0,
+      "max": 100,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "PWR_VOLT_LPF_A",
+      "type": "Float",
+      "default": 0.01,
+      "min": 0,
+      "max": 1,
+      "shortDesc": "deferred",
+      "rebootRequired": true
+    },
+    {
+      "name": "SF_RC_LOSS_TIME",
+      "type": "Float",
+      "default": 1,
+      "min": 0.001,
+      "max": 1,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "SF_DESCEND_TIME",
+      "type": "Float",
+      "default": 10,
+      "min": 0.001,
+      "max": 60,
+      "shortDesc": "obsolete",
+      "rebootRequired": true
+    },
+    {
+      "name": "SF_DISARM_TILT",
+      "type": "Float",
+      "default": 2.094395102,
+      "min": 0.1,
+      "max": 3.141592653589793,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    }
+  ]
+}
