@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "queued_frames": [],
+  "queued_controls_before_reset": false,
+  "reset_kind": "all",
+  "explicit_reset_recovery": false,
+  "reset_fault": null,
+  "loss_zero_at_us": null,
+  "reconnect_without_arm_checked": false,
+  "native_reset": false,
+  "reset_seen": false,
+  "native_recovery_status": null,
+  "reset_error": null,
+  "engine": "rust",
+  "scenario": "pitch-pulse",
+  "profile": "gazebo11-legacy-65g-ground-start",
+  "requirements": [
+    "P6-02",
+    "P6-05",
+    "SAF-01",
+    "SAF-08"
+  ],
+  "status": "pass",
+  "failures": [],
+  "ticks": 7157,
+  "command_events": 163,
+  "dropped_ticks": 0,
+  "invalid_packets": 0,
+  "max_tilt_degrees": 4.335452816603006,
+  "max_lift_m": 5.618050719611347,
+  "first_fault": null,
+  "first_inverted": null,
+  "post_stop_fault": null,
+  "final_tick": {
+    "kind": "tick",
+    "version": 2,
+    "sim_us": 7157000,
+    "generation": 5,
+    "state": 1,
+    "reason": 1,
+    "source": 0,
+    "target_attitude_valid": false,
+    "sequence": 7156,
+    "numeric_valid": true,
+    "sample_us": 7157000,
+    "sample_time_provenance": "input-v2",
+    "position_world_m": [
+      -0.4324348270893097,
+      2.257014513015747,
+      0.013799999840557575
+    ],
+    "pose_wxyz": [
+      0.9999833106994629,
+      1.6581645724458166e-13,
+      8.011977583113894e-14,
+      0.005779825616627932
+    ],
+    "velocity_world_m_s": [
+      1.9969431832578266e-06,
+      0.00018232518050353974,
+      0.0010279904818162322
+    ],
+    "gyro_body_rad_s": [
+      0.012783661484718323,
+      0.0015480017755180597,
+      -0.0002325840323464945
+    ],
+    "acceleration_body_m_s2": [
+      -0.2016475647687912,
+      -0.12490798532962799,
+      13.742768287658691
+    ],
+    "estimate_wxyz": [
+      0.9999836683273315,
+      -0.00017315804143436253,
+      0.0002547662879806012,
+      0.005709483288228512
+    ],
+    "estimated_rates_rad_s": [
+      -8.69228970259428e-05,
+      -5.491322372108698e-05,
+      -0.0004393381532281637
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "stop_latency_sim_us": 0,
+  "hardware_test": false,
+  "source": "uncommitted; attach source manifest"
+}
