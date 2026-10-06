@@ -1,0 +1,11 @@
+[package]
+name = "flight-replay"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+[dependencies]
+flight-core.workspace = true
+flight-protocol.workspace = true
+flight-config.workspace = true
+flight-esp32 = {path = "../esp32"}
+
