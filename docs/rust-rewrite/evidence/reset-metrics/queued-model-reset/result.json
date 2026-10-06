@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "queued_frames": [
+    "fd210000b3ffbe4c00000000803f000000400000000000000000000000000000000000000000b000010100997b",
+    "fd0b0000b4ffbe4500000000000000000000000001151d",
+    "fd210000b5ffbe4c00000000803f000000000000000000000000000000000000000000000000900101010075e2",
+    "fd0b0000b6ffbe45000000000000260200000000013078"
+  ],
+  "queued_controls_before_reset": true,
+  "reset_kind": "model",
+  "explicit_reset_recovery": true,
+  "reset_fault": {
+    "kind": "tick",
+    "version": 2,
+    "sim_us": 5904000,
+    "generation": 6,
+    "state": 5,
+    "reason": 5,
+    "source": null,
+    "target_attitude_valid": false,
+    "sequence": 5902,
+    "numeric_valid": true,
+    "sample_us": 5904000,
+    "sample_time_provenance": "input-v2",
+    "position_world_m": [
+      -1.5539751430093673e-10,
+      2.14641750062583e-06,
+      0.01379261165857315
+    ],
+    "pose_wxyz": [
+      1.0,
+      -7.776864367770031e-05,
+      -2.293339518288917e-09,
+      6.310785782837058e-10
+    ],
+    "velocity_world_m_s": [
+      -1.534941134195833e-07,
+      0.002146428218111396,
+      -0.007388023193925619
+    ],
+    "gyro_body_rad_s": [
+      0.0012008004123345017,
+      -0.00015034680836834013,
+      0.0005955200758762658
+    ],
+    "acceleration_body_m_s2": [
+      164.10595703125,
+      -244.08465576171875,
+      -1916.8988037109375
+    ],
+    "estimate_wxyz": [
+      1.0,
+      1.2991076800972223e-06,
+      1.526227748627207e-07,
+      7.26226289771148e-07
+    ],
+    "estimated_rates_rad_s": [
+      0.002598215127363801,
+      0.0003052455431316048,
+      0.001452452503144741
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "loss_zero_at_us": null,
+  "reconnect_without_arm_checked": false,
+  "native_reset": true,
+  "reset_seen": true,
+  "native_recovery_status": "stopped",
+  "reset_error": null,
+  "engine": "rust",
+  "scenario": "level-thrust",
+  "profile": "gazebo11-legacy-65g-ground-start",
+  "requirements": [
+    "P6-02",
+    "P6-05",
+    "SAF-08"
+  ],
+  "status": "pass",
+  "failures": [],
+  "ticks": 8401,
+  "command_events": 180,
+  "dropped_ticks": 0,
+  "invalid_packets": 0,
+  "max_tilt_degrees": 4.121287966569391,
+  "max_lift_m": 5.095148707740009,
+  "first_fault": null,
+  "first_inverted": null,
+  "post_stop_fault": null,
+  "final_tick": {
+    "kind": "tick",
+    "version": 2,
+    "sim_us": 8402000,
+    "generation": 7,
+    "state": 1,
+    "reason": 1,
+    "source": null,
+    "target_attitude_valid": false,
+    "sequence": 8400,
+    "numeric_valid": true,
+    "sample_us": 8402000,
+    "sample_time_provenance": "input-v2",
+    "position_world_m": [
+      1.408318780704576e-06,
+      -4.407572760101175e-06,
+      0.013784852810204029
+    ],
+    "pose_wxyz": [
+      1.0,
+      0.00015946212806738913,
+      1.4132811365641373e-08,
+      4.694987731923561e-10
+    ],
+    "velocity_world_m_s": [
+      6.322711101347522e-07,
+      -0.004362460691481829,
+      -0.004997812211513519
+    ],
+    "gyro_body_rad_s": [
+      -0.3138352632522583,
+      -0.0044135479256510735,
+      0.0013108898419886827
+    ],
+    "acceleration_body_m_s2": [
+      0.12638652324676514,
+      8.778335571289062,
+      9.739850997924805
+    ],
+    "estimate_wxyz": [
+      0.9999996423721313,
+      -0.0009248941205441952,
+      -3.599362389650196e-05,
+      -5.937129390076734e-05
+    ],
+    "estimated_rates_rad_s": [
+      -0.0351337268948555,
+      -0.0007803576299920678,
+      4.103925311937928e-05
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "stop_latency_sim_us": null,
+  "hardware_test": false,
+  "source": "uncommitted; attach source manifest"
+}
