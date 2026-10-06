@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-06",
+  "status": "unqualified-development",
+  "source": "uncommitted; source fingerprints in development-manifest.json",
+  "tests": {
+    "rust": 45,
+    "python": 30,
+    "cpp_scalar_cases": 400,
+    "abi_scenarios": 14,
+    "proxy_nostd": true,
+    "flight_nostd": true,
+    "xtensa_archives": [
+      "flight",
+      "proxy"
+    ],
+    "sdk_link_profiles": [
+      "proxy",
+      "flight-default",
+      "flight-espnow"
+    ]
+  },
+  "sdk": "esp-idf-v5.4.2",
+  "rust_xtensa": "1.88.0.0",
+  "rust_host": "1.92.0",
+  "physical_test": false,
+  "radio_test": false,
+  "qgroundcontrol_test": false,
+  "gazebo_rerun": false,
+  "gazebo_reason": "transport changes; Docker daemon unavailable; preceding 17-scenario evidence retained",
+  "artifacts": {
+    "proxy": {
+      "bytes": 696192,
+      "files": {
+        "flix_proxy.bin": "4bacef56197347d060a3965ffdd89e1f56aa25829e20145489191db6ff7a939a",
+        "bootloader/bootloader.bin": "810b559a240c65055aab73fefa7403c3462d508557b1a6720c9de4f879af55ba",
+        "partition_table/partition-table.bin": "7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820",
+        "flasher_args.json": "3623e382e132a376979b72f6d302cbf17eba3b89bee55857950c939889604268",
+        "flash_args": "19a27200f0e3f37e6dd82f950d93b5a992283ce9c2c03baa46f0a7b475487c25",
+        "sdkconfig": "a0f61c18869b39a7ae4b98d22c371b600ac1b950e9da78d85fb30098356762ec"
+      },
+      "hardware_qualified": false
+    },
+    "flight-default": {
+      "bytes": 440464,
+      "files": {
+        "flix_rust.bin": "2b188f85e4c661b8452087943ed1f8dcd89e4e8e6af527fef2f7d960b1dee272",
+        "bootloader/bootloader.bin": "51b2f412d4e04b78f94671489998679c27efa7bf5654b9c9918fd3608867aaad",
+        "partition_table/partition-table.bin": "7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820",
+        "flasher_args.json": "7892e18f804252df807ec5e2209b1a4cbf53130b29afbe79f520f8bc33dbebb3",
+        "flash_args": "0964110ff03490933ae648678177a30a1a6682abf60a0a103e995873d7658b5b",
+        "sdkconfig": "e8fccfbb19cc07b83a2af334eae3f1d7035843eb9bb2c4c5c8a51318afe7786a"
+      },
+      "hardware_qualified": false
+    },
+    "flight-espnow": {
+      "bytes": 939712,
+      "files": {
+        "flix_rust.bin": "e3432b46f3853a634aa4345c5dfd5f7fbde9b91cb7cd56268da5a5d56dd3cf3c",
+        "bootloader/bootloader.bin": "c620fae0a339b3d7d0774252285dc095dace00275ac85b4a41a5155fd866f9d7",
+        "partition_table/partition-table.bin": "7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820",
+        "flasher_args.json": "7892e18f804252df807ec5e2209b1a4cbf53130b29afbe79f520f8bc33dbebb3",
+        "flash_args": "0964110ff03490933ae648678177a30a1a6682abf60a0a103e995873d7658b5b",
+        "sdkconfig": "f2020d328df839f2c40d751e051d05fe57cdea046f8b5416c6ed8bb6420655f5"
+      },
+      "hardware_qualified": false
+    }
+  },
+  "baseline_source_snapshot_retained": false,
+  "nvs_generation": {
+    "roles": [
+      "proxy",
+      "flight"
+    ],
+    "bytes_each": 24576,
+    "mode": "0600",
+    "namespace_checked": true,
+    "flashed": false,
+    "profile": "synthetic compile-only keys; private images excluded from evidence"
+  },
+  "commands": [
+    "sh scripts/check.sh",
+    "cargo check --manifest-path apps/proxy/firmware/Cargo.toml --locked --target thumbv7em-none-eabihf",
+    "cargo check --manifest-path apps/esp32/firmware/Cargo.toml --locked --target thumbv7em-none-eabihf",
+    "sh scripts/build-proxy.sh",
+    "cargo +esp rustc --manifest-path apps/esp32/firmware/Cargo.toml --locked --release --target xtensa-esp32s3-espidf -Z build-std=core -- -C panic=abort",
+    "idf.py -C apps/esp32/idf -B .local/proxy-flight-default-build build",
+    "idf.py -C apps/esp32/idf -B .local/proxy-flight-espnow-build -D SDKCONFIG=<repo>/.local/proxy-flight-espnow.sdkconfig -D SDKCONFIG_DEFAULTS=<repo>/apps/esp32/idf/sdkconfig.defaults;<repo>/.local/proxy-flight-espnow.defaults build",
+    "python3 scripts/proxy-provision.py --role <proxy|flight> --config .local/compile-only.proxy.json --output <private role image>"
+  ],
+  "requirements": [
+    "P7-05",
+    "R7-02",
+    "R7-03 (software subset)"
+  ],
+  "open": [
+    "physical USB/radio",
+    "callback and Stop timing",
+    "NVS interruption/recovery",
+    "RC/radio coexistence",
+    "QGroundControl",
+    "hardware flight qualification"
+  ]
+}
