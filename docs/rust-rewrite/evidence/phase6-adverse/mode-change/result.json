@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "gap_zero_ticks": 0,
+  "mode_rearmed": true,
+  "diagnostic_seen": false,
+  "saturated": false,
+  "recovered_output": false,
+  "queued_frames": [],
+  "queued_controls_before_reset": false,
+  "reset_kind": "all",
+  "explicit_reset_recovery": false,
+  "reset_fault": null,
+  "loss_zero_at_us": null,
+  "reconnect_without_arm_checked": false,
+  "native_reset": false,
+  "reset_seen": false,
+  "native_recovery_status": null,
+  "reset_error": null,
+  "engine": "rust",
+  "scenario": "mode-change",
+  "profile": "gazebo11-legacy-65g-ground-start",
+  "requirements": [
+    "P6-05",
+    "SAF-01"
+  ],
+  "status": "pass",
+  "failures": [],
+  "ticks": 6517,
+  "command_events": 135,
+  "dropped_ticks": 0,
+  "invalid_packets": 0,
+  "max_tilt_degrees": 12.317052083324288,
+  "max_lift_m": 0.37462859880179167,
+  "first_fault": null,
+  "first_inverted": null,
+  "post_stop_fault": {
+    "kind": "tick",
+    "version": 2,
+    "sim_us": 4810000,
+    "generation": 9,
+    "state": 5,
+    "reason": 5,
+    "source": 0,
+    "target_attitude_valid": false,
+    "sequence": 4809,
+    "numeric_valid": true,
+    "sample_us": 4810000,
+    "sample_time_provenance": "input-v2",
+    "position_world_m": [
+      -1.820458173751831,
+      2.8880767822265625,
+      0.022761089727282524
+    ],
+    "pose_wxyz": [
+      0.9964596033096313,
+      -0.06858686357736588,
+      -0.028569186106324196,
+      0.03934388980269432
+    ],
+    "velocity_world_m_s": [
+      -0.8915224671363831,
+      1.8352092504501343,
+      -1.9274485111236572
+    ],
+    "gyro_body_rad_s": [
+      21.514514923095703,
+      21.327468872070312,
+      6.405257701873779
+    ],
+    "acceleration_body_m_s2": [
+      748.8612670898438,
+      -917.4442138671875,
+      564.5706176757812
+    ],
+    "estimate_wxyz": [
+      0.996197521686554,
+      -0.06925315409898758,
+      -0.0414007231593132,
+      0.032870784401893616
+    ],
+    "estimated_rates_rad_s": [
+      0.0004852486017625779,
+      -0.00011573005758691579,
+      0.0314241386950016
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "final_tick": {
+    "kind": "tick",
+    "version": 2,
+    "sim_us": 6517000,
+    "generation": 9,
+    "state": 5,
+    "reason": 5,
+    "source": 0,
+    "target_attitude_valid": false,
+    "sequence": 6516,
+    "numeric_valid": true,
+    "sample_us": 6517000,
+    "sample_time_provenance": "input-v2",
+    "position_world_m": [
+      -1.8249578475952148,
+      2.897590398788452,
+      0.013784852810204029
+    ],
+    "pose_wxyz": [
+      0.9993900656700134,
+      0.00015936970885377377,
+      5.552965376409702e-06,
+      0.03492063656449318
+    ],
+    "velocity_world_m_s": [
+      0.0003037967544514686,
+      -0.004351814277470112,
+      -0.004998045042157173
+    ],
+    "gyro_body_rad_s": [
+      -0.31800898909568787,
+      0.00013125019904691726,
+      -0.0021379305981099606
+    ],
+    "acceleration_body_m_s2": [
+      0.11561759561300278,
+      8.651773452758789,
+      9.749818801879883
+    ],
+    "estimate_wxyz": [
+      0.996197521686554,
+      -0.06925315409898758,
+      -0.0414007231593132,
+      0.032870784401893616
+    ],
+    "estimated_rates_rad_s": [
+      0.0004852486017625779,
+      -0.00011573005758691579,
+      0.0314241386950016
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "stop_latency_sim_us": 0,
+  "hardware_test": false,
+  "source": "uncommitted; attach source manifest"
+}
