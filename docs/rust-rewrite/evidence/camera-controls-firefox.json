@@ -1,0 +1,9 @@
+{
+  "browser": "Firefox",
+  "top_changes_actual_canvas": true,
+  "isometric_restores_canvas": true,
+  "drag_rotates_canvas": true,
+  "reset_restores_canvas": true,
+  "active_button_feedback": true,
+  "page_errors": []
+}
