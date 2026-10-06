@@ -1,0 +1,212 @@
+{
+  "version": 1,
+  "status": "pass",
+  "failures": [],
+  "requirements": [
+    "P4-05",
+    "P6-05",
+    "SAF-01",
+    "SAF-05"
+  ],
+  "ticks": 2684,
+  "dropped_ticks": 0,
+  "seen_armed_output": true,
+  "metrics": {
+    "version": 1,
+    "hardware_qualified": false,
+    "histograms": {
+      "acquisition": {
+        "count": 0,
+        "maximum_us": 0,
+        "buckets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "upper_us": [
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2000,
+          5000,
+          null
+        ]
+      },
+      "sample_age": {
+        "count": 2139,
+        "maximum_us": 0,
+        "buckets": [
+          2139,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "upper_us": [
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2000,
+          5000,
+          null
+        ]
+      },
+      "owner_tick": {
+        "count": 0,
+        "maximum_us": 0,
+        "buckets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "upper_us": [
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2000,
+          5000,
+          null
+        ]
+      },
+      "acquisition_and_owner": {
+        "count": 0,
+        "maximum_us": 0,
+        "buckets": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "upper_us": [
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2000,
+          5000,
+          null
+        ]
+      },
+      "schedule_jitter": {
+        "count": 2138,
+        "maximum_us": 1,
+        "buckets": [
+          2138,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "upper_us": [
+          50,
+          100,
+          250,
+          500,
+          1000,
+          2000,
+          5000,
+          null
+        ]
+      }
+    },
+    "invalid_sample_age": 0
+  },
+  "final_tick": {
+    "kind": "tick",
+    "version": 2,
+    "sim_us": 2684000,
+    "generation": 7,
+    "state": 1,
+    "reason": 1,
+    "source": 0,
+    "target_attitude_valid": false,
+    "sequence": 2683,
+    "numeric_valid": true,
+    "sample_us": 2684000,
+    "sample_time_provenance": "input-v2",
+    "position_world_m": [
+      5.141543624631595e-06,
+      -1.2377147868392058e-05,
+      0.013796982355415821
+    ],
+    "pose_wxyz": [
+      1.0,
+      3.1760580895934254e-05,
+      -4.5382879676481025e-09,
+      3.951464896090329e-05
+    ],
+    "velocity_world_m_s": [
+      -7.367815868519756e-08,
+      -0.0008766219834797084,
+      -0.003017212264239788
+    ],
+    "gyro_body_rad_s": [
+      0.06355807930231094,
+      -0.003244785126298666,
+      -0.0006085765780881047
+    ],
+    "acceleration_body_m_s2": [
+      -0.019209370017051697,
+      -1.7445281744003296,
+      23.312175750732422
+    ],
+    "estimate_wxyz": [
+      0.9999974966049194,
+      0.0022349888458848,
+      2.3122909624362364e-05,
+      -3.084712716372451e-06
+    ],
+    "estimated_rates_rad_s": [
+      0.0017362534999847412,
+      -0.001224718289449811,
+      3.519808524288237e-05
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "hardware_test": false,
+  "client": "repository pyflix; unsigned loopback simulation",
+  "source": "uncommitted; attach source manifest"
+}
