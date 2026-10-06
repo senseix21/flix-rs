@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "profile": "bangladesh-esp32s3-mpu6050-awaiting-inspection",
+  "chip": "esp32s3",
+  "module_marking": null,
+  "board_schematic": null,
+  "flash_mb": null,
+  "psram_mb": null,
+  "reserved_pins": null,
+  "pins": {"sda": null, "scl": null, "rl": null, "rr": null, "fr": null, "fl": null, "enable": null, "battery_adc": null},
+  "imu": {"identity": null, "axis_rotation_radians": null, "bus_voltage": null, "pullups_ohms": null, "readback_trace": null},
+  "power": {"driver_part": null, "enable_active_high": null, "reset_pulldown": null, "logic_regulator": null, "battery_cells": null, "battery_discharge_a": null, "loaded_motor_a": null, "divider_ratio": null},
+  "airframe": {"mass_g": null, "motors": null, "props": null, "rotation_order": null},
+  "partition_bytes": null,
+  "image_bytes": null,
+  "scope": "unqualified-development"
+}
