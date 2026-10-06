@@ -1,6 +1,27 @@
-# Flix RS
+<!-- markdownlint-disable MD041 -->
 
-**A Rust flight controller for the Flix ESP32 quadcopter, with deterministic control, bounded communication, and Gazebo simulation.**
+<p align="center">
+  <img src="docs/img/flix.svg" width="180" alt="Original Flix logo"><br>
+  <strong>Flix RS</strong><br>
+  A Rust flight controller for the Flix ESP32 quadcopter.<br>
+  Deterministic control · Bounded communication · Gazebo simulation
+</p>
+
+<table>
+  <tr>
+    <th align="center">Original Flix 1.1 · 3D-printed frame</th>
+    <th align="center">Original Flix · Version 0</th>
+  </tr>
+  <tr>
+    <td><img src="docs/img/flix1.1.jpg" width="500" alt="Original Flix 1.1 quadcopter with a 3D-printed frame"></td>
+    <td><img src="docs/img/flix.jpg" width="500" alt="Original Flix version 0 quadcopter"></td>
+  </tr>
+</table>
+
+<p align="center">
+  Hardware photographs and logo from the original Flix project.<br>
+  <a href="docs/img/README.md">Asset provenance</a> · <a href="https://youtu.be/hT46CZ1CgC4">Original Flix flight demo</a>
+</p>
 
 Flix RS is an educational and research rewrite of [Flix](https://github.com/okalachev/flix). It combines a portable `no_std` control core with ESP32-S3 firmware integration, authenticated MAVLink 2 communication, host replay tools, and a browser-accessible Gazebo environment.
 
@@ -103,6 +124,11 @@ The consolidated check includes Python integration tests against a real loopback
 
 The supported workflow runs Gazebo 11 headlessly in Docker and exposes a local browser viewer. It uses the original Flix plant assets, including mass and motor geometry. It does not model or qualify a specific development board's electrical hardware.
 
+<p align="center">
+  <img src="docs/img/simulator1.png" width="700" alt="Original Flix Gazebo simulator showing the quadcopter world"><br>
+  <em>Upstream Flix simulator screenshot. The Rust workflow below uses the Rust controller and its own browser viewer.</em>
+</p>
+
 ### Start the world and viewer
 
 From the repository root:
@@ -161,6 +187,19 @@ make sim-scenarios
 Scenario inputs and thresholds are declared in [`fixtures/simulator/acceptance.json`](fixtures/simulator/acceptance.json). Results, logs, and per-tick traces are written under `.local/qualification/`. These checks run separately from the live viewer container. Dropped trace packets invalidate timing conclusions.
 
 ## ESP32-S3 firmware
+
+<table>
+  <tr>
+    <th align="center">Original Flix ESP32 Mini</th>
+    <th align="center">GY-521 / MPU6050 module</th>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/img/esp32.jpg" width="180" alt="ESP32 Mini board used by the original Flix design"></td>
+    <td align="center"><img src="docs/img/gy-521.jpg" width="180" alt="GY-521 MPU6050 sensor module"></td>
+  </tr>
+</table>
+
+These upstream component photographs are reference illustrations. The Rust firmware candidate targets ESP32-S3 with MPU6050; an ESP32 Mini photograph does not identify a supported Rust board or pin mapping.
 
 The target integration uses **ESP-IDF v5.4.2** and **Xtensa Rust 1.88.0.0**. Activate the pinned `esp` toolchain and ESP-IDF environment before building:
 
