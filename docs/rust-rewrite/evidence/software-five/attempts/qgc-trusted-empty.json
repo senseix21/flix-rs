@@ -1,0 +1,59 @@
+{
+  "client": "QGroundControl v5.0.8",
+  "bench_endpoint": "127.0.0.1:55357",
+  "executable_sha256": "1700a82754c47e77cdd1a562267524c85ac021572319eddf7d2ed8287483fce0",
+  "owner_returncode": 0,
+  "qgc_early_returncode": null,
+  "observed_qgc_frames": [
+    {
+      "header": [
+        255,
+        190,
+        76,
+        false,
+        false,
+        "future"
+      ],
+      "count": 3
+    },
+    {
+      "header": [
+        255,
+        190,
+        0,
+        false,
+        false,
+        "future"
+      ],
+      "count": 1
+    },
+    {
+      "header": [
+        "non-v2",
+        254,
+        76
+      ],
+      "count": 13
+    },
+    {
+      "header": [
+        "non-v2",
+        254,
+        0
+      ],
+      "count": 24
+    },
+    {
+      "header": [
+        "non-v2",
+        254,
+        21
+      ],
+      "count": 3
+    }
+  ],
+  "owner_summary": "admitted={0: 1, 76: 3} rejected=33 incoming={(255, 190, 0, 0): 1, (255, 190, 76, 0): 3} outgoing={0: 39, 26: 298, 31: 399, 35: 160, 77: 3, 140: 199, 147: 39} state=Standby\n",
+  "ingress_policy": "host-only BenchUsb",
+  "physical_hardware": false,
+  "manual_ui_commands_verified": false
+}
