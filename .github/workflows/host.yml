@@ -1,0 +1,50 @@
+name: Host contracts
+on: [push, pull_request]
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: flix-rust
+      - uses: actions/checkout@v4
+        with:
+          repository: okalachev/flix
+          ref: 1f5b268271536e45a9377d1c5317d3eb6f3c3bba
+          path: flix
+      - name: Toolchain
+        working-directory: flix-rust
+        run: rustup toolchain install 1.92.0 --component rustfmt --component clippy --target thumbv7em-none-eabihf
+      - name: Consolidated host gates
+        working-directory: flix-rust
+        run: sh scripts/check.sh
+      - name: Allocation-free embedded dependency check
+        working-directory: flix-rust
+        run: |
+          cargo check --manifest-path apps/esp32/firmware/Cargo.toml --locked --release --target thumbv7em-none-eabihf
+          cargo check --manifest-path apps/proxy/firmware/Cargo.toml --locked --release --target thumbv7em-none-eabihf
+
+  gazebo:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: flix-rust
+      - uses: actions/checkout@v4
+        with:
+          repository: okalachev/flix
+          ref: 1f5b268271536e45a9377d1c5317d3eb6f3c3bba
+          path: flix
+      - name: Build and exercise actual Gazebo plugin
+        working-directory: flix-rust
+        run: make sim-check
+      - name: Finite traced physics probes
+        working-directory: flix-rust
+        run: make sim-scenarios
+      - name: Preserve simulator evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulator-probes
+          path: flix-rust/.local/qualification/
