@@ -1,0 +1,8 @@
+{
+  "missing_abortsignal_timeout_supported": true,
+  "injected_network_failure": true,
+  "last_pose_preserved": true,
+  "unavailable_telemetry_hidden": true,
+  "automatically_reconnected": true,
+  "page_errors": []
+}
