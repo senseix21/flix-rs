@@ -1,0 +1,18 @@
+{
+  "client": "QGroundControl v5.0.8",
+  "bench_endpoint": "127.0.0.1:64486",
+  "executable_sha256": "1700a82754c47e77cdd1a562267524c85ac021572319eddf7d2ed8287483fce0",
+  "owner_returncode": 0,
+  "qgc_early_returncode": null,
+  "observed_qgc_frames": [
+    {
+      "header": [
+        "non-v2"
+      ],
+      "count": 2
+    }
+  ],
+  "owner_summary": "admitted={} rejected=1 incoming={} outgoing={0: 40, 26: 298, 31: 400, 35: 160, 140: 200, 147: 40} state=Standby\n",
+  "physical_hardware": false,
+  "manual_ui_commands_verified": false
+}
