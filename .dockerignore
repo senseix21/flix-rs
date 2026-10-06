@@ -1,0 +1,8 @@
+target
+**/target
+.git
+**/build
+**/sdkconfig
+**/sdkconfig.old
+**/__pycache__
+.env*
