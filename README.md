@@ -1,7 +1,7 @@
 <!-- markdownlint-disable MD041 -->
 
 <p align="center">
-  <img src="docs/img/flix.svg" width="180" alt="Original Flix logo"><br>
+  <img src="docs/img/flix-rs-logo.png" width="240" alt="Flix RS quadcopter logo"><br>
   <strong>Flix RS</strong><br>
   A Rust flight controller for the Flix ESP32 quadcopter.<br>
   Deterministic control · Bounded communication · Gazebo simulation
@@ -19,7 +19,7 @@
 </table>
 
 <p align="center">
-  Hardware photographs and logo from the original Flix project.<br>
+  Hardware photographs from the original Flix project. Flix RS logo created for this repository.<br>
   <a href="docs/img/README.md">Asset provenance</a> · <a href="https://youtu.be/hT46CZ1CgC4">Original Flix flight demo</a>
 </p>
 
