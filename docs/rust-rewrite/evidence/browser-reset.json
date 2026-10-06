@@ -1,0 +1,42 @@
+{
+  "browser": "Firefox",
+  "reset_from_positive_motor_output": true,
+  "reset_stays_disarmed": true,
+  "upright_at_origin": true,
+  "page_errors": [],
+  "pose": {
+    "position": [
+      3.1368981759026033e-7,
+      -0.0000044075727253545096,
+      0.013784853191039963
+    ],
+    "quaternion_xyzw": [
+      0.00015946213375197334,
+      1.4132811586258943e-8,
+      4.688033154415961e-10,
+      0.9999999872859138
+    ],
+    "received_unix": 1791208321.916739
+  },
+  "telemetry": {
+    "estimate_wxyz": [
+      0.9999961256980896,
+      0.0027955500409007072,
+      -0.00007330133666982874,
+      -0.0000018838370579032926
+    ],
+    "received_unix": 1791208321.807404,
+    "motors": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "motor_unix": 1791208321.807404,
+    "armed": false,
+    "fault": false,
+    "heartbeat_unix": 1791208321.8008747
+  },
+  "browser_armed": false,
+  "thrust": 0
+}
