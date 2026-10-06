@@ -12,4 +12,4 @@ Hardware and timing observations in the review refer to the stated host probes a
 
 ## README visual assets
 
-The root README adopts the original centered logo and side-by-side hardware gallery. Six unchanged visual assets are copied from the pinned upstream revision into `docs/img/`. Their source, attribution, license uncertainty, and SHA-256 hashes are recorded in [the asset inventory](img/README.md). The upstream hardware photographs and simulator screenshot do not represent physical qualification or a screenshot of the Rust browser viewer.
+The root README adopts the original centered header layout and side-by-side hardware gallery, with a new Flix RS project logo. Six unchanged visual assets are copied from the pinned upstream revision into `docs/img/`. Their source, attribution, license uncertainty, and SHA-256 hashes are recorded in [the asset inventory](img/README.md). The upstream hardware photographs and simulator screenshot do not represent physical qualification or a screenshot of the Rust browser viewer.
