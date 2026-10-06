@@ -1,0 +1,34 @@
+cargo 1.88.0-nightly (873a06493 2025-05-10) (1.88.0.0)
+rustc 1.88.0-nightly (2ab28d2e7 2025-06-24) (1.88.0.0)
+   Compiling flight-protocol v0.1.0 (/Users/abuhamzah/Dev/erik/flix-rust/crates/flight-protocol)
+   Compiling flight-esp32 v0.1.0 (/Users/abuhamzah/Dev/erik/flix-rust/apps/esp32)
+   Compiling flix-firmware v0.1.0 (/Users/abuhamzah/Dev/erik/flix-rust/apps/esp32/firmware)
+    Finished `release` profile [optimized] target(s) in 10.49s
+Executing action: all (aliases: build)
+Running ninja in directory /Users/abuhamzah/Dev/erik/flix-rust/apps/esp32/idf/build
+Executing "ninja all"...
+[1/6] Performing build step for 'bootloader'
+[1/1] cd /Users/abuhamzah/Dev/erik/flix-rust/apps/esp32/idf/build/bootloader/esp-idf/esptool_py && /private/tmp/flix-idf-tools/python_env/idf5.4_py3.13_env/bin/python /private/tmp/flix-esp-idf-v5.4.2/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 /Users/abuhamzah/Dev/erik/flix-rust/apps/esp32/idf/build/bootloader/bootloader.bin
+Bootloader binary size 0x51c0 bytes. 0x2e40 bytes (36%) free.
+[2/6] No install step for 'bootloader'
+[3/6] Completed 'bootloader'
+[4/6] Linking CXX executable flix_rust.elf
+/private/tmp/flix-idf-tools/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/bin/ld: warning: /private/tmp/flix-idf-tools/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/esp32s3/no-rtti/crtn.o: missing .note.GNU-stack section implies executable stack
+/private/tmp/flix-idf-tools/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/bin/ld: NOTE: This behaviour is deprecated and will be removed in a future version of the linker
+[5/6] Generating binary image from built executable
+esptool.py v4.12.0
+Creating esp32s3 image...
+Merged 2 ELF sections
+Successfully created esp32s3 image.
+Generated /Users/abuhamzah/Dev/erik/flix-rust/apps/esp32/idf/build/flix_rust.bin
+[6/6] cd /Users/abuhamzah/Dev/erik/flix-rust/apps/esp32/idf/build/esp-idf/esptool_py && /private/tmp/flix-idf-tools/python_env/idf5.4_py3.13_env/bin/python /private/tmp/flix-esp-idf-v5.4.2/components/partition_table/check_sizes.py --offset 0x8000 partition --type app /Users/abuhamzah/Dev/erik/flix-rust/apps/esp32/idf/build/partition_table/partition-table.bin /Users/abuhamzah/Dev/erik/flix-rust/apps/esp32/idf/build/flix_rust.bin
+flix_rust.bin binary size 0x6b330 bytes. Smallest app partition is 0x100000 bytes. 0x94cd0 bytes (58%) free.
+
+Project build complete. To flash, run:
+ idf.py flash
+or
+ idf.py -p PORT flash
+or
+ python -m esptool --chip esp32s3 -b 460800 --before default_reset --after hard_reset write_flash --flash_mode dio --flash_size 2MB --flash_freq 80m 0x0 build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin 0x10000 build/flix_rust.bin
+or from the "/Users/abuhamzah/Dev/erik/flix-rust/apps/esp32/idf/build" directory
+ python -m esptool --chip esp32s3 -b 460800 --before default_reset --after hard_reset write_flash "@flash_args"
