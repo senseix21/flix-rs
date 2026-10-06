@@ -1,0 +1,8 @@
+idf_component_register(SRCS "main.c" "radio.c" "espnow.c" INCLUDE_DIRS "." REQUIRES esp_driver_gpio esp_driver_ledc esp_driver_i2c esp_driver_uart esp_timer nvs_flash esp_wifi esp_event esp_netif)
+get_filename_component(RUST_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../firmware" ABSOLUTE)
+set(RUST_LIB "${RUST_ROOT}/target/xtensa-esp32s3-espidf/release/libflix_firmware.a")
+if(NOT EXISTS "${RUST_LIB}")
+  message(FATAL_ERROR "Build the Rust archive with scripts/build-esp32.sh before invoking idf.py")
+endif()
+add_prebuilt_library(flix_firmware "${RUST_LIB}")
+target_link_libraries(${COMPONENT_LIB} PRIVATE flix_firmware)
