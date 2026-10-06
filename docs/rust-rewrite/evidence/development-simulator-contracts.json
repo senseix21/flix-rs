@@ -1,0 +1,22 @@
+{
+  "profile": "simulator-ABI-replay",
+  "seed": 24301,
+  "physics_test": false,
+  "hardware_test": false,
+  "passed": [
+    "ACRO explicit arm and stop",
+    "STAB explicit arm and stop",
+    "AUTO attitude explicit arm and stop",
+    "AUTO rates explicit arm and stop",
+    "nonfinite IMU stops and denies rearm",
+    "stale IMU stops and denies rearm",
+    "calibration lost stops and denies rearm",
+    "clock rollback stops and denies rearm",
+    "clock gap stops and denies rearm",
+    "direct diagnostic output obeys explicit stop",
+    "heartbeat and rejected inputs do not renew command lease",
+    "reset clears authority and preserves independent instance",
+    "reserved stop dominates full command queue",
+    "seeded extreme ACRO inputs stay bounded and disarm"
+  ]
+}
