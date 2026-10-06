@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "scenario": "level-thrust",
+  "profile": "gazebo11-legacy-65g-ground-start",
+  "requirements": [
+    "P6-02",
+    "P6-05",
+    "SAF-08"
+  ],
+  "status": "fail",
+  "failures": [
+    "stopped lifecycle has nonzero motors"
+  ],
+  "ticks": 7505,
+  "command_events": 180,
+  "dropped_ticks": 0,
+  "invalid_packets": 0,
+  "max_tilt_degrees": 4.3282739866457245,
+  "max_lift_m": 5.089593078009784,
+  "first_fault": null,
+  "stop_latency_sim_us": 1000,
+  "hardware_test": false,
+  "source": "uncommitted; attach source manifest"
+}
