@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "status": "declared-bench-workload-not-measured",
+  "duration_seconds": 1800,
+  "owner_period_us": 1000,
+  "sensor_bus_hz": 400000,
+  "sensor_bytes_per_read": 14,
+  "ingress": {
+    "wire_frame_max_bytes": 280,
+    "udp_packets_per_wake_max": 4,
+    "espnow_callback_queue_packets": 4,
+    "espnow_peers_max": 4,
+    "owner_command_queue": 8,
+    "owner_commands_per_tick": 2,
+    "owner_reply_slots": 4,
+    "accepted_setpoint_hz": 50,
+    "accepted_heartbeat_hz": 1,
+    "rejected_packet_hz": 100,
+    "reconnect_attempts_per_minute": 6,
+    "overload_burst_packets": 32
+  },
+  "telemetry": {
+    "profile": "schema-defaults",
+    "MAV_RATE_SLOW": 2,
+    "MAV_RATE_ATT": 20,
+    "MAV_RATE_RC": 10,
+    "MAV_RATE_MOT": 10,
+    "MAV_RATE_IMU": 15,
+    "heartbeat_and_battery_hz_each": 2,
+    "configured_attempts_per_second": 59,
+    "delivery_is_best_effort_bounded_four_reply_slots": true,
+    "must_capture_actual_exported_settings": true
+  },
+  "logs": {"capacity_entries": 1000, "entry_bytes": 64, "armed_download_allowed": false},
+  "provisional_limits": {"core_us": 500, "sample_to_output_us": 1000, "jitter_us": 100},
+  "physical_stop_us": null,
+  "physical_stop_bound_status": "awaiting_mechanism_and_trace_review"
+}
