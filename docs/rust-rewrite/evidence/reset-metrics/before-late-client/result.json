@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "status": "fail",
+  "failures": [
+    "TimeoutError: ('ack', 400)",
+    "armed control output not observed",
+    "metrics snapshot not received"
+  ],
+  "requirements": [
+    "P4-05",
+    "P6-05",
+    "SAF-01",
+    "SAF-05"
+  ],
+  "ticks": 3101,
+  "dropped_ticks": 0,
+  "seen_armed_output": false,
+  "metrics": null,
+  "final_tick": {
+    "kind": "tick",
+    "version": 2,
+    "sim_us": 3101000,
+    "generation": 3,
+    "state": 1,
+    "reason": 1,
+    "source": null,
+    "target_attitude_valid": false,
+    "sequence": 3100,
+    "numeric_valid": true,
+    "sample_us": 3101000,
+    "sample_time_provenance": "input-v2",
+    "position_world_m": [
+      1.746863745211158e-06,
+      -4.407572760101175e-06,
+      0.013784852810204029
+    ],
+    "pose_wxyz": [
+      1.0,
+      0.00015946212806738913,
+      1.4132811365641373e-08,
+      4.697137678810748e-10
+    ],
+    "velocity_world_m_s": [
+      6.322711101347522e-07,
+      -0.004362460691481829,
+      -0.004997812211513519
+    ],
+    "gyro_body_rad_s": [
+      0.3154517114162445,
+      -0.003110477700829506,
+      0.0008703266503289342
+    ],
+    "acceleration_body_m_s2": [
+      -0.003930934704840183,
+      0.03937844559550285,
+      9.754619598388672
+    ],
+    "estimate_wxyz": [
+      1.0,
+      -0.00015564374916721135,
+      -0.00019778513524215668,
+      -3.012181150552351e-05
+    ],
+    "estimated_rates_rad_s": [
+      0.07932256162166595,
+      -0.0015420635463669896,
+      0.0017350250855088234
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "hardware_test": false,
+  "client": "repository pyflix; unsigned loopback simulation",
+  "source": "uncommitted; attach source manifest"
+}
