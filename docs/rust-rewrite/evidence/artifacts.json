@@ -1,0 +1,31 @@
+{
+  "status": "unqualified-development",
+  "source_revision": "uncommitted",
+  "sdk_revision": "f5c3654a1c2d2a01f7f67def7a0dc48e691f63c0",
+  "sdk_tag": "v5.4.2",
+  "target_compiler": "esp Rust 1.88.0.0",
+  "host_compiler": "Rust 1.92.0",
+  "hardware_evidence": null,
+  "artifacts": {
+    "unwired_app": {
+      "size": 428832,
+      "sha256": "6f9c7d476dbdf3f2102d7e1be74d7a69febc88d885d185b7cc4bb576cf7cadd2",
+      "local_build_path": "/private/tmp/flix-rust-implementation/apps/esp32/idf/build/flix_rust.bin"
+    },
+    "enabled_compile_only_app": {
+      "size": 988896,
+      "sha256": "845c8e85de70fce76e30e2401ab20f76f13f8c0c4ffe23c54ff188796e60a7c1",
+      "local_build_path": "/private/tmp/flix-idf-enabled-build/flix_rust.bin"
+    },
+    "unwired_bootloader": {
+      "size": 20928,
+      "sha256": "4479579f5b4f42285a64a638cb17458c7580abc771d40f0537d34452fd05693f",
+      "local_build_path": "/private/tmp/flix-rust-implementation/apps/esp32/idf/build/bootloader/bootloader.bin"
+    },
+    "unwired_partition": {
+      "size": 3072,
+      "sha256": "7f00b6c042a89b15b0cac534f82ed988caf29278ff5700b0c511eb1b5bb7c820",
+      "local_build_path": "/private/tmp/flix-rust-implementation/apps/esp32/idf/build/partition_table/partition-table.bin"
+    }
+  }
+}
