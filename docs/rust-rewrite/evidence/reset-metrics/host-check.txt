@@ -1,0 +1,272 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.26s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running unittests src/lib.rs (target/debug/deps/flight_config-ce47490e07b9d31c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/persistence.rs (target/debug/deps/persistence-9504edf76940dbd8)
+
+running 5 tests
+test flash_requires_stopped_exclusive_maintenance ... ok
+test only_absent_storage_can_initialize_defaults ... ok
+test invalid_values_and_config_aliasing_are_rejected_atomically ... ok
+test schema_inventory_and_crc_corruption_contract ... ok
+test every_interruption_retains_the_last_committed_record ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running unittests src/lib.rs (target/debug/deps/flight_core-5394b74548c06f21)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/allocation.rs (target/debug/deps/allocation-4020c9e0d2fabf04)
+
+running 1 test
+test flight_ticks_do_not_allocate ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/authority.rs (target/debug/deps/authority-a1b26efdc27f07d1)
+
+running 2 tests
+test replacing_diagnostics_revokes_the_previous_frame ... ok
+test a_frame_from_another_live_or_replaced_owner_cannot_apply ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rc_and_log.rs (target/debug/deps/rc_and_log-63c4a01c93f5a220)
+
+running 2 tests
+test sbus_calibration_flags_and_channel_bounds ... ok
+test ring_order_partial_offsets_and_zero_capacity ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/safety_contract.rs (target/debug/deps/safety_contract-35ecc6b038df115a)
+
+running 9 tests
+test arm_requires_source_calibration_freshness_and_low_thrust ... ok
+test disarm_invalidates_cached_and_invalid_intents ... ok
+test diagnostic_is_exclusive_bounded_and_expires ... ok
+test every_supported_intent_obeys_frame_expiry_and_disarm ... ok
+test quaternion_rotation_and_clock_wrap_contract ... ok
+test invalid_sensor_clock_and_reset_never_preserve_output ... ok
+test leases_expire_without_heartbeat_or_implicit_rearm ... ok
+test bounded_outputs_property_and_mixer_signs ... ok
+test transition_stress_stop_dominates_at_every_seeded_step ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running unittests src/lib.rs (target/debug/deps/flight_esp32-3eb5387b9b85c220)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/battery.rs (target/debug/deps/battery-ed0ffd406c4eefe2)
+
+running 2 tests
+test invalid_stale_and_debounced_voltage_have_explicit_states ... ok
+test opt_in_unknown_denies_arm_and_critical_latches_zero_output ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/maintenance.rs (target/debug/deps/maintenance-37d4902e4cb346c2)
+
+running 3 tests
+test invalid_storage_fault_is_not_cleared_by_console_acknowledgement ... ok
+test diagnostics_require_maintenance_and_expire_through_the_owner ... ok
+test pending_driver_change_cannot_be_erased_by_another_parameter_or_exit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/metrics.rs (target/debug/deps/metrics-7d155ba455866539)
+
+running 2 tests
+test histogram_boundaries_are_inclusive_and_saturating ... ok
+test frozen_metrics_require_exclusive_maintenance_and_stop_cancels_transfer ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/runtime.rs (target/debug/deps/runtime-d37b40a9f3d01d24)
+
+running 3 tests
+test owner_roundtrip_arm_manual_disarm_and_ack ... ok
+test maintenance_transfer_is_denied_armed_and_snapshot_offsets_work ... ok
+test imu_readback_identity_and_stationary_calibration_are_required ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/session.rs (target/debug/deps/session-22b7ba20c22f5ca2)
+
+running 2 tests
+test enrolled_timestamp_is_anchored_and_bidirectional_signature_is_valid ... ok
+test enrollment_requires_exclusive_stop_and_rotation_rejects_old_key ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/flight_gazebo-d836357e0cba04f4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/abi.rs (target/debug/deps/abi-2e857c72b64389ef)
+
+running 2 tests
+test handles_instances_nulls_versions_and_reset_contract ... ok
+test observation_is_read_only_and_checks_caller_contract ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/flight_protocol-8d808d612d37edd1)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/contracts.rs (target/debug/deps/contracts-a132ef9f16963f4c)
+
+running 6 tests
+test peers_are_bounded_and_require_unicast_nonzero_keys ... ok
+test stop_survives_full_queue_and_discards_pending_arm ... ok
+test truncated_zero_tail_and_concatenated_streams_are_safe ... ok
+test bad_masks_destinations_counts_and_numbers_rejected ... ok
+test crc_signature_replay_and_source_are_enforced ... ok
+test seeded_packet_mutation_and_arbitrary_stream_corpus_never_panics ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/fuzz_valid_frames.rs (target/debug/deps/fuzz_valid_frames-a0fff9901464ac95)
+
+running 2 tests
+test advancing_signature_floor_rejects_unseen_old_packets ... ok
+test valid_crc_arbitrary_payloads_exercise_all_ingress_decoders ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/proxy.rs (target/debug/deps/proxy-1d4759f37e0408da)
+
+running 1 test
+test partial_frames_expire_and_unsigned_or_enrollment_is_never_relayed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/bench.rs (target/debug/deps/bench-322d48b1bf0605ad)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/flight_replay-0d83d649832f67f6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/settings.rs (target/debug/deps/settings-be2724cfbebb5bf9)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flight_config
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flight_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flight_esp32
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flight_gazebo
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests flight_protocol
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `release` profile [optimized] target(s) in 0.06s
+    Finished `release` profile [optimized] target(s) in 0.05s
+test_actual_rust_owner_roundtrip (test_client.ClientTests.test_actual_rust_owner_roundtrip) ... ok
+test_close_wakes_pending_request (test_client.ClientTests.test_close_wakes_pending_request) ... ok
+test_duplicate_request_key_is_rejected (test_client.ClientTests.test_duplicate_request_key_is_rejected) ... ok
+test_immediate_ack_and_slow_callback (test_client.ClientTests.test_immediate_ack_and_slow_callback) ... ok
+test_udp_requires_signing_except_explicit_loopback_simulation (test_client.ClientTests.test_udp_requires_signing_except_explicit_loopback_simulation) ... ok
+test_opposite_quaternion_sign_same_orientation_and_threshold_failure_kept (test_gazebo_compare.ComparisonTests.test_opposite_quaternion_sign_same_orientation_and_threshold_failure_kept) ... ok
+test_bad_packets_and_nonfinite_observation (test_gazebo_trace.TraceTests.test_bad_packets_and_nonfinite_observation) ... ok
+test_command_boundary_is_plugin_time (test_gazebo_trace.TraceTests.test_command_boundary_is_plugin_time) ... ok
+test_layout_and_units (test_gazebo_trace.TraceTests.test_layout_and_units) ... ok
+test_v2_sensor_capture_time_and_power_fault (test_gazebo_trace.TraceTests.test_v2_sensor_capture_time_and_power_fault) ... ok
+test_conflicts_partition_and_discharge_fail_the_gate (test_hardware_profile.HardwareProfileTests.test_conflicts_partition_and_discharge_fail_the_gate) ... ok
+test_uninspected_supplier_template_is_rejected (test_hardware_profile.HardwareProfileTests.test_uninspected_supplier_template_is_rejected) ... ok
+test_missing_chunk_and_nonfinite_rejected (test_log.LogTests.test_missing_chunk_and_nonfinite_rejected) ... ok
+test_offsets_and_roundtrip (test_log.LogTests.test_offsets_and_roundtrip) ... ok
+test_actual_rust_owner_maintenance_snapshot (test_metrics.MetricsTests.test_actual_rust_owner_maintenance_snapshot) ... ok
+test_missing_and_conflicting_chunks_never_succeed (test_metrics.MetricsTests.test_missing_and_conflicting_chunks_never_succeed) ... ok
+test_reordered_chunks_and_wrong_nonce (test_metrics.MetricsTests.test_reordered_chunks_and_wrong_nonce) ... ok
+test_actual_posix_serial_and_proxy_cannot_enroll (test_serial_signing.SerialSigningTests.test_actual_posix_serial_and_proxy_cannot_enroll) ... ok
+test_signed_python_client_roundtrip_with_actual_rust_owner (test_serial_signing.SerialSigningTests.test_signed_python_client_roundtrip_with_actual_rust_owner) ... ok
+test_signed_reader_rejects_tampering_replay_unsigned_and_wrong_source (test_serial_signing.SerialSigningTests.test_signed_reader_rejects_tampering_replay_unsigned_and_wrong_source) ... ok
+test_input_validation_is_atomic_and_rejects_nonfinite_or_out_of_bounds (test_viewer.BrowserControlTests.test_input_validation_is_atomic_and_rejects_nonfinite_or_out_of_bounds) ... ok
+test_reserved_disarm_revokes_input_even_when_command_queue_full (test_viewer.BrowserControlTests.test_reserved_disarm_revokes_input_even_when_command_queue_full) ... ok
+test_reset_disarms_cancels_queued_arm_and_bounds_restart (test_viewer.BrowserControlTests.test_reset_disarms_cancels_queued_arm_and_bounds_restart) ... ok
+test_zero_thrust_arm_expiring_stick_and_explicit_stop (test_viewer.ControlTests.test_zero_thrust_arm_expiring_stick_and_explicit_stop) ... ok
+test_malformed_pose_does_not_replace_live_state (test_viewer.ViewerTests.test_malformed_pose_does_not_replace_live_state) ... ok
+test_observation_io_failure_does_not_interrupt_transport (test_viewer.ViewerTests.test_observation_io_failure_does_not_interrupt_transport) ... ok
+test_observer_reads_valid_motor_frames_and_rejects_invalid_values (test_viewer.ViewerTests.test_observer_reads_valid_motor_frames_and_rejects_invalid_values) ... ok
+test_pose_uses_model_world_frame_not_relative_link_frame (test_viewer.ViewerTests.test_pose_uses_model_world_frame_not_relative_link_frame) ... ok
+
+----------------------------------------------------------------------
+Ran 28 tests in 3.460s
+
+OK
+Disarmed + invalid torque: motor remains 0.40
+AUTO + unset controlTime: thrust remains 0.60
+Direct output + expired controlTime: target 0.5999, motor 0.40
+Rate after clock rollback: blocked (last=4294.0, now=0.001)
+{"legacy": "1f5b268271536e45a9377d1c5317d3eb6f3c3bba", "cases": 400, "tolerance": 5e-06, "max_absolute_error": 4.769999999432173e-07, "seed": 24301}
+C ABI: independent layout, stopped output, stale handle passed
+{
+  "profile": "simulator-ABI-replay",
+  "seed": 24301,
+  "physics_test": false,
+  "hardware_test": false,
+  "passed": [
+    "ACRO explicit arm and stop",
+    "STAB explicit arm and stop",
+    "AUTO attitude explicit arm and stop",
+    "AUTO rates explicit arm and stop",
+    "nonfinite IMU stops and denies rearm",
+    "stale IMU stops and denies rearm",
+    "calibration lost stops and denies rearm",
+    "clock rollback stops and denies rearm",
+    "clock gap stops and denies rearm",
+    "direct diagnostic output obeys explicit stop",
+    "heartbeat and rejected inputs do not renew command lease",
+    "reset clears authority and preserves independent instance",
+    "reserved stop dominates full command queue",
+    "seeded extreme ACRO inputs stay bounded and disarm"
+  ]
+}
+    Finished `release` profile [optimized] target(s) in 0.07s
+     Running `target/release/flight-replay --benchmark`
+host_only armed_stabilized_ticks=100000 elapsed_us=79570 core_bytes=496 owner_bytes=67752
