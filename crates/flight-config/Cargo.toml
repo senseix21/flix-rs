@@ -1,0 +1,8 @@
+[package]
+name = "flight-config"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+[dependencies]
+flight-core.workspace = true
+
