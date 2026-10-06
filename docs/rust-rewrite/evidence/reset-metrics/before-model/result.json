@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "reset_kind": "model",
+  "explicit_reset_recovery": false,
+  "reset_fault": null,
+  "loss_zero_at_us": null,
+  "reconnect_without_arm_checked": false,
+  "native_reset": true,
+  "reset_seen": false,
+  "native_recovery_status": "latched-fault-needs-explicit-clear",
+  "reset_error": null,
+  "engine": "rust",
+  "scenario": "level-thrust",
+  "profile": "gazebo11-legacy-65g-ground-start",
+  "requirements": [
+    "P6-02",
+    "P6-05",
+    "SAF-08"
+  ],
+  "status": "fail",
+  "failures": [
+    "native reset not observed",
+    "scenario deadline expired at resetting"
+  ],
+  "ticks": 18909,
+  "command_events": 179,
+  "dropped_ticks": 0,
+  "invalid_packets": 0,
+  "max_tilt_degrees": 3.3140085999988225,
+  "max_lift_m": 5.109881068579853,
+  "first_fault": null,
+  "first_inverted": null,
+  "post_stop_fault": null,
+  "final_tick": {
+    "kind": "tick",
+    "version": 1,
+    "sim_us": 18910000,
+    "generation": 5,
+    "state": 5,
+    "reason": 5,
+    "source": 0,
+    "target_attitude_valid": false,
+    "sequence": 18908,
+    "numeric_valid": true,
+    "position_world_m": [
+      4.1718406507129657e-10,
+      -1.0725522692212053e-09,
+      0.013799999840557575
+    ],
+    "pose_wxyz": [
+      1.0,
+      9.792324498267128e-16,
+      9.479790516553972e-16,
+      -1.5820631915630656e-06
+    ],
+    "velocity_world_m_s": [
+      5.249168206220359e-14,
+      -1.4795303160703175e-16,
+      3.1843501360068194e-12
+    ],
+    "gyro_body_rad_s": [
+      0.0014203140744939446,
+      0.0007466007955372334,
+      0.0024979044683277607
+    ],
+    "acceleration_body_m_s2": [
+      -0.0019219286041334271,
+      -0.10875850170850754,
+      9.810011863708496
+    ],
+    "estimate_wxyz": [
+      0.9999837875366211,
+      2.9067908968727352e-08,
+      1.2110548368582386e-06,
+      0.005706864409148693
+    ],
+    "estimated_rates_rad_s": [
+      -6.941118044778705e-05,
+      -3.7470541428774595e-05,
+      0.0019060710910707712
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "stop_latency_sim_us": null,
+  "hardware_test": false,
+  "source": "uncommitted; attach source manifest"
+}
