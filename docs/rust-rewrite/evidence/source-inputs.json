@@ -1,0 +1,302 @@
+[
+  {
+    "path": ".github/workflows/host.yml",
+    "sha256": "dc3dc82e25872ecda0c70aaa5217fd2578b80aa1713dace5d401d762a09f03aa"
+  },
+  {
+    "path": "Cargo.lock",
+    "sha256": "6d139c649486c0a5065bb1bc2e7aff2a07ed09fc6c94f69c2b89910392c2318a"
+  },
+  {
+    "path": "Cargo.toml",
+    "sha256": "1863cd80ca8073eb8ad6c9f8457231861b712b9d123b7abe9bc662c370a4fd07"
+  },
+  {
+    "path": "Makefile",
+    "sha256": "b1b48c735e32e0d99baa8014c152326deba8175d78ef00a54507d149ccedf29d"
+  },
+  {
+    "path": "adapters/gazebo/CMakeLists.txt",
+    "sha256": "8f8c86370fdae6d4ed04d6e00cf767f67fe96877245bda67f78704060b6a127d"
+  },
+  {
+    "path": "adapters/gazebo/Cargo.toml",
+    "sha256": "4007043ae13e204eb685e36302e5f4c92687232e8ac9fd3aa31d9a3982fd0555"
+  },
+  {
+    "path": "adapters/gazebo/Dockerfile",
+    "sha256": "b88886344caabe578798f2bff290bb305cb06e614d761bf008325bb6d092c16a"
+  },
+  {
+    "path": "adapters/gazebo/flix.h",
+    "sha256": "ff235c48458472033b08312c2360293de60d3ed3538ae71ab3077fa45793261d"
+  },
+  {
+    "path": "adapters/gazebo/plugin.cpp",
+    "sha256": "49aa1d39bf1a26c1473a5b0ba5902e2bf0ad2620ffb57ab96f43a0afbfc361ad"
+  },
+  {
+    "path": "adapters/gazebo/src/lib.rs",
+    "sha256": "dffc6f6daa99a2176bb428263cc20ee7ee7ad508cec393a1845994941b80281c"
+  },
+  {
+    "path": "adapters/gazebo/tests/abi.rs",
+    "sha256": "50af8c57084a679f2951eb9fad2b690c2274b440d8c688c7363b14d5c4106b64"
+  },
+  {
+    "path": "apps/esp32/Cargo.toml",
+    "sha256": "e844c392ed60484faa6b75736b724a7cc1fbaa799fb4d795fb018fc2420c252c"
+  },
+  {
+    "path": "apps/esp32/firmware/Cargo.lock",
+    "sha256": "97f883427241b1a00894d4a586866eb78334e91d481bf099cf0cb519257fe505"
+  },
+  {
+    "path": "apps/esp32/firmware/Cargo.toml",
+    "sha256": "db4f561ae86b8fe1d6b0c29636203b2646f00f5bab6842712176bfa3203a0e6a"
+  },
+  {
+    "path": "apps/esp32/firmware/src/lib.rs",
+    "sha256": "135cdc0422f02eebe2e19b374fbc0b634caf872975157b17bf0fd7b91d528612"
+  },
+  {
+    "path": "apps/esp32/idf/CMakeLists.txt",
+    "sha256": "fea4f5a49b9cef78018355931d9aab49d6118fe48b1b823055532e5b2879814e"
+  },
+  {
+    "path": "apps/esp32/idf/main/CMakeLists.txt",
+    "sha256": "fab2dad6af547a697fbf170111f676cfbed2b0f11befdbf87bc16c39d4561eec"
+  },
+  {
+    "path": "apps/esp32/idf/main/Kconfig.projbuild",
+    "sha256": "fa2f0e2eee3546ee7266e744f27e0b23b65edcf29eb7a59d4fcbe2d442cde339"
+  },
+  {
+    "path": "apps/esp32/idf/main/board.h",
+    "sha256": "0fd9babb0bdaf19dff9d712981ed51e99aa5a8988696f1fd16f0680fab2633c5"
+  },
+  {
+    "path": "apps/esp32/idf/main/espnow.c",
+    "sha256": "0e4be638fa9de310b594c743e97b84f429eb099bddbef4e26695969e08f3c6a5"
+  },
+  {
+    "path": "apps/esp32/idf/main/main.c",
+    "sha256": "5622300660825f14f4dedb985cff798f467d22d50e234a42a33111305b5b8d75"
+  },
+  {
+    "path": "apps/esp32/idf/main/radio.c",
+    "sha256": "e3bfd80823d66c3e6e3e29e0caaa67ccab0d33334f369bb5b15f012a98b7c2f2"
+  },
+  {
+    "path": "apps/esp32/idf/sdkconfig.defaults",
+    "sha256": "4c279085ab7457c4255de26a03395e84681e5ecd1f68a025e6bc874edc37b00b"
+  },
+  {
+    "path": "apps/esp32/src/imu.rs",
+    "sha256": "45d710a368f0684000cfc1f4417712cb661a6236149972ae399b12712402142b"
+  },
+  {
+    "path": "apps/esp32/src/lib.rs",
+    "sha256": "5e37eaae3207fafdf72f0984248e4ad098a7f17026cbc2ab5f37efa5db826aa8"
+  },
+  {
+    "path": "apps/esp32/src/runtime.rs",
+    "sha256": "c4680550342bfd66cde23fcba6749c0691b282c980306f5a96f399fd2868c07e"
+  },
+  {
+    "path": "apps/esp32/tests/maintenance.rs",
+    "sha256": "f3476a3e4ce8b59ba85cb134a12d6f4a28ed74cd65ad733fb870e1d98311e5c0"
+  },
+  {
+    "path": "apps/esp32/tests/runtime.rs",
+    "sha256": "1caefa2993e5e7cd9e691c34527046b53919aa06e30c45bd261fb2a4ff26076b"
+  },
+  {
+    "path": "apps/replay/Cargo.toml",
+    "sha256": "6d58a3530f3025602690b9b687e847691c61ebbedac2d4bf8200173d7d5b4e1c"
+  },
+  {
+    "path": "apps/replay/src/bin/bench.rs",
+    "sha256": "bc308e46e530a6af95744eaf8a768b5f54b5b3030ebc32e0d1ce7340bd7a1a6e"
+  },
+  {
+    "path": "apps/replay/src/bin/settings.rs",
+    "sha256": "3210709393a36e9c90eaf71b6cacd5ac448fb2e7b35d89773f17e98e70e38bb1"
+  },
+  {
+    "path": "apps/replay/src/main.rs",
+    "sha256": "b7df0b8f74965e91800487d3eaa11d4a1e694c4f74681851f02478bc103d26bb"
+  },
+  {
+    "path": "crates/flight-config/Cargo.toml",
+    "sha256": "91609b2d25b310009099aedc49158fd9560fc78d75bda8737cf24f7aee6895f8"
+  },
+  {
+    "path": "crates/flight-config/src/lib.rs",
+    "sha256": "a0696e3acf67b41245b70e469752ba6afbb4e79c6db0cd059f0dc6f4e8683052"
+  },
+  {
+    "path": "crates/flight-config/src/schema.rs",
+    "sha256": "9739fbc6828f86cce0ab3ee97c3b6e6cbd0fb94d6266572f8b9698c3c63ef8b3"
+  },
+  {
+    "path": "crates/flight-config/tests/persistence.rs",
+    "sha256": "5b5574edc10141f7717623a6ef57a52d9f0070b60ecb6a4a58ec8109d3fc270f"
+  },
+  {
+    "path": "crates/flight-core/Cargo.toml",
+    "sha256": "04ed33bb0c3ba5b021d8c87f672e39b8f42f6f9d87bedbf761811cb267d79bfa"
+  },
+  {
+    "path": "crates/flight-core/src/control.rs",
+    "sha256": "873279dd846aa880a7694842bd034df8d16aa428deb247fee215b38473cccc49"
+  },
+  {
+    "path": "crates/flight-core/src/lib.rs",
+    "sha256": "31f747fed4cd375088e411e3fa0d92a53540c005fc98b5314b7b320f1e8b5fe7"
+  },
+  {
+    "path": "crates/flight-core/src/log.rs",
+    "sha256": "3f328165e22a6274cb87595bbf0cea492cd775ed6916da11d8bc682fcc06b84e"
+  },
+  {
+    "path": "crates/flight-core/src/math.rs",
+    "sha256": "7709f8749abbf1180340de1c5526c00bfb4cfb3a71527ea5d3e55c5605ce79ac"
+  },
+  {
+    "path": "crates/flight-core/src/rc.rs",
+    "sha256": "b935db551983580e4e398b6015bbecbaf35a91ad236f3deba970f233ef5fbb88"
+  },
+  {
+    "path": "crates/flight-core/src/safety.rs",
+    "sha256": "5f4fde1327d01aea41d1b00da709be28262ecbb6960f053763aa4c9bcc4efcf2"
+  },
+  {
+    "path": "crates/flight-core/src/time.rs",
+    "sha256": "8dee9ccf621d31a988fd98f516730629ed64caf3a7cb886bca5b370a1d8b5fec"
+  },
+  {
+    "path": "crates/flight-core/tests/allocation.rs",
+    "sha256": "93fdbea18d3adc2e8bb37dec5429570b019dee9747f63ea72d18d1caef4699c1"
+  },
+  {
+    "path": "crates/flight-core/tests/authority.rs",
+    "sha256": "3f1bd3edd2c677f17ab6c2e1bb7c81909bf97a93317a278a79322bb8fe416939"
+  },
+  {
+    "path": "crates/flight-core/tests/rc_and_log.rs",
+    "sha256": "754435ae1f1c84c3e2f1b06c35d0a92f187daeb3d3878bcd53e26c0ba939752e"
+  },
+  {
+    "path": "crates/flight-core/tests/safety_contract.rs",
+    "sha256": "7b2a93e2b99008f62e0e615da597d9cbe44b6c0ebb899c2c80eabf8d883f15e7"
+  },
+  {
+    "path": "crates/flight-protocol/Cargo.toml",
+    "sha256": "4cccb7f86bb88cc4fa5edb2809ac82289662d73539fd4cdf82214857fae2d746"
+  },
+  {
+    "path": "crates/flight-protocol/src/dialect.rs",
+    "sha256": "d9ace38f2dc8d416f387dd180a3ab8efbc93233ec41d42e9113c86a3cb32a4c6"
+  },
+  {
+    "path": "crates/flight-protocol/src/ingress.rs",
+    "sha256": "92ef25cc2b31645e9ad60e482cdcc4d4e38994a2bfc1ee8a6bba7c90121d8da4"
+  },
+  {
+    "path": "crates/flight-protocol/src/lib.rs",
+    "sha256": "1db6d599b97a4344a256701dca3e28f37a6800e3ffaf3143aa11129d7b58b1b1"
+  },
+  {
+    "path": "crates/flight-protocol/src/peers.rs",
+    "sha256": "7ed28d0bfd5155b20f77d91be3f39e902db5ee23abf30493363d821f0c60e3cc"
+  },
+  {
+    "path": "crates/flight-protocol/src/telemetry.rs",
+    "sha256": "79ca5e0a47cf210a2ae753aebe9a72700c0e5cde0c73c858a4b13c154f19b46f"
+  },
+  {
+    "path": "crates/flight-protocol/src/wire.rs",
+    "sha256": "6d81e42222a0ba14032b72974890b2449864479285375e2a4b565acc526538c4"
+  },
+  {
+    "path": "crates/flight-protocol/tests/contracts.rs",
+    "sha256": "0c07c548ad841c68d6681c44fe3a7fdca106f74d784a1a18da81054314c795f5"
+  },
+  {
+    "path": "crates/flight-protocol/tests/fuzz_valid_frames.rs",
+    "sha256": "eb1bb31ea4ae3453e17ef8405a576522db5671b1d537eb3a5ed5312bb0d91c93"
+  },
+  {
+    "path": "fixtures/legacy/defects.cpp",
+    "sha256": "aa6ee64d3fe9c8a0e620242fa44bb07092f9d5a1a48f0884ec9e54a6e7829887"
+  },
+  {
+    "path": "fixtures/legacy/oracle.cpp",
+    "sha256": "7684a1775ca5960098041c2dec3677b6225d32f37c3dbcd7f02e33e931e2c256"
+  },
+  {
+    "path": "protocol/common-subset.json",
+    "sha256": "c5476d28fe3c7514810c5fa74d9b74893051b6ce9873c79dff6cc684ac760c11"
+  },
+  {
+    "path": "protocol/parameters.json",
+    "sha256": "2c6406b184de3a284cd1bc02fb53cfe120d5af8e75f4a2b4e0a8177659a30294"
+  },
+  {
+    "path": "rust-toolchain.toml",
+    "sha256": "7ffdb0d32b0e9f1d0366a9ea240d3c9983bd231617e6c1f5abae93c74a13d872"
+  },
+  {
+    "path": "schema/parameters.json",
+    "sha256": "379e28df4e4153d02ee8230ed91be6f995b6a5040b528be1d4a5ab8d998d9cb1"
+  },
+  {
+    "path": "scripts/abi-smoke.py",
+    "sha256": "4f2a1f0403eddd966fbd99a112ad3537a6c5e7fe9f00b5906524a996a4d2bb3d"
+  },
+  {
+    "path": "scripts/build-esp32.sh",
+    "sha256": "7372a710c7bd991b2d1327b0e3408a5c0bb73d9c182acbf9240a8d3c06564254"
+  },
+  {
+    "path": "scripts/check.sh",
+    "sha256": "02e2d39dc4d0a85a0369aecce628480ec6176f61086296acfca9aed1d9531e1b"
+  },
+  {
+    "path": "scripts/gazebo-smoke.sh",
+    "sha256": "598ca88c719799122c9807a2e8af5bd084bf87855e14420432a3171a08cfc7cd"
+  },
+  {
+    "path": "scripts/generate.py",
+    "sha256": "00aabef4785233d62b1daf1e6b6066dd9c886ed353252c37d796343ce1e07ebb"
+  },
+  {
+    "path": "scripts/legacy-parity.py",
+    "sha256": "2c2ea8270f613f960d398d7a089027d12e50217fef0175f55f8e6cb9a65a797d"
+  },
+  {
+    "path": "scripts/release-manifest.py",
+    "sha256": "39b1cbaaad41582e49caa22fb8e904f4f2e5b275159de9836bf3cfe0fc64e5cc"
+  },
+  {
+    "path": "tools/log.py",
+    "sha256": "ec9c317dd9fd2bc234e8d873d414b5e5e13a46ad659e53ea316b1e7e8fc4e763"
+  },
+  {
+    "path": "tools/pyflix/__init__.py",
+    "sha256": "1893bd6def41d62bf13d7025a31f472779c33c675a844f4cf61370f1e92c6a13"
+  },
+  {
+    "path": "tools/pyflix/client.py",
+    "sha256": "c4eb576a8fa751bee4d96d19f8291b4d08e616693dcaa1ae5742b059b3149a86"
+  },
+  {
+    "path": "tools/tests/test_client.py",
+    "sha256": "164b96f193c27e1d5625ffaaffefc540c339a240da5edacf2726653b31c8ac96"
+  },
+  {
+    "path": "tools/tests/test_log.py",
+    "sha256": "e32fc1acd655385302f057e3e80672732409e221b53274b5fb2a02ba7495b34c"
+  }
+]
