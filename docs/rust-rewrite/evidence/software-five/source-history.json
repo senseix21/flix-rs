@@ -1,0 +1,21 @@
+{
+  "source_status": "uncommitted",
+  "baseline_source_archive_sha256": "89b07413e5699ca53518e6464b45acdc068fbf076185e2d2f98d47d96e32d6ca",
+  "baseline_manifest_sha256": "c82677d03541f9ae26aa719cb92617434fee8290ba7bd92faa54a9b609889894",
+  "unchanged_flight_core_files": {
+    "crates/flight-core/Cargo.toml": "04ed33bb0c3ba5b021d8c87f672e39b8f42f6f9d87bedbf761811cb267d79bfa",
+    "crates/flight-core/src/battery.rs": "626d90713054e14b206739ce5d8f5fd672b2fe751675fe9dbb9e0875cc492921",
+    "crates/flight-core/src/control.rs": "873279dd846aa880a7694842bd034df8d16aa428deb247fee215b38473cccc49",
+    "crates/flight-core/src/lib.rs": "818ad870652b822b9aa9f463973f5a2b51a240f6a7476b20adbad23664a6c4dc",
+    "crates/flight-core/src/log.rs": "3f328165e22a6274cb87595bbf0cea492cd775ed6916da11d8bc682fcc06b84e",
+    "crates/flight-core/src/math.rs": "7709f8749abbf1180340de1c5526c00bfb4cfb3a71527ea5d3e55c5605ce79ac",
+    "crates/flight-core/src/rc.rs": "b935db551983580e4e398b6015bbecbaf35a91ad236f3deba970f233ef5fbb88",
+    "crates/flight-core/src/safety.rs": "f878b6d467a7cd856fc1c944e2ad8b24e9ef6478164b9f9d1859e6d84344e689",
+    "crates/flight-core/src/time.rs": "8dee9ccf621d31a988fd98f516730629ed64caf3a7cb886bca5b370a1d8b5fec",
+    "crates/flight-core/tests/allocation.rs": "e0b9f00eefc2ef70ebf7c234a61b6eeafdf734d98a213def670370a6933ced25",
+    "crates/flight-core/tests/authority.rs": "3f1bd3edd2c677f17ab6c2e1bb7c81909bf97a93317a278a79322bb8fe416939",
+    "crates/flight-core/tests/rc_and_log.rs": "754435ae1f1c84c3e2f1b06c35d0a92f187daeb3d3878bcd53e26c0ba939752e",
+    "crates/flight-core/tests/safety_contract.rs": "7b2a93e2b99008f62e0e615da597d9cbe44b6c0ebb899c2c80eabf8d883f15e7"
+  },
+  "provenance_limit": "Earlier scenarios preceded per-run source manifests and capability/protocol additions; their unchanged flight-core source is retained in the baseline archive. Later runs include code-filewalk source inventories. No complete historical binary/source qualification is inferred."
+}
