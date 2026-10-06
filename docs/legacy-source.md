@@ -9,3 +9,7 @@ The transferred review, specification, and plan were written on 2026-10-05. The 
 When adding comparison fixtures or copied reference excerpts, preserve original copyright notices, record their source path and revision, and verify applicable licensing. Do not infer that a file without an explicit license grants a particular redistribution license.
 
 Hardware and timing observations in the review refer to the stated host probes and static inspection. No ESP32 or flight qualification has been completed for the Rust application.
+
+## README visual assets
+
+The root README adopts the original centered logo and side-by-side hardware gallery. Six unchanged visual assets are copied from the pinned upstream revision into `docs/img/`. Their source, attribution, license uncertainty, and SHA-256 hashes are recorded in [the asset inventory](img/README.md). The upstream hardware photographs and simulator screenshot do not represent physical qualification or a screenshot of the Rust browser viewer.
