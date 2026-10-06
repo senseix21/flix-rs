@@ -1,0 +1,223 @@
+{
+  "dates": "2026-10-05\u201306",
+  "status": "unqualified-development",
+  "source": "uncommitted; see development-manifest.json",
+  "hardware_qualified": false,
+  "physical_test": false,
+  "qgroundcontrol_test": false,
+  "tests": {
+    "rust": 42,
+    "python": 28,
+    "cpp_scalar_cases": 400,
+    "scalar_tolerance": 5e-06,
+    "abi_scenarios": 14,
+    "actual_gazebo_scenarios": 13
+  },
+  "gazebo": {
+    "level-thrust": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 7505,
+      "dropped_ticks": 0,
+      "stop_latency_sim_us": 0,
+      "reset_kind": "all",
+      "reset_seen": false,
+      "explicit_reset_recovery": false,
+      "queued_controls_before_reset": false,
+      "seen_armed_output": null
+    },
+    "pitch-pulse": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 7157,
+      "dropped_ticks": 0,
+      "stop_latency_sim_us": 0,
+      "reset_kind": "all",
+      "reset_seen": false,
+      "explicit_reset_recovery": false,
+      "queued_controls_before_reset": false,
+      "seen_armed_output": null
+    },
+    "native-reset": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 8884,
+      "dropped_ticks": 0,
+      "stop_latency_sim_us": null,
+      "reset_kind": "all",
+      "reset_seen": true,
+      "explicit_reset_recovery": true,
+      "queued_controls_before_reset": false,
+      "seen_armed_output": null
+    },
+    "acro-level": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 5509,
+      "dropped_ticks": 0,
+      "stop_latency_sim_us": 0,
+      "reset_kind": "all",
+      "reset_seen": false,
+      "explicit_reset_recovery": false,
+      "queued_controls_before_reset": false,
+      "seen_armed_output": null
+    },
+    "auto-level": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 5506,
+      "dropped_ticks": 0,
+      "stop_latency_sim_us": 0,
+      "reset_kind": "all",
+      "reset_seen": false,
+      "explicit_reset_recovery": false,
+      "queued_controls_before_reset": false,
+      "seen_armed_output": null
+    },
+    "lease-loss-reconnect": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 6205,
+      "dropped_ticks": 0,
+      "stop_latency_sim_us": 0,
+      "reset_kind": "all",
+      "reset_seen": false,
+      "explicit_reset_recovery": false,
+      "queued_controls_before_reset": false,
+      "seen_armed_output": null
+    },
+    "time-reset": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 8392,
+      "dropped_ticks": 0,
+      "stop_latency_sim_us": null,
+      "reset_kind": "time",
+      "reset_seen": true,
+      "explicit_reset_recovery": true,
+      "queued_controls_before_reset": false,
+      "seen_armed_output": null
+    },
+    "model-reset": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 8478,
+      "dropped_ticks": 0,
+      "stop_latency_sim_us": null,
+      "reset_kind": "model",
+      "reset_seen": true,
+      "explicit_reset_recovery": true,
+      "queued_controls_before_reset": false,
+      "seen_armed_output": null
+    },
+    "two-models": {
+      "status": "pass",
+      "failures": [],
+      "ticks": [
+        4117,
+        4117
+      ],
+      "dropped_ticks": [
+        0,
+        0
+      ],
+      "stop_latency_sim_us": [
+        0,
+        0
+      ],
+      "reset_kind": null,
+      "reset_seen": null,
+      "explicit_reset_recovery": null,
+      "queued_controls_before_reset": null,
+      "seen_armed_output": null
+    },
+    "sensor-invalid": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 6006,
+      "dropped_ticks": 0,
+      "stop_latency_sim_us": 0,
+      "reset_kind": "all",
+      "reset_seen": false,
+      "explicit_reset_recovery": false,
+      "queued_controls_before_reset": false,
+      "seen_armed_output": null
+    },
+    "sensor-stale": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 6006,
+      "dropped_ticks": 0,
+      "stop_latency_sim_us": 0,
+      "reset_kind": "all",
+      "reset_seen": false,
+      "explicit_reset_recovery": false,
+      "queued_controls_before_reset": false,
+      "seen_armed_output": null
+    },
+    "queued-model-reset": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 8401,
+      "dropped_ticks": 0,
+      "stop_latency_sim_us": null,
+      "reset_kind": "model",
+      "reset_seen": true,
+      "explicit_reset_recovery": true,
+      "queued_controls_before_reset": true,
+      "seen_armed_output": null
+    },
+    "late-client": {
+      "status": "pass",
+      "failures": [],
+      "ticks": 2725,
+      "dropped_ticks": 0,
+      "stop_latency_sim_us": null,
+      "reset_kind": null,
+      "reset_seen": null,
+      "explicit_reset_recovery": null,
+      "queued_controls_before_reset": null,
+      "seen_armed_output": true
+    }
+  },
+  "failed_reproductions": {
+    "before-model": [
+      "native reset not observed",
+      "scenario deadline expired at resetting"
+    ],
+    "failed-time-concurrent": [
+      "native reset client deadline expired",
+      "native reset not observed",
+      "scenario deadline expired at resetting",
+      "trace incomplete"
+    ],
+    "before-queued-model": [
+      "reset preserved authority"
+    ],
+    "before-late-client": [
+      "TimeoutError: ('ack', 400)",
+      "armed control output not observed",
+      "metrics snapshot not received"
+    ]
+  },
+  "baseline_source_snapshot_retained": false,
+  "baseline_provenance": "uncommitted pre-correction runs; raw commands/observations retained, no complete baseline source snapshot",
+  "sdk": {
+    "version": "v5.4.2",
+    "target_rustc": "esp 1.88.0.0",
+    "default_bytes": 440464,
+    "enabled_compile_only_bytes": 1000768,
+    "default_sdkconfig_sha256": "1e3666c67bdff37a933f37e7b6225d47daca51a4a5a6eab369291761251b8483",
+    "enabled_sdkconfig_sha256": "d9425c905fe3552a971f1f37bb29389ce0eed10391346070f2e52301fcd38ee9"
+  },
+  "legacy_model_sha256": "30f80ee3d9f8dacff9500a492487d1d21fe4e4993bdce5cc952d3c5cfe5db210",
+  "commands": [
+    "sh scripts/check.sh",
+    "cargo check --manifest-path apps/esp32/firmware/Cargo.toml --target thumbv7em-none-eabihf --locked",
+    "sh scripts/build-esp32.sh",
+    "idf.py -C apps/esp32/idf -B /private/tmp/flix-execution-idf-enabled-build -D SDKCONFIG=/private/tmp/flix-execution-enabled-sdkconfig -D SDKCONFIG_DEFAULTS=/private/tmp/flix-compile-profile.defaults build",
+    "make sim-scenarios"
+  ],
+  "fixture_seed": 24301,
+  "physics_seed_explicitly_set_by_runner": false
+}
