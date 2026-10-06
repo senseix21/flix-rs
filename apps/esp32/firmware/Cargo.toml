@@ -1,0 +1,19 @@
+[package]
+name = "flix-firmware"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+[workspace]
+[lib]
+crate-type = ["staticlib"]
+[dependencies]
+flight-esp32 = {path = ".."}
+flight-core = {path = "../../../crates/flight-core"}
+flight-protocol = {path = "../../../crates/flight-protocol"}
+flight-config = {path = "../../../crates/flight-config"}
+[profile.release]
+panic = "abort"
+lto = true
+codegen-units = 1
+[profile.dev]
+panic = "abort"
