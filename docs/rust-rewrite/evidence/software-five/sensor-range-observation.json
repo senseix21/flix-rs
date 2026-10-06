@@ -1,0 +1,87 @@
+{
+  "status": "pass",
+  "profiles": {
+    "landing-contact": {
+      "ticks": 5610,
+      "limited_ticks": 15
+    },
+    "pitch-pulse": {
+      "ticks": 7156,
+      "limited_ticks": 1
+    },
+    "lease-loss-reconnect": {
+      "ticks": 6207,
+      "limited_ticks": 4
+    },
+    "sensor-invalid": {
+      "ticks": 6008,
+      "limited_ticks": 2
+    },
+    "model-reset": {
+      "ticks": 8722,
+      "limited_ticks": 2
+    },
+    "native-reset": {
+      "ticks": 8652,
+      "limited_ticks": 1
+    },
+    "timing-gap": {
+      "ticks": 6006,
+      "limited_ticks": 1
+    },
+    "mode-change": {
+      "ticks": 6516,
+      "limited_ticks": 3
+    },
+    "time-reset": {
+      "ticks": 8741,
+      "limited_ticks": 1
+    },
+    "sensor-stale": {
+      "ticks": 6006,
+      "limited_ticks": 1
+    },
+    "diagnostic-stop": {
+      "ticks": 4008,
+      "limited_ticks": 0
+    },
+    "long-level": {
+      "ticks": 16006,
+      "limited_ticks": 0
+    },
+    "acro-level": {
+      "ticks": 5537,
+      "limited_ticks": 8
+    },
+    "auto-level": {
+      "ticks": 5507,
+      "limited_ticks": 1
+    },
+    "late-client": {
+      "ticks": 2700,
+      "limited_ticks": 0
+    },
+    "axis-pulses": {
+      "ticks": 7305,
+      "limited_ticks": 1
+    },
+    "level-thrust": {
+      "ticks": 7506,
+      "limited_ticks": 1
+    },
+    "saturation-recovery": {
+      "ticks": 5027,
+      "limited_ticks": 1
+    },
+    "two-models": {
+      "ticks": 8021,
+      "limited_ticks": 2
+    },
+    "queued-model-reset": {
+      "ticks": 8530,
+      "limited_ticks": 1
+    }
+  },
+  "tolerance": 2e-05,
+  "hardware_test": false
+}
