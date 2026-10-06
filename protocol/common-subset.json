@@ -1,0 +1,128 @@
+{
+  "source": "https://raw.githubusercontent.com/mavlink/c_library_v2/master/common/common.h",
+  "retrieved": "2026-10-05",
+  "source_sha256": "60c66af9f08eacff4614e42a8ee29c14ca41fd8c1e992560f5401d7aa5cd6d9d",
+  "columns": [
+    "crc_extra",
+    "minimum_length",
+    "maximum_length"
+  ],
+  "messages": {
+    "0": [
+      50,
+      9,
+      9
+    ],
+    "20": [
+      214,
+      20,
+      20
+    ],
+    "21": [
+      159,
+      2,
+      2
+    ],
+    "22": [
+      220,
+      25,
+      25
+    ],
+    "23": [
+      168,
+      23,
+      23
+    ],
+    "30": [
+      39,
+      28,
+      28
+    ],
+    "65": [
+      118,
+      42,
+      42
+    ],
+    "69": [
+      243,
+      11,
+      30
+    ],
+    "76": [
+      152,
+      33,
+      33
+    ],
+    "77": [
+      143,
+      3,
+      10
+    ],
+    "82": [
+      49,
+      39,
+      51
+    ],
+    "119": [
+      116,
+      12,
+      12
+    ],
+    "120": [
+      134,
+      97,
+      97
+    ],
+    "126": [
+      220,
+      79,
+      81
+    ],
+    "140": [
+      181,
+      41,
+      41
+    ],
+    "147": [
+      154,
+      36,
+      54
+    ],
+    "26": [
+      170,
+      22,
+      24
+    ],
+    "31": [
+      246,
+      32,
+      48
+    ],
+    "35": [
+      244,
+      22,
+      22
+    ],
+    "256": [
+      71,
+      42,
+      42
+    ],
+    "148": [
+      178,
+      60,
+      78
+    ],
+    "300": [
+      217,
+      22,
+      22
+    ]
+  },
+  "additions": {
+    "256": {
+      "source": "https://raw.githubusercontent.com/mavlink/c_library_v2/master/common/mavlink_msg_setup_signing.h",
+      "purpose": "trusted wired enrollment only; never a radio Event"
+    }
+  }
+}
