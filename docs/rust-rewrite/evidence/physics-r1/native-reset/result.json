@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "native_reset": true,
+  "reset_seen": true,
+  "native_recovery_status": "latched-fault-needs-explicit-clear",
+  "reset_error": null,
+  "engine": "rust",
+  "scenario": "level-thrust",
+  "profile": "gazebo11-legacy-65g-ground-start",
+  "requirements": [
+    "P6-02",
+    "P6-05",
+    "SAF-08"
+  ],
+  "status": "pass",
+  "failures": [],
+  "ticks": 7681,
+  "command_events": 179,
+  "dropped_ticks": 0,
+  "invalid_packets": 0,
+  "max_tilt_degrees": 5.002211141170003,
+  "max_lift_m": 5.085674430243671,
+  "first_fault": null,
+  "first_inverted": null,
+  "post_stop_fault": null,
+  "final_tick": {
+    "kind": "tick",
+    "version": 1,
+    "sim_us": 2001000,
+    "generation": 6,
+    "state": 5,
+    "reason": 5,
+    "source": null,
+    "target_attitude_valid": false,
+    "sequence": 7680,
+    "numeric_valid": true,
+    "position_world_m": [
+      1.1261978443144471e-06,
+      -4.407572760101175e-06,
+      0.013784852810204029
+    ],
+    "pose_wxyz": [
+      1.0,
+      0.00015946212806738913,
+      1.4132811365641373e-08,
+      4.693195276850304e-10
+    ],
+    "velocity_world_m_s": [
+      6.322711101347522e-07,
+      -0.004362460691481829,
+      -0.004997812211513519
+    ],
+    "gyro_body_rad_s": [
+      -0.3192356824874878,
+      -0.002870183903723955,
+      0.0031259842216968536
+    ],
+    "acceleration_body_m_s2": [
+      -0.05771566182374954,
+      8.740983963012695,
+      9.76311206817627
+    ],
+    "estimate_wxyz": [
+      1.0,
+      -3.231270966352895e-06,
+      -4.376667220640229e-06,
+      1.3275043784233276e-06
+    ],
+    "estimated_rates_rad_s": [
+      4.2868778109550476e-05,
+      0.0001991430763155222,
+      0.0013266695896163583
+    ],
+    "target_rates_rad_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "target_wxyz": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "motors": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "stop_latency_sim_us": null,
+  "hardware_test": false,
+  "source": "uncommitted; attach source manifest"
+}
