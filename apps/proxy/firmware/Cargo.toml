@@ -1,0 +1,16 @@
+[package]
+name = "flix-proxy-firmware"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+[workspace]
+[lib]
+crate-type = ["staticlib"]
+[dependencies]
+flight-proxy = {path = ".."}
+[profile.release]
+panic = "abort"
+lto = true
+codegen-units = 1
+[profile.dev]
+panic = "abort"
