@@ -12,3 +12,9 @@ No repository-wide license file was found in the local upstream checkout. This a
 | `simulator1.png` | `f4cb446034aee46ec8d7537aea59ab79a37c840b1fd637c9f99093825a129a95` |
 | `esp32.jpg` | `2d0bed01ca92523057919b10e81b5803c92b9a3478f6949876fe8cc5bfd96022` |
 | `gy-521.jpg` | `1985670dae08b0f4417e0d852d4e7255b7a4d71d350c00c7e66500657d2aebc8` |
+
+## Flix RS identity
+
+`flix-rs-logo.png` is an AI-generated project logo created for Flix RS, using the imagegen tool. It is a transparent PNG with an orange quadcopter mark and the FLIX-RS wordmark. It is separate from the upstream `flix.svg`, which remains unchanged.
+
+SHA-256: `3933bd0ff5c0885caa6276a009c2afa73cb3d1eec9b9dbff9ec4545f0206e99b`.
