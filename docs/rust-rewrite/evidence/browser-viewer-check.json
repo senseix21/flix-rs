@@ -1,0 +1,10 @@
+{
+  "browser": "Chromium",
+  "live_pose": true,
+  "disarmed": true,
+  "orbit_and_camera_buttons": true,
+  "read_only_api": true,
+  "stale_values_hidden": true,
+  "mobile_no_horizontal_overflow": true,
+  "page_errors": []
+}
