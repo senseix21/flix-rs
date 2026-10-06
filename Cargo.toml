@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = ["crates/flight-core", "crates/flight-protocol", "crates/flight-config", "apps/replay", "apps/esp32", "apps/proxy", "adapters/gazebo"]
+default-members = ["crates/flight-core", "crates/flight-protocol", "crates/flight-config", "apps/replay", "apps/esp32", "apps/proxy", "adapters/gazebo"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.85"
+version = "0.1.0"
+
+[workspace.dependencies]
+flight-core = { path = "crates/flight-core" }
+flight-protocol = { path = "crates/flight-protocol" }
+flight-config = { path = "crates/flight-config" }
+libm = "=0.2.16"
+sha2 = { version = "=0.10.9", default-features = false }
+
+[profile.release]
+panic = "abort"
+lto = true
+codegen-units = 1
+
