@@ -18,3 +18,9 @@ No repository-wide license file was found in the local upstream checkout. This a
 `flix-rs-logo.png` is an AI-generated project logo created for Flix RS, using the imagegen tool. It is a transparent PNG with an orange quadcopter mark and the FLIX-RS wordmark. It is separate from the upstream `flix.svg`, which remains unchanged.
 
 SHA-256: `3933bd0ff5c0885caa6276a009c2afa73cb3d1eec9b9dbff9ec4545f0206e99b`.
+
+### Current wordmark
+
+`flix-rs-logo-v2.png` is the current README logo, generated with imagegen using the pinned upstream `flix.svg` as a visual reference. It draws inspiration from the rounded lowercase lettering and orange/gray palette, with hollow rotor rings forming the x and an integrated -rs suffix. It is a distinct project adaptation, not the original upstream logo. The first generated design is retained in `flix-rs-logo.png`.
+
+SHA-256: `4e121be3c8e9d5364bdab9066dfd8e6b5b8ed9acc292c4ddbac4393ef844d061`.
