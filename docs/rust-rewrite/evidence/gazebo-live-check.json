@@ -1,0 +1,22 @@
+{
+  "endpoint": "127.0.0.1:14550",
+  "parameter_0": 0.05000000074505806,
+  "mode": "STAB",
+  "arm_ack": true,
+  "positive_motor_telemetry": true,
+  "disarm_ack": true,
+  "motors_after_disarm": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "received_message_ids": [
+    26,
+    31,
+    35,
+    77,
+    140
+  ],
+  "hardware_test": false
+}
