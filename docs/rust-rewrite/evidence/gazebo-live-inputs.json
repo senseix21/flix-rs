@@ -1,0 +1,7 @@
+{
+  "adapters/gazebo/plugin.cpp": "6788bc2ab5123f27eb709026b22f718c1dc6f239ddfd31d4098aa1271e310e72",
+  "adapters/gazebo/bench.world": "b75b1cb38d886c073f300f09a446e126b831d06468accf1c5f5de6ab6dc6d95a",
+  "scripts/gazebo-run.sh": "b9de2839be7e4f9d1767483881fb8c7d69c80e34be209fd4773fb865ab9ca874",
+  "tools/gazebo-server.py": "28b3d1bd13735884efd79f24a57b6946616cf91739a9d23f4bb22476fedb6027",
+  "tools/gazebo-check.py": "c6be4fce4561970553249924d34b4cc0945564573c7e39f7e87f94e006c8dd89"
+}
