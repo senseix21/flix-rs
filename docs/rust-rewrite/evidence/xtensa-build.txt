@@ -1,0 +1,6 @@
+   Compiling flight-core v0.1.0 (/private/tmp/flix-rust-implementation/crates/flight-core)
+   Compiling flight-protocol v0.1.0 (/private/tmp/flix-rust-implementation/crates/flight-protocol)
+   Compiling flight-config v0.1.0 (/private/tmp/flix-rust-implementation/crates/flight-config)
+   Compiling flight-esp32 v0.1.0 (/private/tmp/flix-rust-implementation/apps/esp32)
+   Compiling flix-firmware v0.1.0 (/private/tmp/flix-rust-implementation/apps/esp32/firmware)
+    Finished `release` profile [optimized] target(s) in 9.05s
