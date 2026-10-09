@@ -95,6 +95,7 @@ pub unsafe extern "C" fn flix_tick(handle: u64, input: *const Input, output: *mu
     // SAFETY: validated alignment/null; object lifetime/extent/nonaliasing are caller contract.
     let input = unsafe { *input };
     // Initialize stopped output before checking handle or input version.
+    // SAFETY: validated alignment/null; extent/nonaliasing are caller contract.
     unsafe {
         output.write(Output {
             version: 1,

@@ -1,0 +1,18 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 4604e8825ca0c952d285f0bb150793acca3f5f50f4c105ca71ba9acc10b1a9e6 # shrinks to ops = [Ready(Rc), Command(Rc, Stabilized(Pilot { roll: 0.0, pitch: 0.0, yaw: NaN, thrust: 0.0 }))]
+cc b15a6bd30d26923a20c8b5f256f4659e84cf35acd224f69a371eda2187d36dbe # shrinks to ops = [Tick(Normal(1), Fresh), ClearFault, Tick(Normal(1), Fresh), Maintenance, Diagnostic([0.0, 0.0, 0.0, 0.16528873], 1)]
+cc b2443cf600c9483c3073e359143dbdecce8b6c26b25af64457d92a41b6d3610d # shrinks to ops = [Select(Rc), Command(Rc, Acro(Pilot { roll: 0.0, pitch: 0.0, yaw: 0.0, thrust: 0.8470567 })), Arm]
+cc 76230c353ad97a640d3dfbe694e0b9e116d4e5e13a18f6f0a25511c22c8736a8 # shrinks to ops = [Ready(Pilot), Arm, Disarm]
+cc eebcd967797ac7bf8a9f11ebee6d840da5c4aeb4fe8454d92b457347745506bd # shrinks to limits = Limits { command_us: 5010, sensor_us: 2000, frame_us: 500, gap_us: 10000, max_tilt: 2.0943952 }, ops = [Ready(Pilot), Arm, Tick(Normal(1), Fresh), Replay(0, 500)]
+cc 189843743e3084a29e0cc8ca173dda0bcad7b37c46216ed98593fba6d3f7168c # shrinks to limits = Limits { command_us: 5000, sensor_us: 2000, frame_us: 500, gap_us: 10000, max_tilt: 2.0943952 }, ops = [Ready(Rc), Command(Rc, Acro(Pilot { roll: 0.0, pitch: 0.0, yaw: 0.0, thrust: 0.0 })), Arm, Fly(0.0, 0.0)]
+cc 3cf3c7fdeb81616f913d7edabe3ec1c0d456bd9c53b84e80a96386d82497a64a # shrinks to limits = Limits { command_us: 5000, sensor_us: 2000, frame_us: 2219, gap_us: 10000, max_tilt: 2.0943952 }, ops = [Tick(Normal(1), Fresh), ClearFault, Ready(Pilot), Tick(Normal(1), Fresh), Arm, Tick(Normal(1), Fresh), Tick(Normal(1), Fresh), Disarm, Maintenance, Diagnostic([0.0, 0.0, 0.0, 0.0], 815), Replay(0, 0)]
+cc 6a9a30c85080d9773cdf11e1659d7dd26c9499645e9b6b1b20f303829aa815bd # shrinks to limits = Limits { command_us: 1419, sensor_us: 2000, frame_us: 500, gap_us: 10000, max_tilt: 2.0943952 }, ops = [Ready(Pilot), Command(Pilot, Stabilized(Pilot { roll: 0.0, pitch: 0.0, yaw: 0.0, thrust: 0.0 })), Arm, Tick(Normal(927), Fresh), Replay(0, 493)]
+cc 9c5aede06ac899dd8071f6a0b4f044c1bdb8a5f2ca94d448dcbd6076f541ec3d # shrinks to limits = Limits { command_us: 500, sensor_us: 2000, frame_us: 3224, gap_us: 10000, max_tilt: 2.0943952 }, ops = [Maintenance, Diagnostic([0.0, 0.0, 0.0, 0.04329832], 25), Tick(Normal(1), Fresh), Replay(0, 24)]
+cc 10d1edcf2e84d539270d615d790ecea023c0b8b0b18672f6dbf4355bbe9cb67c # shrinks to limits = Limits { command_us: 500, sensor_us: 2000, frame_us: 500, gap_us: 10000, max_tilt: 2.0943952 }, ops = [Maintenance, Diagnostic([0.0, 0.0, 0.0, 0.27921364], 1)]
+cc 758eb3f2c9d6ac31622943836decc4e6431940a99e4454cbe49f9066a24f8022 # shrinks to limits = Limits { command_us: 500, sensor_us: 2000, frame_us: 500, gap_us: 10000, max_tilt: 2.0943952 }, ops = [Maintenance, Diagnostic([0.0, 0.0, 0.0, 0.03493279], 6692), Tick(Normal(1), Fresh), Tick(Normal(1), Fresh), Replay(0, 500)]
+cc b12f00082a095160d6a4435d60b02c550d0542488ad34a81944b956b780807a0 # shrinks to limits = Limits { command_us: 1070, sensor_us: 2000, frame_us: 500, gap_us: 10000, max_tilt: 2.0943952 }, ops = [Ready(Rc), Arm, Command(Rc, Acro(Pilot { roll: 0.0, pitch: 0.0, yaw: 0.0, thrust: 0.0 }))]

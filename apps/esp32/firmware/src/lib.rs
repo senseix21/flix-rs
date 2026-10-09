@@ -8,11 +8,13 @@ use flight_esp32::{
     imu::{Bus, Mpu6050},
 };
 use flight_protocol::wire::{Decoder, Policy};
+// SAFETY: signatures match `idf/main/main.c`. The `safe` functions take no
+// pointers, validate their own state and serialize output access with a lock.
 unsafe extern "C" {
     fn flix_hal_read(register: u8, out: *mut u8, len: u32) -> i32;
-    fn flix_hal_write(register: u8, value: u8) -> i32;
-    fn flix_hal_stop();
-    fn flix_hal_now() -> u64;
+    safe fn flix_hal_write(register: u8, value: u8) -> i32;
+    safe fn flix_hal_stop();
+    safe fn flix_hal_now() -> u64;
     fn flix_hal_storage_read(slot: u32, out: *mut u8, len: u32) -> i32;
     fn flix_hal_storage_write(slot: u32, data: *const u8, len: u32) -> i32;
 }
@@ -25,7 +27,7 @@ impl Bus for I2c {
         if result == 0 { Ok(()) } else { Err(result) }
     }
     fn write(&mut self, register: u8, value: u8) -> Result<(), i32> {
-        let result = unsafe { flix_hal_write(register, value) };
+        let result = flix_hal_write(register, value);
         if result == 0 { Ok(()) } else { Err(result) }
     }
 }
@@ -36,6 +38,7 @@ impl flight_config::Storage for Nvs {
         slot: usize,
         out: &mut [u8; flight_config::RECORD_SIZE],
     ) -> Result<(), flight_config::Error> {
+        // SAFETY: out is a live exclusive RECORD_SIZE buffer; C writes at most len bytes.
         let result =
             unsafe { flix_hal_storage_read(slot as u32, out.as_mut_ptr(), out.len() as u32) };
         if result == 1 {
@@ -52,6 +55,7 @@ impl flight_config::Storage for Nvs {
         slot: usize,
         data: &[u8; flight_config::RECORD_SIZE],
     ) -> Result<(), flight_config::Error> {
+        // SAFETY: data is a live RECORD_SIZE buffer; C only reads len bytes.
         let result =
             unsafe { flix_hal_storage_write(slot as u32, data.as_ptr(), data.len() as u32) };
         if result == 0 {
@@ -81,26 +85,30 @@ static mut FIRMWARE: Firmware = Firmware {
     ready: false,
 };
 static mut INITIALIZED: bool = false;
-// SAFETY: app_main initializes once; only the flight task calls board exports afterwards.
-// ESP-NOW callbacks and timer callbacks exclusively use C handoffs, never this storage.
+/// app_main initializes once; only the flight task calls board exports afterwards.
+/// ESP-NOW callbacks and timer callbacks exclusively use C handoffs, never this storage.
+/// # Safety
+/// Caller is the flight task and holds no other reference into `FIRMWARE`.
 unsafe fn firmware() -> Option<&'static mut Firmware> {
+    // SAFETY: single-task access per this function's contract.
     if !unsafe { INITIALIZED } {
         return None;
     }
+    // SAFETY: as above; the returned borrow is the only live reference.
     Some(unsafe { &mut *core::ptr::addr_of_mut!(FIRMWARE) })
 }
 /// # Safety
-/// pins points to seven readable i32 values: SDA, SCL, RL, RR, FR, FL, SBUS RX.
+/// pins points to seven readable aligned i32 values: SDA, SCL, RL, RR, FR, FL, SBUS RX.
+/// Called once from app_main before the flight task starts.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn flix_board_init(pins: *const i32) -> i32 {
-    if pins.is_null() {
+    flix_hal_stop();
+    if pins.is_null() || !pins.is_aligned() {
         return -1;
     }
-    unsafe {
-        flix_hal_stop();
-        if INITIALIZED {
-            return -1;
-        }
+    // SAFETY: app_main is the only caller and the flight task has not started.
+    if unsafe { INITIALIZED } {
+        return -1;
     }
     let mut a = [0; flight_config::RECORD_SIZE];
     let mut b = [0; flight_config::RECORD_SIZE];
@@ -112,10 +120,8 @@ pub unsafe extern "C" fn flix_board_init(pins: *const i32) -> i32 {
     let mut settings = recovered
         .as_ref()
         .map_or_else(|_| flight_config::Settings::default(), |(s, _, _)| *s);
-    let mut board_pins = [0i32; 7];
-    unsafe {
-        core::ptr::copy_nonoverlapping(pins, board_pins.as_mut_ptr(), 7);
-    }
+    // SAFETY: non-null and aligned (checked); caller guarantees seven readable values.
+    let board_pins = unsafe { pins.cast::<[i32; 7]>().read() };
     if settings.bind_board(board_pins).is_err() {
         return -2;
     }
@@ -123,6 +129,7 @@ pub unsafe extern "C" fn flix_board_init(pins: *const i32) -> i32 {
         return -2;
     };
     // Static log storage avoids constructing a 64 KiB owner on the SDK startup stack.
+    // SAFETY: INITIALIZED is false, so no export can hold a reference yet.
     let f = unsafe { &mut *core::ptr::addr_of_mut!(FIRMWARE) };
     f.owner.settings = settings;
     f.owner.flight = flight;
@@ -161,6 +168,7 @@ pub unsafe extern "C" fn flix_board_init(pins: *const i32) -> i32 {
     }
     f.imu = Some(imu);
     f.ready = ready;
+    // SAFETY: still the sole caller; publishing happens before the task starts.
     unsafe {
         INITIALIZED = true;
     }
@@ -173,9 +181,11 @@ pub unsafe extern "C" fn flix_board_usb(data: *const u8, len: u32, now: u64) {
     if data.is_null() || len > 1120 {
         return;
     }
+    // SAFETY: owner-task caller per this export's contract.
     let Some(f) = (unsafe { firmware() }) else {
         return;
     };
+    // SAFETY: non-null; caller guarantees len readable bytes for this call only.
     let bytes = unsafe { core::slice::from_raw_parts(data, len as usize) };
     let mut completed = 0;
     for byte in bytes {
@@ -220,14 +230,19 @@ pub unsafe extern "C" fn flix_board_sign_reply(
     if out.is_null() || capacity > 280 || length > capacity {
         return 0;
     }
+    // SAFETY: owner-task caller per this export's contract.
     let Some(f) = (unsafe { firmware() }) else {
         return 0;
     };
+    // SAFETY: non-null; caller guarantees capacity (<=280) exclusive writable bytes.
     let bytes = unsafe { core::slice::from_raw_parts_mut(out, capacity as usize) };
     f.radio.sign(bytes, length as usize, Tick(now)).unwrap_or(0) as u32
 }
+/// # Safety
+/// Only the owner task calls this export.
 #[unsafe(no_mangle)]
-pub extern "C" fn flix_board_radio_epoch() -> u64 {
+pub unsafe extern "C" fn flix_board_radio_epoch() -> u64 {
+    // SAFETY: owner-task caller per this export's contract.
     unsafe { firmware() }.map_or(0, |f| f.radio.epoch())
 }
 /// Bounded stopped-only timing snapshot for an owner-task instrumentation harness.
@@ -238,6 +253,7 @@ pub unsafe extern "C" fn flix_board_metrics(out: *mut u64, capacity: u32) -> u32
     if out.is_null() || out.addr() % core::mem::align_of::<u64>() != 0 || capacity < 52 {
         return 0;
     }
+    // SAFETY: owner-task caller per this export's contract.
     let Some(f) = (unsafe { firmware() }) else {
         return 0;
     };
@@ -245,9 +261,9 @@ pub unsafe extern "C" fn flix_board_metrics(out: *mut u64, capacity: u32) -> u32
         return 0;
     }
     let snapshot = f.owner.timing.snapshot();
-    unsafe {
-        core::ptr::copy_nonoverlapping(snapshot.as_ptr(), out, 52);
-    }
+    // SAFETY: non-null, aligned (checked) and capacity >= 52 writable values.
+    let out = unsafe { &mut *out.cast::<[u64; 52]>() };
+    *out = snapshot;
     52
 }
 /// # Safety
@@ -257,9 +273,11 @@ pub unsafe extern "C" fn flix_board_radio(data: *const u8, len: u32, now: u64) -
     if data.is_null() || len > 280 {
         return -1;
     }
+    // SAFETY: owner-task caller per this export's contract.
     let Some(f) = (unsafe { firmware() }) else {
         return -2;
     };
+    // SAFETY: non-null; caller guarantees len (<=280) readable bytes.
     let bytes = unsafe { core::slice::from_raw_parts(data, len as usize) };
     if f.radio.receive(bytes, &mut f.owner, Tick(now)) {
         0
@@ -267,18 +285,22 @@ pub unsafe extern "C" fn flix_board_radio(data: *const u8, len: u32, now: u64) -
         -4
     }
 }
+/// # Safety
+/// Only the owner task calls this export.
 #[unsafe(no_mangle)]
-pub extern "C" fn flix_board_stop() {
+pub unsafe extern "C" fn flix_board_stop() {
+    // SAFETY: owner-task caller per this export's contract.
     if let Some(f) = unsafe { firmware() } {
         f.owner.flight.disarm();
         f.owner.ingress = Default::default();
     }
-    unsafe {
-        flix_hal_stop();
-    }
+    flix_hal_stop();
 }
+/// # Safety
+/// Only the owner task calls this export.
 #[unsafe(no_mangle)]
-pub extern "C" fn flix_board_maintenance() -> u32 {
+pub unsafe extern "C" fn flix_board_maintenance() -> u32 {
+    // SAFETY: owner-task caller per this export's contract.
     unsafe { firmware() }.is_some_and(|f| f.owner.flight.stopped_maintenance()) as u32
 }
 /// # Safety
@@ -288,32 +310,31 @@ pub unsafe extern "C" fn flix_board_rc(data: *const u8, now: u64) {
     if data.is_null() {
         return;
     }
+    // SAFETY: owner-task caller per this export's contract.
     if let Some(f) = unsafe { firmware() } {
+        // SAFETY: non-null; caller guarantees 25 readable bytes.
         let bytes = unsafe { core::slice::from_raw_parts(data, 25) };
         f.owner.receive_rc(bytes, Tick(now));
     }
 }
 /// # Safety
-/// motors points to four writable floats; only the flight task calls this export.
+/// motors points to four writable aligned floats; only the flight task calls this export.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn flix_board_tick(motors: *mut f32) -> u32 {
-    if motors.is_null() {
-        unsafe {
-            flix_hal_stop();
-        }
+    if motors.is_null() || !motors.is_aligned() {
+        flix_hal_stop();
         return 5;
     }
-    unsafe {
-        core::ptr::write_bytes(motors, 0, 4);
-    }
+    // SAFETY: non-null, aligned (checked); caller guarantees four exclusive floats.
+    let motors = unsafe { &mut *motors.cast::<[f32; 4]>() };
+    *motors = [0.0; 4];
+    // SAFETY: owner-task caller per this export's contract.
     let Some(f) = (unsafe { firmware() }) else {
         return 5;
     };
-    let start = unsafe { flix_hal_now() };
+    let start = flix_hal_now();
     if f.owner.driver_restart_requested && f.owner.flight.stopped_maintenance() {
-        unsafe {
-            flix_hal_stop();
-        }
+        flix_hal_stop();
         let g = |name| f.owner.settings.get(name).unwrap_or(0.0);
         let rebuilt = Quaternion::euler(Vec3(
             g("IMU_ROT_ROLL"),
@@ -358,15 +379,15 @@ pub unsafe extern "C" fn flix_board_tick(motors: *mut f32) -> u32 {
         f.owner.flight.snapshot().state,
         State::Boot | State::Standby | State::Failsafe | State::Fault
     ) || f.owner.flight.stopped_maintenance();
-    let acquisition_start = unsafe { flix_hal_now() };
+    let acquisition_start = flix_hal_now();
     let sensor = if f.ready {
         f.imu
             .as_mut()
-            .and_then(|imu| imu.sample(Tick(unsafe { flix_hal_now() }), stopped).ok())
+            .and_then(|imu| imu.sample(Tick(flix_hal_now()), stopped).ok())
     } else {
         None
     };
-    let now = Tick(unsafe { flix_hal_now() });
+    let now = Tick(flix_hal_now());
     f.owner
         .timing
         .acquisition
@@ -375,19 +396,15 @@ pub unsafe extern "C" fn flix_board_tick(motors: *mut f32) -> u32 {
     f.owner
         .timing
         .core
-        .record(unsafe { flix_hal_now() }.saturating_sub(now.0));
+        .record(flix_hal_now().saturating_sub(now.0));
     if f.owner.save_requested {
-        unsafe {
-            flix_hal_stop();
-        }
+        flix_hal_stop();
         let _ = flight_config::save(&mut Nvs, &f.owner.settings, &f.owner.flight);
         f.owner.save_requested = false;
     }
     f.owner
-        .record_execution(unsafe { flix_hal_now() }.saturating_sub(start));
-    unsafe {
-        core::ptr::copy_nonoverlapping(values.as_ptr(), motors, 4);
-    }
+        .record_execution(flix_hal_now().saturating_sub(start));
+    *motors = values;
     f.owner.flight.snapshot().state as u32
 }
 /// # Safety
@@ -397,22 +414,24 @@ pub unsafe extern "C" fn flix_board_reply(out: *mut u8, capacity: u32) -> u32 {
     if out.is_null() || capacity < 280 {
         return 0;
     }
+    // SAFETY: owner-task caller per this export's contract.
     let Some(f) = (unsafe { firmware() }) else {
         return 0;
     };
     let Some(reply) = f.owner.reply() else {
         return 0;
     };
-    unsafe {
-        core::ptr::copy_nonoverlapping(reply.bytes.as_ptr(), out, reply.len);
-    }
-    reply.len as u32
+    let Some(reply) = reply.bytes.get(..reply.len) else {
+        return 0;
+    };
+    // SAFETY: non-null; caller guarantees capacity (>=280) exclusive writable bytes.
+    let out = unsafe { core::slice::from_raw_parts_mut(out, capacity as usize) };
+    out[..reply.len()].copy_from_slice(reply);
+    reply.len() as u32
 }
 #[panic_handler]
 fn panic(_: &PanicInfo) -> ! {
-    unsafe {
-        flix_hal_stop();
-    }
+    flix_hal_stop();
     loop {
         core::hint::spin_loop();
     }

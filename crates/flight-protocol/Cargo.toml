@@ -3,6 +3,8 @@ name = "flight-protocol"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+[lints]
+workspace = true
 [dependencies]
 flight-core.workspace = true
 sha2.workspace = true

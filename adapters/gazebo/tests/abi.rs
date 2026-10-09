@@ -24,6 +24,7 @@ fn handles_instances_nulls_versions_and_reset_contract() {
         generation: 0,
         motors: [1.; 4],
     };
+    // SAFETY: locals are live, aligned and distinct for each call.
     unsafe {
         assert_eq!(flix_tick(a, &input, &mut out), 0);
         assert_eq!(out.motors, [0.; 4]);
@@ -34,12 +35,14 @@ fn handles_instances_nulls_versions_and_reset_contract() {
     let mut zero = input;
     zero.now_us = 0;
     zero.sample_us = 0;
+    // SAFETY: locals are live, aligned and distinct for each call.
     unsafe {
         assert_eq!(flix_tick(a, &zero, &mut out), 0);
         assert_eq!(out.state, 1);
     }
     assert_eq!(flix_destroy(a), 0);
     assert_eq!(flix_destroy(a), -2);
+    // SAFETY: locals are live, aligned and distinct for each call.
     unsafe {
         assert_eq!(flix_tick(a, &input, &mut out), -2);
         assert_eq!(out.motors, [0.; 4]);
