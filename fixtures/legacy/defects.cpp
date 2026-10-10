@@ -5,6 +5,9 @@
 #include <csignal>
 #include <termios.h>
 #include <cstdio>
+// The pinned legacy Arduino.h calls atol/atof without including <cstdlib>;
+// current libstdc++/libc++ no longer provide it transitively.
+#include <cstdlib>
 #include "Arduino.h"
 extern float t, dt;
 #include "vector.h"
