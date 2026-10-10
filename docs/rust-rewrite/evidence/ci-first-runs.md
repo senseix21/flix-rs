@@ -40,9 +40,8 @@ Every scenario passed. Every scenario with reportable range-limited ticks delive
 (11, including `gx`). The four native-reset runs each had one limit inside the reset window and
 correctly required no notice.
 
-Finding: almost every scenario saturates all three accelerometer axes once, apparently at spawn or
-first ground contact. This is a simulator start-up artifact to investigate separately; it is not
-evidence about hardware.
+Almost every scenario saturates all three accelerometer axes once. My first guess (spawn) was wrong:
+these are post-disarm ground impacts. See [gazebo-accel-saturation](gazebo-accel-saturation.md).
 
 Run 38027769029 is the first fully green run: all four jobs passed, including the proxy serial
 round trip and the parity check against the pinned legacy source.
