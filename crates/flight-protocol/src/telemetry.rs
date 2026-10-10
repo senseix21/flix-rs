@@ -97,6 +97,28 @@ pub fn highres_imu(sensor: flight_core::Sensor) -> [u8; 63] {
     p[62] = 0; // sensor instance id
     p
 }
+/// STATUSTEXT (253) severity WARNING naming saturated IMU axes, e.g.
+/// "IMU saturated: gx az". Mask bits: gyro x/y/z 0..=2, accel x/y/z 3..=5 (sensor frame).
+pub fn imu_saturated(mask: u8) -> [u8; 54] {
+    const WARNING: u8 = 4;
+    const PREFIX: &[u8] = b"IMU saturated:";
+    let mut p = [0; 54];
+    p[0] = WARNING;
+    p[1..1 + PREFIX.len()].copy_from_slice(PREFIX);
+    let mut at = 1 + PREFIX.len();
+    for (bit, name) in [b"gx", b"gy", b"gz", b"ax", b"ay", b"az"]
+        .into_iter()
+        .enumerate()
+    {
+        if mask & (1 << bit) != 0 {
+            // At most 14 + 6 * 3 = 32 bytes, well inside the 50-byte text field.
+            p[at] = b' ';
+            p[at + 1..at + 3].copy_from_slice(name);
+            at += 3;
+        }
+    }
+    p
+}
 pub fn rc(channels: [u16; 8], at: Tick) -> [u8; 22] {
     let mut p = [0; 22];
     p[..4].copy_from_slice(&boot_ms(at).to_le_bytes());

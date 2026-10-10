@@ -37,6 +37,8 @@ Default telemetry: heartbeat/battery 2 Hz, attitude quaternion 20 Hz, RC/motor c
 
 SCALED_IMU stays for upstream pyflix and QGroundControl compatibility. Its i16 mrad/s gyro saturates near 1,877 deg/s. HIGHRES_IMU carries the exact f32 sample (FRD, rad/s and m/s^2) up to the MPU6050's ±2000 deg/s range. Non-finite axes are sent as 0 with their `fields_updated` bit clear; magnetometer, pressure and temperature bits are never set. Payloads match the legacy-pinned MAVLink C library byte for byte (`scripts/telemetry-oracle.py`).
 
+MPU6050 register saturation (a raw register at `i16::MIN` or `i16::MAX`) is counted per axis and reported as STATUSTEXT (253), severity WARNING, text `IMU saturated:` followed by the axes (`gx gy gz ax ay az`, sensor frame). At most one notice per second names every axis that saturated since the previous one. Reporting only: the controller still receives the clipped sample.
+
 Reply slots are bounded at four. A due telemetry stream that finds too few free slots stays due and is sent on a later tick instead of being dropped, so every stream keeps its configured rate and `reply_overflow` counts only real loss. At schema defaults the measured unsigned telemetry is 3,492 B/s, about 30% of a 115,200-baud UART. FRD/NED signs are converted at the boundary. Battery measurements remain unknown until an actual battery adapter/policy is qualified; all unknown sentinel fields are initialized explicitly.
 
 ## Provisioned serial proxy

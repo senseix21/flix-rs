@@ -387,6 +387,9 @@ pub unsafe extern "C" fn flix_board_tick(motors: *mut f32) -> u32 {
     } else {
         None
     };
+    if let (Some(_), Some(imu)) = (sensor, &f.imu) {
+        f.owner.record_imu_saturation(imu.saturation());
+    }
     let now = Tick(flix_hal_now());
     f.owner
         .timing

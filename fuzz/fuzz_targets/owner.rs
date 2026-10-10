@@ -23,6 +23,8 @@ enum Op {
     Message(u8, Vec<u8>),
     Radio(Vec<u8>),
     Rc(Vec<u8>),
+    /// A driver saturation mask for the next sample, including undefined high bits.
+    Saturation(u8),
     Tick {
         step: u16,
         stale: bool,
@@ -93,6 +95,20 @@ impl Harness {
                 break;
             };
             let b = &reply.bytes[..reply.len];
+            if b.len() >= 12 && u32::from_le_bytes([b[7], b[8], b[9], 0]) == 253 {
+                let text = &b[11..b.len() - 2];
+                assert_eq!(b[10], 4, "STATUSTEXT severity");
+                assert!(text.starts_with(b"IMU saturated:"), "{text:?}");
+                let words = text
+                    .split(|c| *c == b' ' || *c == 0)
+                    .filter(|w| !w.is_empty());
+                for word in words.skip(2) {
+                    assert!(
+                        [&b"gx"[..], b"gy", b"gz", b"ax", b"ay", b"az"].contains(&word),
+                        "unknown axis {word:?}"
+                    );
+                }
+            }
             if b.len() >= 12 && u32::from_le_bytes([b[7], b[8], b[9], 0]) == 105 {
                 let p = &b[10..b.len() - 2];
                 for i in 0..6 {
@@ -132,6 +148,7 @@ fuzz_target!(|ops: Vec<Op>| {
             Op::Rc(bytes) => {
                 h.owner.receive_rc(&bytes, Tick(h.now));
             }
+            Op::Saturation(mask) => h.owner.record_imu_saturation(mask),
             Op::Tick { step, stale, gyro } => h.tick(step, stale, gyro),
         }
     }

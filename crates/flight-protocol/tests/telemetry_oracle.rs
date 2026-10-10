@@ -35,3 +35,21 @@ fn highres_imu_matches_c_library() {
     }
     assert_eq!(cases, 6);
 }
+
+const STATUS_FIXTURE: &str = include_str!("../../../fixtures/telemetry/imu_saturated.txt");
+
+#[test]
+fn imu_saturated_statustext_matches_c_library_for_every_mask() {
+    let mut cases = 0;
+    for line in STATUS_FIXTURE.lines().filter(|l| !l.starts_with('#')) {
+        let (mask, payload) = line.split_once(' ').expect("mask and payload");
+        let mask = u8::from_str_radix(mask, 16).expect("mask");
+        assert_eq!(
+            flight_protocol::telemetry::imu_saturated(mask).as_slice(),
+            hex(payload),
+            "mask {mask:#04x}"
+        );
+        cases += 1;
+    }
+    assert_eq!(cases, 63);
+}

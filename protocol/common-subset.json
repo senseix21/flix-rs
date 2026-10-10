@@ -122,6 +122,11 @@
       93,
       62,
       63
+    ],
+    "253": [
+      83,
+      51,
+      54
     ]
   },
   "additions": {
@@ -133,6 +138,11 @@
       "source": "MAVLink Arduino library 2.0.33 (legacy-pinned, scripts/fetch-legacy-mavlink.py): mavlink/common/mavlink_msg_highres_imu.h",
       "crosscheck": "https://raw.githubusercontent.com/mavlink/c_library_v2/master/common/mavlink_msg_highres_imu.h sha256 cdc669ed5efd619d2ac184ce472ee309200ad3fb7fdb2810369e3e0fb759d031, retrieved 2026-10-10: same CRC and lengths",
       "purpose": "full-range float IMU telemetry alongside SCALED_IMU; outbound only, never a radio Event"
+    },
+    "253": {
+      "source": "MAVLink Arduino library 2.0.33 (legacy-pinned, scripts/fetch-legacy-mavlink.py): mavlink/common/mavlink_msg_statustext.h",
+      "crosscheck": "https://raw.githubusercontent.com/mavlink/c_library_v2/master/common/mavlink_msg_statustext.h sha256 1767e8b56034980015d9f065953d0babba188902112862bec5325f61839006e6, retrieved 2026-10-10: same CRC and lengths",
+      "purpose": "outbound operator warnings (IMU register saturation); never a radio Event"
     }
   }
 }

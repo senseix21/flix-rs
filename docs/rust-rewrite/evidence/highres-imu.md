@@ -77,5 +77,5 @@ Unsigned telemetry at schema defaults on the host: **3,492 B/s**, about 30% of 1
 - Target UART and ESP-NOW throughput with signing (+13 bytes per frame) are unmeasured.
 - QGroundControl v5.0.8 MAVLink Inspector display of message 105 has not been checked manually.
 - Gazebo trajectories exceeding 1,877 deg/s were not run for this change.
-- Follow-up: MPU6050 register saturation at ±1,998 deg/s still clips the control input itself.
-  Detecting and reporting it needs a separate change; acting on it is a flight-safety decision.
+- Follow-up done: register saturation is now detected and reported; see
+  [imu-saturation](imu-saturation.md). Acting on it remains a flight-safety decision.
