@@ -8,6 +8,10 @@
 // The pinned legacy Arduino.h calls atol/atof without including <cstdlib>;
 // current libstdc++/libc++ no longer provide it transitively.
 #include <cstdlib>
+// Legacy vector.h/quaternion.h call unqualified isfinite; libstdc++ declares it
+// only in std::, libc++ also globally.
+#include <cmath>
+using std::isfinite;
 #include "Arduino.h"
 extern float t, dt;
 #include "vector.h"
