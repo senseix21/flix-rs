@@ -7,3 +7,5 @@ The ESP32 boundary pins Rust Xtensa v1.88.0.0, ESP-IDF v5.4.2 and its submodule 
 Before a distributable release, review the lockfile's advisory database, dependency licenses and legacy provenance. No advisory scan or licensing approval follows from a compiler pass. No remote publication is part of this development task.
 
 `proptest=1.11.0` (no default features, `std` only) is a host dev-dependency of `flight-core` for the model-based safety properties. It is absent from the normal dependency graph and never linked into firmware; `cargo tree -p flight-core -e normal` still lists only `libm`.
+
+`fuzz/` is a separate workspace with its own `Cargo.lock`, built only with a nightly toolchain and `cargo-fuzz` 0.13.2. It pins `libfuzzer-sys=0.4.10` and `arbitrary=1.5.0`. Neither enters the host workspace or any firmware graph.
