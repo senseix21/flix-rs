@@ -57,3 +57,27 @@ class SerialSigningTests(unittest.TestCase):
             with Flix(transport,key=b"x"*32) as client:
                 with self.assertRaises(ValueError):client.enroll_radio(b'x'*32,123)
         finally:os.close(master);os.close(slave)
+
+class SerialLockTests(unittest.TestCase):
+    def test_send_never_waits_behind_a_receive(self):
+        # The client's reader thread polls receive() continuously. A send must not
+        # queue behind it: one shared lock starved send() past its 0.5 s deadline
+        # in 7-9 of 30 Linux runs of the proxy round trip.
+        import threading
+        master,slave=pty.openpty()
+        transport=SerialTransport(os.ttyname(slave))
+        try:
+            held=threading.Event();release=threading.Event()
+            def hold_read():
+                with transport._read_lock:
+                    held.set();release.wait(2)
+            reader=threading.Thread(target=hold_read);reader.start()
+            self.assertTrue(held.wait(1))
+            frame=pack(0,b'\0'*9)
+            started=time.monotonic()
+            transport.send(frame)
+            self.assertLess(time.monotonic()-started,.1)
+            self.assertEqual(os.read(master,64),frame)
+            release.set();reader.join()
+        finally:
+            transport.close();os.close(master);os.close(slave)
