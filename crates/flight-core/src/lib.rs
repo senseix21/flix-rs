@@ -24,6 +24,8 @@ pub mod battery;
 pub mod control;
 pub mod log;
 pub mod math;
+#[cfg(kani)]
+mod proofs;
 pub mod rc;
 pub mod safety;
 pub mod time;

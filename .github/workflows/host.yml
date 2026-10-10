@@ -33,6 +33,19 @@ jobs:
       - name: Advisories, licences, bans and sources
         run: sh scripts/deny.sh
 
+  kani:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Kani 0.68.0
+        run: |
+          cargo install --locked kani-verifier --version 0.68.0
+          cargo kani setup
+      - name: Model-check flight-core proofs
+        working-directory: crates/flight-core
+        run: cargo kani
+
   gazebo:
     runs-on: ubuntu-24.04
     timeout-minutes: 20

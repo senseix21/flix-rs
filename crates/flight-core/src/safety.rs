@@ -86,18 +86,18 @@ impl Limits {
     }
 }
 #[derive(Clone, Copy, Debug)]
-struct Lease {
-    intent: Intent,
-    at: Tick,
+pub(crate) struct Lease {
+    pub(crate) intent: Intent,
+    pub(crate) at: Tick,
 }
 /// Only Flight can authorize frames. Copying a frame does not extend its authority.
 #[derive(Clone, Copy, Debug)]
 pub struct MotorFrame {
-    issuer: u32,
-    values: [f32; 4],
-    generation: u64,
-    issued: Tick,
-    expires: Tick,
+    pub(crate) issuer: u32,
+    pub(crate) values: [f32; 4],
+    pub(crate) generation: u64,
+    pub(crate) issued: Tick,
+    pub(crate) expires: Tick,
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Snapshot {
@@ -110,21 +110,21 @@ pub struct Snapshot {
     pub target_attitude: Option<crate::Quaternion>,
 }
 pub struct Flight {
-    issuer: u32,
-    state: State,
-    reason: Reason,
-    generation: u64,
-    selected: Option<Source>,
-    leases: [Option<Lease>; 3],
-    previous: Option<Tick>,
-    sample: Option<Tick>,
-    healthy: bool,
-    calibrated: bool,
+    pub(crate) issuer: u32,
+    pub(crate) state: State,
+    pub(crate) reason: Reason,
+    pub(crate) generation: u64,
+    pub(crate) selected: Option<Source>,
+    pub(crate) leases: [Option<Lease>; 3],
+    pub(crate) previous: Option<Tick>,
+    pub(crate) sample: Option<Tick>,
+    pub(crate) healthy: bool,
+    pub(crate) calibrated: bool,
     estimate: Estimator,
     controller: Controller,
     tuning: Tuning,
     limits: Limits,
-    diagnostic: Option<([f32; 4], Tick)>,
+    pub(crate) diagnostic: Option<([f32; 4], Tick)>,
     last_kind: Option<u8>,
 }
 impl Default for Flight {

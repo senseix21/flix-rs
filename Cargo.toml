@@ -20,6 +20,7 @@ proptest = { version = "=1.11.0", default-features = false, features = ["std"] }
 # Every unsafe operation states its safety argument (AGENTS.md: audited boundaries).
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "deny"
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(kani)"] }
 
 [workspace.lints.clippy]
 undocumented_unsafe_blocks = "deny"
