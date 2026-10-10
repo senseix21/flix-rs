@@ -47,6 +47,6 @@ sim-parity:
 	set -e; for s in $(PARITY_SCENARIOS); do \
 	  docker run --rm --init -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-legacy-scenario.sh $$s /work/.local/qualification/parity/legacy-$$s || true; \
 	  docker run --rm --init -e FLIX_IMU_PROFILE=mpu6050-4g-lpf01 -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-scenario.sh $$s /work/.local/qualification/parity/rust-$$s; \
-	  python3 tools/gazebo-compare.py .local/qualification/parity/rust-$$s/trace.jsonl .local/qualification/parity/legacy-$$s/trace.jsonl --output .local/qualification/parity/compare-$$s.json > /dev/null; \
+	  docker run --rm -v "$(CURDIR):/work" -w /work flix-rust-gazebo:local python3 tools/gazebo-compare.py .local/qualification/parity/rust-$$s/trace.jsonl .local/qualification/parity/legacy-$$s/trace.jsonl --output .local/qualification/parity/compare-$$s.json > /dev/null; \
 	  echo "parity $$s: acceptance pass"; \
 	done
