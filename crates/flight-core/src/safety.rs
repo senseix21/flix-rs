@@ -128,6 +128,10 @@ pub struct Flight {
     last_kind: Option<u8>,
 }
 impl Default for Flight {
+    #[expect(
+        clippy::expect_used,
+        reason = "built-in settings are valid; panics only after u32::MAX owners exhaust issuer IDs"
+    )]
     fn default() -> Self {
         Self::new(Tuning::default(), Limits::default()).expect("valid built-in settings")
     }

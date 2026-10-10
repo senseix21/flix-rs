@@ -24,6 +24,15 @@ jobs:
           cargo check --manifest-path apps/esp32/firmware/Cargo.toml --locked --release --target thumbv7em-none-eabihf
           cargo check --manifest-path apps/proxy/firmware/Cargo.toml --locked --release --target thumbv7em-none-eabihf
 
+  supply-chain:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --version 0.20.2 --locked
+      - name: Advisories, licences, bans and sources
+        run: sh scripts/deny.sh
+
   gazebo:
     runs-on: ubuntu-24.04
     timeout-minutes: 20

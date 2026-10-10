@@ -3,6 +3,7 @@ name = "flight-gazebo"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+publish = false
 [lints]
 workspace = true
 [lib]

@@ -1,5 +1,17 @@
 #![no_std]
 #![forbid(unsafe_code)]
+// Panics in the portable core are visible, reasoned exceptions only.
+#![deny(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::dbg_macro,
+    clippy::print_stdout,
+    clippy::print_stderr
+)]
 pub mod ingress;
 pub mod peers;
 pub mod proxy;
@@ -87,11 +99,7 @@ pub fn console(bytes: &[u8]) -> Result<Console, Error> {
     }
 }
 fn f32_at(p: &[u8], offset: usize) -> f32 {
-    f32::from_le_bytes(
-        p[offset..offset + 4]
-            .try_into()
-            .expect("validated dialect length"),
-    )
+    f32::from_le_bytes([p[offset], p[offset + 1], p[offset + 2], p[offset + 3]])
 }
 fn i16_at(p: &[u8], offset: usize) -> i16 {
     i16::from_le_bytes([p[offset], p[offset + 1]])

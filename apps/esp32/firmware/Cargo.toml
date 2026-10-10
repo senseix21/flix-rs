@@ -3,6 +3,7 @@ name = "flix-firmware"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
+publish = false
 [workspace]
 # Same unsafe policy as the root workspace; this is a separate SDK-linked workspace.
 [lints.rust]

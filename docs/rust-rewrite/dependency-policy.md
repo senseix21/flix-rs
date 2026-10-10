@@ -9,3 +9,5 @@ Before a distributable release, review the lockfile's advisory database, depende
 `proptest=1.11.0` (no default features, `std` only) is a host dev-dependency of `flight-core` for the model-based safety properties. It is absent from the normal dependency graph and never linked into firmware; `cargo tree -p flight-core -e normal` still lists only `libm`.
 
 `fuzz/` is a separate workspace with its own `Cargo.lock`, built only with a nightly toolchain and `cargo-fuzz` 0.13.2. It pins `libfuzzer-sys=0.4.10` and `arbitrary=1.5.0`. Neither enters the host workspace or any firmware graph.
+
+`deny.toml` enforces this policy mechanically: run `sh scripts/deny.sh` (needs network access for RustSec). See [supply-chain evidence](evidence/supply-chain-and-lints.md).

@@ -1,5 +1,17 @@
 #![no_std]
 #![forbid(unsafe_code)]
+// Panics in the portable core are visible, reasoned exceptions only.
+#![deny(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::dbg_macro,
+    clippy::print_stdout,
+    clippy::print_stderr
+)]
 use flight_core::control::Tuning;
 use flight_core::{Limits, Vec3};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -181,6 +193,10 @@ impl Settings {
         }
         Ok(())
     }
+    #[expect(
+        clippy::expect_used,
+        reason = "names come from the generated schema; a missing key is a build defect"
+    )]
     pub fn tuning(&self) -> Tuning {
         let g = |name: &str| {
             self.get(name)
@@ -208,6 +224,10 @@ impl Settings {
             level_weight: g("EST_LVL_WEIGHT"),
         }
     }
+    #[expect(
+        clippy::expect_used,
+        reason = "names come from the generated schema; a missing key is a build defect"
+    )]
     pub fn limits(&self) -> Limits {
         Limits {
             command_us: (self.get("SF_RC_LOSS_TIME").expect("schema") * 1e6) as u64,
@@ -268,11 +288,8 @@ pub fn decode(bytes: &[u8]) -> Result<(Settings, u64), Error> {
         return Err(Error::Storage);
     }
     let values = core::array::from_fn(|i| {
-        f32::from_le_bytes(
-            bytes[16 + i * 4..20 + i * 4]
-                .try_into()
-                .expect("fixed record"),
-        )
+        let at = 16 + i * 4;
+        f32::from_le_bytes([bytes[at], bytes[at + 1], bytes[at + 2], bytes[at + 3]])
     });
     let s = Settings { values };
     s.validate()?;
