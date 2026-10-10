@@ -29,6 +29,13 @@ pub enum Reason {
     Configuration = 10,
     Power = 11,
 }
+impl Reason {
+    /// Faults that only a rebuilt owner may leave (ADR 003 D1). Every exit from Fault
+    /// (`clear_fault`, `reset`) consults this one predicate.
+    pub fn latched(self) -> bool {
+        matches!(self, Reason::Configuration | Reason::Generation)
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Source {
@@ -184,9 +191,10 @@ impl Flight {
     pub fn stopped_maintenance(&self) -> bool {
         self.state == State::Maintenance && self.diagnostic.is_none()
     }
+    /// Revoke all authority and return to Boot, except that a latched fault stays latched.
     pub fn reset(&mut self) {
         self.invalidate();
-        if self.generation == u64::MAX {
+        if self.state == State::Fault && self.reason.latched() {
             return;
         }
         self.state = State::Boot;
@@ -237,10 +245,7 @@ impl Flight {
         self.invalidate();
     }
     pub fn clear_fault(&mut self) -> bool {
-        if self.state != State::Fault
-            || self.generation == u64::MAX
-            || self.reason == Reason::Configuration
-        {
+        if self.state != State::Fault || self.reason.latched() {
             return false;
         }
         self.state = State::Boot;
