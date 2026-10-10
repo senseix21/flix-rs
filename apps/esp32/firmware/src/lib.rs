@@ -164,7 +164,8 @@ pub unsafe extern "C" fn flix_board_init(pins: *const i32) -> i32 {
     };
     let ready = imu.configure().is_ok();
     if !ready {
-        f.owner.flight.fault(flight_core::Reason::SensorExpired);
+        // The driver built but the sensor did not configure: a sensor fault (ADR 003 D2).
+        f.owner.flight.fault(flight_core::Reason::SensorInit);
     }
     f.imu = Some(imu);
     f.ready = ready;
@@ -333,7 +334,9 @@ pub unsafe extern "C" fn flix_board_tick(motors: *mut f32) -> u32 {
         return 5;
     };
     let start = flix_hal_now();
-    if f.owner.driver_restart_requested && f.owner.flight.stopped_maintenance() {
+    let restart = f.owner.driver_restart_requested && f.owner.flight.stopped_maintenance();
+    let retry = f.owner.sensor_retry_requested;
+    if restart || retry {
         flix_hal_stop();
         let g = |name| f.owner.settings.get(name).unwrap_or(0.0);
         let rebuilt = Quaternion::euler(Vec3(
@@ -358,16 +361,22 @@ pub unsafe extern "C" fn flix_board_tick(motors: *mut f32) -> u32 {
             )
             .ok()
         });
+        // Settings that cannot build a driver are a configuration fault; a driver that
+        // builds but does not answer is a sensor fault (ADR 003 D2).
         if let Some(mut imu) = rebuilt {
             f.ready = imu.configure().is_ok();
             f.imu = Some(imu);
+            if !f.ready {
+                f.owner.flight.fault(flight_core::Reason::SensorInit);
+            }
         } else {
             f.ready = false;
-        }
-        if !f.ready {
             f.owner.flight.fault(flight_core::Reason::Configuration);
         }
         f.owner.driver_restart_requested = false;
+        if retry {
+            f.owner.sensor_retry_result(f.ready);
+        }
     }
     if f.owner.calibration_requested && f.owner.flight.stopped_maintenance() {
         if let Some(imu) = &mut f.imu {

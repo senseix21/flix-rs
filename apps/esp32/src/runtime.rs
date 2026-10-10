@@ -55,6 +55,9 @@ pub struct Owner {
     pub save_requested: bool,
     pub calibration_requested: bool,
     pub driver_restart_requested: bool,
+    /// Operator asked to clear a `SensorInit` fault; firmware rebuilds the driver and
+    /// reports through `sensor_retry_result` (ADR 003 D2).
+    pub sensor_retry_requested: bool,
     pilot_acro: bool,
     battery: Option<flight_core::battery::Guard>,
     battery_reading: flight_core::battery::Reading,
@@ -99,6 +102,7 @@ impl Owner {
         save_requested: false,
         calibration_requested: false,
         driver_restart_requested: false,
+        sensor_retry_requested: false,
         pilot_acro: false,
         battery: None,
         battery_reading: flight_core::battery::Reading::Unavailable,
@@ -135,6 +139,7 @@ impl Owner {
             save_requested: false,
             calibration_requested: false,
             driver_restart_requested: false,
+            sensor_retry_requested: false,
             pilot_acro: false,
             battery: None,
             battery_reading: flight_core::battery::Reading::Unavailable,
@@ -193,6 +198,7 @@ impl Owner {
         self.last_saturation_notice = None;
         self.log = Log::default();
         self.driver_restart_requested = false;
+        self.sensor_retry_requested = false;
     }
     /// Stopped enrollment invalidates cached outputs, commands and queued replies.
     /// Caller must hold exclusive stopped Maintenance.
@@ -410,7 +416,15 @@ impl Owner {
                     }
                 }
                 Console::ClearFault => {
-                    self.flight.clear_fault();
+                    let snapshot = self.flight.snapshot();
+                    if snapshot.state == State::Fault
+                        && snapshot.reason == flight_core::Reason::SensorInit
+                    {
+                        // Clearing must prove the sensor works; never just drop the flag.
+                        self.sensor_retry_requested = true;
+                    } else {
+                        self.flight.clear_fault();
+                    }
                 }
                 Console::Save => {
                     self.save_requested = self.flight.stopped_maintenance();
@@ -654,6 +668,18 @@ impl Owner {
             }
         }
         self.saturation_pending |= mask;
+    }
+    /// Firmware result of a requested driver rebuild for a `SensorInit` fault. Only a
+    /// passing rebuild clears it; a failing one leaves the owner faulted.
+    pub fn sensor_retry_result(&mut self, configured: bool) {
+        self.sensor_retry_requested = false;
+        let snapshot = self.flight.snapshot();
+        if configured
+            && snapshot.state == State::Fault
+            && snapshot.reason == flight_core::Reason::SensorInit
+        {
+            self.flight.clear_fault();
+        }
     }
     pub fn record_execution(&mut self, microseconds: u64) {
         self.timing.owner.record(microseconds);

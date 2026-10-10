@@ -28,6 +28,9 @@ pub enum Reason {
     MaintenanceExpired = 9,
     Configuration = 10,
     Power = 11,
+    /// The IMU driver failed to configure (bus, identity or readback). Recoverable only
+    /// after a rebuilt driver passes again (ADR 003 D2).
+    SensorInit = 12,
 }
 impl Reason {
     /// Faults that only a rebuilt owner may leave (ADR 003 D1). Every exit from Fault
