@@ -117,12 +117,22 @@
       217,
       22,
       22
+    ],
+    "105": [
+      93,
+      62,
+      63
     ]
   },
   "additions": {
     "256": {
       "source": "https://raw.githubusercontent.com/mavlink/c_library_v2/master/common/mavlink_msg_setup_signing.h",
       "purpose": "trusted wired enrollment only; never a radio Event"
+    },
+    "105": {
+      "source": "MAVLink Arduino library 2.0.33 (legacy-pinned, scripts/fetch-legacy-mavlink.py): mavlink/common/mavlink_msg_highres_imu.h",
+      "crosscheck": "https://raw.githubusercontent.com/mavlink/c_library_v2/master/common/mavlink_msg_highres_imu.h sha256 cdc669ed5efd619d2ac184ce472ee309200ad3fb7fdb2810369e3e0fb759d031, retrieved 2026-10-10: same CRC and lengths",
+      "purpose": "full-range float IMU telemetry alongside SCALED_IMU; outbound only, never a radio Event"
     }
   }
 }

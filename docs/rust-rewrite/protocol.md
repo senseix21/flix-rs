@@ -33,7 +33,11 @@ and denies conflicting, malformed or incomplete snapshots. This response framing
 is a Flix development extension inside standard SERIAL_CONTROL, not a promised
 QGroundControl command.
 
-Default telemetry: heartbeat/battery 2 Hz, attitude quaternion 20 Hz, RC/motor controls 10 Hz, scaled IMU 15 Hz. Timestamps use milliseconds for attitude/IMU/RC and microseconds for actuator controls. FRD/NED signs are converted at the boundary. Battery measurements remain unknown until an actual battery adapter/policy is qualified; all unknown sentinel fields are initialized explicitly.
+Default telemetry: heartbeat/battery 2 Hz, attitude quaternion 20 Hz, RC/motor controls 10 Hz, and IMU 15 Hz as both SCALED_IMU (26) and HIGHRES_IMU (105). Timestamps use milliseconds for attitude/SCALED_IMU/RC and microseconds for HIGHRES_IMU and actuator controls.
+
+SCALED_IMU stays for upstream pyflix and QGroundControl compatibility. Its i16 mrad/s gyro saturates near 1,877 deg/s. HIGHRES_IMU carries the exact f32 sample (FRD, rad/s and m/s^2) up to the MPU6050's ±2000 deg/s range. Non-finite axes are sent as 0 with their `fields_updated` bit clear; magnetometer, pressure and temperature bits are never set. Payloads match the legacy-pinned MAVLink C library byte for byte (`scripts/telemetry-oracle.py`).
+
+Reply slots are bounded at four. A due telemetry stream that finds too few free slots stays due and is sent on a later tick instead of being dropped, so every stream keeps its configured rate and `reply_overflow` counts only real loss. At schema defaults the measured unsigned telemetry is 3,492 B/s, about 30% of a 115,200-baud UART. FRD/NED signs are converted at the boundary. Battery measurements remain unknown until an actual battery adapter/policy is qualified; all unknown sentinel fields are initialized explicitly.
 
 ## Provisioned serial proxy
 

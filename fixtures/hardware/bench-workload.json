@@ -27,8 +27,12 @@
     "MAV_RATE_MOT": 10,
     "MAV_RATE_IMU": 15,
     "heartbeat_and_battery_hz_each": 2,
-    "configured_attempts_per_second": 59,
+    "configured_attempts_per_second": 74,
+    "imu_messages": ["SCALED_IMU 26", "HIGHRES_IMU 105"],
     "delivery_is_best_effort_bounded_four_reply_slots": true,
+    "full_reply_queue_behavior": "due stream deferred to a later tick, not dropped",
+    "host_measured_unsigned_bytes_per_second": 3492,
+    "host_measurement": "apps/esp32/tests/imu_telemetry.rs, 10 s at schema defaults, 2026-10-10; target UART unmeasured",
     "must_capture_actual_exported_settings": true
   },
   "logs": {"capacity_entries": 1000, "entry_bytes": 64, "armed_download_allowed": false},

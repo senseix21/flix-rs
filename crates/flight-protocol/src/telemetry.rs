@@ -76,6 +76,27 @@ pub fn scaled_imu(sensor: flight_core::Sensor) -> [u8; 22] {
     }
     p
 }
+/// HIGHRES_IMU (105) payload: the exact f32 sample in FRD, so the full MPU6050 range
+/// is reported where SCALED_IMU's i16 mrad/s clips near 1,877 deg/s. Non-finite axes
+/// are sent as 0 with their `fields_updated` bit clear; unmeasured fields stay clear.
+pub fn highres_imu(sensor: flight_core::Sensor) -> [u8; 63] {
+    let mut p = [0; 63];
+    p[..8].copy_from_slice(&sensor.at.0.to_le_bytes());
+    let a = sensor.acceleration;
+    let g = sensor.gyro;
+    let mut updated = 0u16;
+    // Payload order xacc..zgyro matches HIGHRES_IMU_UPDATED_* bits 0..=5.
+    for (i, v) in [a.0, -a.1, -a.2, g.0, -g.1, -g.2].into_iter().enumerate() {
+        if v.is_finite() {
+            p[8 + i * 4..12 + i * 4].copy_from_slice(&v.to_le_bytes());
+            updated |= 1 << i;
+        }
+    }
+    // Magnetometer, pressure and temperature (offsets 32..60) are not measured.
+    p[60..62].copy_from_slice(&updated.to_le_bytes());
+    p[62] = 0; // sensor instance id
+    p
+}
 pub fn rc(channels: [u16; 8], at: Tick) -> [u8; 22] {
     let mut p = [0; 22];
     p[..4].copy_from_slice(&boot_ms(at).to_le_bytes());

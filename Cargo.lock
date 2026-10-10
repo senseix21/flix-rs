@@ -97,6 +97,7 @@ name = "flight-protocol"
 version = "0.1.0"
 dependencies = [
  "flight-core",
+ "proptest",
  "sha2",
 ]
 

@@ -6,9 +6,9 @@ use flight_protocol::wire::{self, Policy, Signing};
 use libfuzzer_sys::fuzz_target;
 
 /// Every message ID in the frozen dialect plus one unsupported ID.
-const IDS: [u32; 23] = [
-    0, 20, 21, 22, 23, 26, 30, 31, 35, 65, 69, 76, 77, 82, 119, 120, 126, 140, 147, 148, 256, 300,
-    9999,
+const IDS: [u32; 24] = [
+    0, 20, 21, 22, 23, 26, 30, 31, 35, 65, 69, 76, 77, 82, 105, 119, 120, 126, 140, 147, 148, 256,
+    300, 9999,
 ];
 const KEY: [u8; 32] = [7; 32];
 

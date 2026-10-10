@@ -243,6 +243,9 @@ impl Owner {
             self.counters.reply_overflow = self.counters.reply_overflow.saturating_add(1);
         }
     }
+    fn free_replies(&self) -> usize {
+        self.replies.iter().filter(|slot| slot.is_none()).count()
+    }
     pub fn reply(&mut self) -> Option<Reply> {
         let reply = self.replies[0].take();
         self.replies.rotate_left(1);
@@ -533,11 +536,14 @@ impl Owner {
                 self.log_cursor = None;
             }
         }
+        // A due stream that finds too few free reply slots stays due and is sent on a
+        // later tick instead of being dropped; reply_overflow then counts only real loss.
         if due(
             now,
             self.last_heartbeat,
             self.settings.get("MAV_RATE_SLOW").unwrap_or(0.0),
-        ) {
+        ) && self.free_replies() >= 2
+        {
             self.emit(
                 0,
                 &flight_protocol::telemetry::heartbeat(snapshot, self.pilot_acro),
@@ -566,7 +572,8 @@ impl Owner {
             now,
             self.last_attitude,
             self.settings.get("MAV_RATE_ATT").unwrap_or(0.0),
-        ) {
+        ) && self.free_replies() >= 1
+        {
             self.emit(
                 31,
                 &flight_protocol::telemetry::attitude_quaternion(snapshot, now),
@@ -577,7 +584,8 @@ impl Owner {
             now,
             self.last_motors,
             self.settings.get("MAV_RATE_MOT").unwrap_or(0.0),
-        ) {
+        ) && self.free_replies() >= 1
+        {
             self.emit(140, &flight_protocol::telemetry::motors(motors, now));
             self.last_motors = now;
         }
@@ -585,9 +593,13 @@ impl Owner {
             now,
             self.last_imu,
             self.settings.get("MAV_RATE_IMU").unwrap_or(0.0),
-        ) {
+        ) && self.free_replies() >= if sensor.is_some() { 2 } else { 0 }
+        {
             if let Some(sensor) = sensor {
+                // SCALED_IMU keeps upstream pyflix/QGC compatible; HIGHRES_IMU carries
+                // the unclipped float sample.
                 self.emit(26, &flight_protocol::telemetry::scaled_imu(sensor));
+                self.emit(105, &flight_protocol::telemetry::highres_imu(sensor));
             }
             self.last_imu = now;
         }
@@ -595,7 +607,8 @@ impl Owner {
             now,
             self.last_rc,
             self.settings.get("MAV_RATE_RC").unwrap_or(0.0),
-        ) {
+        ) && self.free_replies() >= 1
+        {
             self.emit(
                 35,
                 &flight_protocol::telemetry::rc(self.rc_channels, self.rc_at),

@@ -61,8 +61,8 @@ under current invariants.
 - **Telemetry helpers:** `boot_ms` (MAVLink `time_boot_ms` wraps after about 49.7 days by
   definition) and `saturating_i16`.
 - **Finding:** `SCALED_IMU` reports gyro in mrad/s as i16. The MPU6050's ±2000 deg/s range
-  (34.9 rad/s) exceeds i16, so gyro above about 1,875 deg/s saturates in telemetry. Control
-  is unaffected.
+  (34.9 rad/s) exceeds i16, so gyro above about 1,877 deg/s saturates in telemetry. Control
+  is unaffected. Resolved by adding HIGHRES_IMU alongside it; see [highres-imu](highres-imu.md).
 - **Reasoned `#[expect]`:** `flight_protocol::event` (MAVLink integer arguments are exact
   floats; a tolerance would accept 0.5 as Stop; every cast follows a range check),
   `Settings::scalar`, `validate`, `limits` and `telemetry::battery_voltage`.

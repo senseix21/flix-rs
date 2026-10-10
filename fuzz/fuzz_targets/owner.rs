@@ -10,8 +10,9 @@ use flight_esp32::{Owner, session::RadioSession};
 use flight_protocol::wire::{self, Decoder, Policy};
 use libfuzzer_sys::fuzz_target;
 
-const IDS: [u32; 22] = [
-    0, 20, 21, 22, 23, 26, 30, 31, 35, 65, 69, 76, 77, 82, 119, 120, 126, 140, 147, 148, 256, 300,
+const IDS: [u32; 23] = [
+    0, 20, 21, 22, 23, 26, 30, 31, 35, 65, 69, 76, 77, 82, 105, 119, 120, 126, 140, 147, 148, 256,
+    300,
 ];
 
 #[derive(Arbitrary, Debug)]
@@ -88,8 +89,17 @@ impl Harness {
         }
         // Replies are bounded; drain them as the flight task does.
         for _ in 0..4 {
-            if self.owner.reply().is_none() {
+            let Some(reply) = self.owner.reply() else {
                 break;
+            };
+            let b = &reply.bytes[..reply.len];
+            if b.len() >= 12 && u32::from_le_bytes([b[7], b[8], b[9], 0]) == 105 {
+                let p = &b[10..b.len() - 2];
+                for i in 0..6 {
+                    let at = 8 + i * 4;
+                    let v = f32::from_le_bytes([p[at], p[at + 1], p[at + 2], p[at + 3]]);
+                    assert!(v.is_finite(), "HIGHRES_IMU axis {i} = {v}");
+                }
             }
         }
     }
