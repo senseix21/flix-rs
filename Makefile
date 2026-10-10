@@ -44,9 +44,9 @@ sim-parity:
 	# Prepare inside the container: earlier container steps leave .local owned by root.
 	docker run --rm -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh -c \
 	  'git config --global --add safe.directory /legacy && mkdir -p .local && git -C /legacy archive --format=tar 1f5b268271536e45a9377d1c5317d3eb6f3c3bba > .local/legacy-baseline.tar && python3 scripts/fetch-legacy-mavlink.py > /dev/null'
-	set -e; for s in $(PARITY_SCENARIOS); do \
+	set -e; status=0; for s in $(PARITY_SCENARIOS); do \
 	  docker run --rm --init -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-legacy-scenario.sh $$s /work/.local/qualification/parity/legacy-$$s || true; \
 	  docker run --rm --init -e FLIX_IMU_PROFILE=mpu6050-4g-lpf01 -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-scenario.sh $$s /work/.local/qualification/parity/rust-$$s; \
-	  docker run --rm -v "$(CURDIR):/work" -w /work flix-rust-gazebo:local python3 tools/gazebo-compare.py .local/qualification/parity/rust-$$s/trace.jsonl .local/qualification/parity/legacy-$$s/trace.jsonl --output .local/qualification/parity/compare-$$s.json > /dev/null; \
-	  echo "parity $$s: acceptance pass"; \
-	done
+	  docker run --rm -v "$(CURDIR):/work" -w /work flix-rust-gazebo:local python3 tools/gazebo-compare.py .local/qualification/parity/rust-$$s/trace.jsonl .local/qualification/parity/legacy-$$s/trace.jsonl --output .local/qualification/parity/compare-$$s.json > /dev/null || status=1; \
+	  python3 -c "import json,sys;r=json.load(open(sys.argv[1]));s=r['stable_interval_characterization'];d=r['dispatch_difference_classification'];print('parity',sys.argv[2],r['acceptance']['status'],'stable',{k:round(v,4) for k,v in s['metrics'].items()},'unexpected',len(d['unexpected_violation_ticks']),d['unexpected_violation_ticks'][:12],'unmatched',r['boundary_unmatched_ticks'][:12])" .local/qualification/parity/compare-$$s.json $$s; \
+	done; exit $$status
