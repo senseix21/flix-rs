@@ -35,3 +35,18 @@ sim-scenarios:
 	docker run --rm --init -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-scenario.sh landing-contact /work/.local/qualification/landing-contact
 	docker run --rm --init -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-scenario.sh long-level /work/.local/qualification/long-level
 	docker run --rm --init -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-scenario.sh axis-pulses /work/.local/qualification/axis-pulses
+
+# Paired C++/Rust comparison (fixtures/simulator/acceptance.json comparison). The Rust
+# side uses the legacy-equivalent accelerometer profile so only controllers differ.
+PARITY_SCENARIOS := pitch-pulse level-thrust
+sim-parity:
+	docker build -t flix-rust-gazebo:local -f adapters/gazebo/Dockerfile .
+	mkdir -p .local
+	git -C ../flix archive --format=tar 1f5b268271536e45a9377d1c5317d3eb6f3c3bba > .local/legacy-baseline.tar
+	python3 scripts/fetch-legacy-mavlink.py
+	set -e; for s in $(PARITY_SCENARIOS); do \
+	  docker run --rm --init -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-legacy-scenario.sh $$s /work/.local/qualification/parity/legacy-$$s || true; \
+	  docker run --rm --init -e FLIX_IMU_PROFILE=mpu6050-4g-lpf01 -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-scenario.sh $$s /work/.local/qualification/parity/rust-$$s; \
+	  python3 tools/gazebo-compare.py .local/qualification/parity/rust-$$s/trace.jsonl .local/qualification/parity/legacy-$$s/trace.jsonl --output .local/qualification/parity/compare-$$s.json > /dev/null; \
+	  echo "parity $$s: acceptance pass"; \
+	done

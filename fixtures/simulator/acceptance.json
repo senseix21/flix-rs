@@ -372,7 +372,10 @@
     "max_attitude_difference_degrees": 5.0,
     "max_motor_absolute_difference": 0.1,
     "max_position_difference_m": 0.5,
-    "limits_status": "predeclared exploratory thresholds; failure is a finding, not permission to retune"
+    "limits_status": "predeclared exploratory thresholds; failure is a finding, not permission to retune",
+    "acceptance_rule": "stable-interval: outside logged MANUAL_CONTROL transition ticks every aligned tick is within the limits, no violation falls outside a transition tick, and at most two boundary ticks are unmatched. Full-tick parity is reported but cannot pass while Rust applies inputs before control (recorded safety correction).",
+    "rust_imu_profile": "mpu6050-4g-lpf01",
+    "rust_imu_profile_reason": "Feed the Rust controller the same simulated accelerometer as the legacy plugin (0.1 filter) so the comparison isolates controller behaviour. See evidence/plant-parity."
   },
   "native_reset": {
     "time_only_position_jump_m": 0.05,

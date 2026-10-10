@@ -49,6 +49,36 @@ Every violation is on a logged transition tick (pitch: 2, 1002, 1162; level: 502
 `explained` with no unexpected ticks. Excluding those ticks, the stable-interval gate passes in all
 four pairs (maximum motor difference 0.062–0.067).
 
+## Decisions (user-approved 2026-10-10) and follow-up
+
+**Realistic sensor model, measured first.** I added the firmware's own configuration as
+`mpu6050-4g-dlpf1`: a first-order approximation of DLPF_CFG=1 (184 Hz accel, 188 Hz gyro). The
+resting chatter is at 500 Hz, above that bandwidth, so the filter leaves about 4 m/s² of it:
+
+| Scenario | Profile | Landed gate passes | Estimate error at arm | Position diff |
+| --- | --- | ---: | ---: | ---: |
+| pitch-pulse | default | 0.9% | 0.215° | 0.129 m |
+| pitch-pulse | dlpf1 | 36.2% | 0.208° | 0.236 m |
+| pitch-pulse | lpf01 | 100% | 0.000° | 0.032 m |
+| level-thrust | default | 0.5% | 0.311° | 0.370 m |
+| level-thrust | dlpf1 | 36.9% | 0.194° | 0.143 m |
+| level-thrust | lpf01 | 100% | 0.038° | 0.058 m |
+
+Modelling the real sensor does not reproduce the legacy simulator, which filters far more than the
+hardware does. The comparison therefore uses `mpu6050-4g-lpf01` on the Rust side (recorded in
+`fixtures/simulator/acceptance.json` as `comparison.rust_imu_profile`), so both controllers receive
+the same sensor model. **The default simulated sensor is unchanged**; whether to switch it to
+`dlpf1` is a separate decision, and the real artifact is the contact chatter.
+
+**Acceptance rule.** `comparison.acceptance_rule` = stable-interval. `tools/gazebo-compare.py`
+reports `acceptance` and exits non-zero only on acceptance failure; full-tick parity is still
+reported. The rule passes all six arm64 pairs, and still **fails** the recorded x86 pair that
+drifted 0.90 m (765 unexpected ticks), so it does not hide real divergence. The default profile
+passed on arm64 only because its pre-arm drift happened to be small in that run.
+
+**CI.** `make sim-parity` (in the Gazebo job) builds the pinned legacy plugin (SDL2 added to the
+pinned image) and runs the pairs on x86 with the `lpf01` profile.
+
 ## Unresolved, and decisions needed
 
 - **Default simulated sensor.** The Rust firmware configures DLPF_CFG=1 (about 184 Hz accel
