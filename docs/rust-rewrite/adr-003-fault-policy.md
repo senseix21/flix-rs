@@ -1,6 +1,6 @@
 # ADR 003: Fault policy and recoverability
 
-Status: proposed, 2026-10-10. Supersedes no ADR. Requirements: SAF-01, SAF-03, SAF-05, SAF-07,
+Status: accepted 2026-10-10; D1–D3 implemented, D4 and D5 open. Supersedes no ADR. Requirements: SAF-01, SAF-03, SAF-05, SAF-07,
 P5 settings integrity, P8 operator recovery.
 
 ## Context
@@ -107,3 +107,18 @@ explicitly confirmed, write both slots and require a reboot.
 - **Treat every fault as latched until reboot.** Maximally conservative, but turns transient bench
   events (a single clock gap, a loose sensor cable) into power cycles, and teaches operators to
   power-cycle reflexively.
+
+## Implementation record (2026-10-10)
+
+| Decision | Change | Evidence |
+| --- | --- | --- |
+| D1 | `Reason::latched()`; `clear_fault()` and `reset()` both consult it | Kani `latched_faults_never_leave_fault` failed on the old `reset()` and passes now; owner test: Configuration survives clear and reset, Tilt/Clock/Power clear |
+| D2 | `Reason::SensorInit = 12` for `configure()` failure at boot and after rebuild; settings that cannot build a driver stay `Configuration`. `clear-fault` sets `sensor_retry_requested`; firmware rebuilds and calls `Owner::sensor_retry_result` | Owner tests: success clears to Boot and still needs explicit arm; failure stays faulted; a late success cannot clear a newer Configuration fault; the test fails if clear-fault clears SensorInit directly. Trace decoder accepts 12 and rejects 13 |
+| D3 | `Reason::label()`, `ArmBlock` and `Flight::arm_blocker()` (which `arm()` now uses, so the cause cannot drift). Owner queues notices (4 slots, identical text suppressed for 1 s), flushed before periodic telemetry: `fault: <reason>` (CRITICAL), `failsafe: <reason>`, `arm denied: <cause>`, `clear denied: …` (WARNING) | Owner tests for each message, severity, 1 s suppression and no reply overflow; the generic STATUSTEXT encoder matches all 63 C-library fixtures; the owner fuzz target validates every notice against this vocabulary (1.32M runs, 0 failures) |
+
+The firmware boot path keeps its existing fallback to identity rotation for unreadable rotation
+settings. Only its fault reason changed. All gates pass: `scripts/check.sh` (75 Rust, 37 Python,
+400 parity cases), 6 Kani proofs, both Xtensa archives, and all fuzz targets.
+
+Both D3 test failures during development were test mistakes (a 1 s time jump and a repeated
+timestamp, both clock-gap faults). The new notices named them (`fault: clock`).

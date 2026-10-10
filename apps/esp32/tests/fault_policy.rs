@@ -85,3 +85,126 @@ fn latched_faults_survive_clear_and_reset_other_faults_clear() {
         }
     }
 }
+
+// ADR 003 D3: operator-facing reasons.
+use flight_core::Source;
+use flight_core::control::{Intent, Pilot};
+
+/// Tick once at `ms` and return the STATUSTEXT (severity, text) replies.
+fn tick_notices(owner: &mut Owner, ms: u64) -> Vec<(u8, String)> {
+    owner.tick(Tick(ms * 1000), Some(sample(ms * 1000)));
+    let mut out = Vec::new();
+    while let Some(r) = owner.reply() {
+        let b = &r.bytes[..r.len];
+        if u32::from_le_bytes([b[7], b[8], b[9], 0]) == 253 {
+            let text = &b[11..b.len() - 2];
+            let end = text.iter().position(|c| *c == 0).unwrap_or(text.len());
+            out.push((b[10], String::from_utf8(text[..end].to_vec()).unwrap()));
+        }
+    }
+    out
+}
+
+/// Tick every millisecond in `from..=to` (the owner faults on clock gaps over 10 ms).
+fn advance(owner: &mut Owner, from: u64, to: u64) -> Vec<(u8, String)> {
+    (from..=to).flat_map(|ms| tick_notices(owner, ms)).collect()
+}
+
+fn texts(n: &[(u8, String)]) -> Vec<&str> {
+    n.iter().map(|(_, t)| t.as_str()).collect()
+}
+
+fn pilot(thrust: f32) -> Intent {
+    Intent::Stabilized(Pilot {
+        roll: 0.,
+        pitch: 0.,
+        yaw: 0.,
+        thrust,
+    })
+}
+
+#[test]
+fn arm_denial_names_the_first_unmet_condition_and_repeats_are_limited() {
+    let mut owner = Owner::default();
+    tick_notices(&mut owner, 0);
+    owner.submit(Event::Arm, Tick(1000));
+    assert_eq!(
+        texts(&tick_notices(&mut owner, 1)),
+        ["arm denied: no command"]
+    );
+    owner.submit(Event::Arm, Tick(2000));
+    assert!(
+        tick_notices(&mut owner, 2).is_empty(),
+        "identical text within 1 s"
+    );
+    assert!(advance(&mut owner, 3, 1001).is_empty());
+    owner.submit(Event::Arm, Tick(1_002_000));
+    assert_eq!(
+        texts(&tick_notices(&mut owner, 1002)),
+        ["arm denied: no command"]
+    );
+
+    // The owner applies setpoints before queued events within a tick, so select first.
+    owner.submit(Event::Select(Source::Pilot), Tick(1_003_000));
+    tick_notices(&mut owner, 1003);
+    owner.submit(Event::Setpoint(Source::Pilot, pilot(0.5)), Tick(1_004_000));
+    tick_notices(&mut owner, 1004);
+    owner.submit(Event::Arm, Tick(1_005_000));
+    assert_eq!(
+        texts(&tick_notices(&mut owner, 1005)),
+        ["arm denied: thrust not low"]
+    );
+}
+
+#[test]
+fn fault_and_failsafe_entries_are_announced_once() {
+    let mut owner = Owner::default();
+    tick_notices(&mut owner, 0);
+    owner.flight.fault(Reason::Tilt);
+    let n = tick_notices(&mut owner, 1);
+    assert_eq!(n, [(2, "fault: tilt".to_string())], "CRITICAL severity");
+    assert!(
+        tick_notices(&mut owner, 2).is_empty(),
+        "no repeat while unchanged"
+    );
+
+    let mut owner = Owner::default();
+    tick_notices(&mut owner, 0);
+    owner.submit(Event::Select(Source::Pilot), Tick(1000));
+    tick_notices(&mut owner, 1);
+    owner.submit(Event::Setpoint(Source::Pilot, pilot(0.0)), Tick(2000));
+    tick_notices(&mut owner, 2);
+    owner.submit(Event::Arm, Tick(3000));
+    tick_notices(&mut owner, 3);
+    assert_eq!(owner.flight.snapshot().state, State::Armed);
+    // No further setpoints: the 1 s lease expires into Failsafe.
+    let seen = advance(&mut owner, 4, 1100);
+    assert_eq!(texts(&seen), ["failsafe: command expired"]);
+    assert_eq!(seen[0].0, 4, "WARNING severity");
+}
+
+#[test]
+fn clear_denials_say_how_to_recover() {
+    let mut owner = Owner::default();
+    tick_notices(&mut owner, 0);
+    owner.flight.fault(Reason::Configuration);
+    tick_notices(&mut owner, 1);
+    owner.submit(Event::Console(Console::ClearFault), Tick(2000));
+    assert_eq!(
+        texts(&tick_notices(&mut owner, 2)),
+        ["clear denied: configuration (reflash)"]
+    );
+
+    let mut owner = Owner::default();
+    tick_notices(&mut owner, 0);
+    owner.flight.fault(Reason::SensorInit);
+    tick_notices(&mut owner, 1);
+    owner.submit(Event::Console(Console::ClearFault), Tick(2000));
+    tick_notices(&mut owner, 2);
+    owner.sensor_retry_result(false);
+    assert_eq!(
+        texts(&tick_notices(&mut owner, 3)),
+        ["clear denied: sensor init"]
+    );
+    assert_eq!(owner.counters.reply_overflow, 0);
+}
