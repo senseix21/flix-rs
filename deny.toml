@@ -1,0 +1,39 @@
+# Supply-chain policy (cargo-deny 0.20). Applies to the host workspace and, via
+# scripts/check.sh, to both firmware workspaces and the fuzz workspace.
+
+[graph]
+all-features = false
+
+[advisories]
+# Any RustSec vulnerability, unsound or yanked crate fails the check.
+unmaintained = "workspace"
+yanked = "deny"
+ignore = []
+
+[licenses]
+# Permissive licences seen in the locked graphs. Add others only by review.
+allow = ["MIT", "Apache-2.0"]
+confidence-threshold = 0.9
+# Exceptions below are shared with the fuzz workspace; other graphs do not use them.
+unused-license-exception = "allow"
+# Narrow, reviewed exceptions. Neither crate is linked into firmware.
+exceptions = [
+    # Bundles LLVM libFuzzer source; fuzz workspace only.
+    { crate = "libfuzzer-sys", allow = ["NCSA"] },
+    # Unicode data tables; proc-macro build dependency only.
+    { crate = "unicode-ident", allow = ["Unicode-3.0"] },
+]
+
+[licenses.private]
+# Project crates are publish = false and have no licence until one is chosen.
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]

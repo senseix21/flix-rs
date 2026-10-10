@@ -7,6 +7,9 @@ cargo build --release --locked -p flight-gazebo
 cmake -S adapters/gazebo -B /work/target/gazebo-plugin -DFLIX_RUST_LIBRARY="$CARGO_TARGET_DIR/release/libflight_gazebo.a"
 cmake --build /work/target/gazebo-plugin -j2
 mkdir -p "$2"
+# The bind mount is owned by the host user; let the container's root read it for
+# the source manifest (container-local git config only).
+git config --global --add safe.directory /work
 python3 scripts/release-manifest.py /work/target/gazebo-linux/release/libflight_gazebo.a --profile "scenario-$1" > "$2/source-manifest.json"
 mkdir -p /tmp/flix-models
 cp -R /legacy/gazebo/models/flix /tmp/flix-models/

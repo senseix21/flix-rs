@@ -62,3 +62,20 @@ class ClientTests(unittest.TestCase):
         finally:
             process.terminate();process.wait(timeout=2);process.stdout.close()
 if __name__=='__main__':unittest.main()
+class HighresImuTests(unittest.TestCase):
+    def test_decodes_full_range_gyro_from_owner_payload(self):
+        # Third oracle case: +/-1999.9 deg/s, beyond SCALED_IMU's i16 mrad/s range.
+        lines=[l for l in (ROOT/'fixtures/telemetry/highres_imu.txt').read_text().splitlines() if not l.startswith('#')]
+        fields=lines[2].split()
+        payload=bytes.fromhex(fields[-1])
+        frames=list(Decoder().feed(pack(105,payload,system=1,component=1)))
+        self.assertEqual(len(frames),1)
+        message,decoded=frames[0]
+        self.assertEqual(message,105)
+        time_us,ax,ay,az,gx,gy,gz=struct.unpack_from('<Q6f',decoded)
+        self.assertEqual(time_us,int(fields[0]))
+        self.assertGreater(gx,32.767)  # SCALED_IMU would clip at 32767 mrad/s
+        self.assertEqual(struct.unpack_from('<H',decoded,60)[0],0x3f)
+        # Trailing zero truncation (MAVLink 2) must decode to the same padded payload.
+        trimmed=payload.rstrip(b'\0')
+        self.assertEqual(list(Decoder().feed(pack(105,trimmed,system=1,component=1)))[0][1],decoded)

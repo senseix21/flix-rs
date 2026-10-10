@@ -30,10 +30,17 @@ class ProxyIntegrationTests(unittest.TestCase):
                 self.assertEqual(bridge.stdout.readline().strip(),'ready')
                 time.sleep(.1) # connect after several telemetry periods; first ACK must survive
                 transport.send(pack(0,b'\0'*9)) # unsigned input cannot poison subsequent valid framing
-                with Flix(transport,key=key) as client:
-                    client.set_mode(2);client.manual(thrust=0);client.arm();client.disarm()
-                    self.assertEqual(len(client.get_parameter(0)),25)
-                    with self.assertRaises(ValueError):client.enroll_radio(key,stamp)
+                try:
+                    with Flix(transport,key=key) as client:
+                        client.set_mode(2);client.manual(thrust=0);client.arm();client.disarm()
+                        self.assertEqual(len(client.get_parameter(0)),25)
+                        with self.assertRaises(ValueError):client.enroll_radio(key,stamp)
+                except OSError as error:
+                    # Name the cause of an intermittent CI write deadline: did the bridge
+                    # exit (e.g. its 100 ms serial-output expiry) or is it still running?
+                    code=bridge.poll()
+                    detail=bridge.stderr.read() if code is not None else 'still running'
+                    raise AssertionError(f'serial path failed; bridge exit={code}: {detail}') from error
                 transport=None
                 with Flix(SerialTransport(os.ttyname(slave),proxy=True),key=secrets.token_bytes(32)) as wrong:
                     with self.assertRaises(TimeoutError):wrong.get_parameter(0)

@@ -15,6 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let path = args.next().ok_or("serial path required")?;
     let mut serial = if path == "--fd" {
         let fd: i32 = args.next().ok_or("inherited serial fd required")?.parse()?;
+        // SAFETY: F_GETFL takes no pointer argument; an invalid fd only returns -1.
         if fd < 3 || unsafe { fcntl(fd, 3) } < 0 {
             return Err("invalid inherited serial fd".into());
         }
@@ -32,6 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     const NONBLOCK: i32 = 2048;
     // SAFETY: valid owned fd; POSIX F_GETFL=3/F_SETFL=4 use integer arguments.
     let flags = unsafe { fcntl(serial.as_raw_fd(), 3) };
+    // SAFETY: as above.
     if flags < 0 || unsafe { fcntl(serial.as_raw_fd(), 4, flags | NONBLOCK) } < 0 {
         return Err(std::io::Error::last_os_error().into());
     }

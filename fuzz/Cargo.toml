@@ -1,0 +1,68 @@
+[package]
+name = "flix-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+# Separate workspace: libFuzzer needs nightly and must not affect the pinned host toolchain.
+[workspace]
+
+[lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+[lints.clippy]
+undocumented_unsafe_blocks = "deny"
+missing_safety_doc = "deny"
+
+[dependencies]
+libfuzzer-sys = "=0.4.10"
+arbitrary = { version = "=1.5.0", features = ["derive"] }
+flight-core = { path = "../crates/flight-core" }
+flight-protocol = { path = "../crates/flight-protocol" }
+flight-config = { path = "../crates/flight-config" }
+flight-esp32 = { path = "../apps/esp32" }
+flight-proxy = { path = "../apps/proxy" }
+
+[[bin]]
+name = "wire_decode"
+path = "fuzz_targets/wire_decode.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "wire_valid"
+path = "fuzz_targets/wire_valid.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "sbus"
+path = "fuzz_targets/sbus.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "config_record"
+path = "fuzz_targets/config_record.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "proxy_bridge"
+path = "fuzz_targets/proxy_bridge.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "owner"
+path = "fuzz_targets/owner.rs"
+test = false
+doc = false
+bench = false

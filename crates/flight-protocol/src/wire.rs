@@ -15,7 +15,7 @@ include!("dialect.rs");
 pub fn crc(bytes: &[u8], extra: u8) -> u16 {
     let mut result = 0xffffu16;
     for byte in bytes.iter().chain(core::iter::once(&extra)) {
-        let mut tmp = *byte ^ result as u8;
+        let mut tmp = *byte ^ result.to_le_bytes()[0];
         tmp ^= tmp << 4;
         result =
             (result >> 8) ^ (u16::from(tmp) << 8) ^ (u16::from(tmp) << 3) ^ (u16::from(tmp) >> 4);
@@ -38,17 +38,11 @@ pub fn encode(
     {
         return Err(Error::Bounds);
     }
+    // max <= 255 and payload.len() <= max (checked above), so the length fits a byte.
+    let length = u8::try_from(payload.len()).map_err(|_| Error::Bounds)?;
+    let [id0, id1, id2, _] = id.to_le_bytes();
     out[..10].copy_from_slice(&[
-        0xfd,
-        payload.len() as u8,
-        0,
-        0,
-        sequence,
-        system,
-        component,
-        id as u8,
-        (id >> 8) as u8,
-        (id >> 16) as u8,
+        0xfd, length, 0, 0, sequence, system, component, id0, id1, id2,
     ]);
     out[10..10 + payload.len()].copy_from_slice(payload);
     let checksum = crc(&out[1..10 + payload.len()], extra);

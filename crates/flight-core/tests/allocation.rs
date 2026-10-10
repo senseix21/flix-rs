@@ -6,6 +6,8 @@ thread_local! {
     static COUNT: Cell<usize> = const { Cell::new(0) };
 }
 struct Allocator;
+// SAFETY: every request is forwarded unchanged to `System`; counting only
+// touches thread-local cells and never allocates.
 unsafe impl GlobalAlloc for Allocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let _ = RECORD.try_with(|record| {
@@ -13,9 +15,11 @@ unsafe impl GlobalAlloc for Allocator {
                 let _ = COUNT.try_with(|count| count.set(count.get() + 1));
             }
         });
+        // SAFETY: forwards this method's own contract to `System`.
         unsafe { System.alloc(layout) }
     }
     unsafe fn dealloc(&self, p: *mut u8, l: Layout) {
+        // SAFETY: forwards this method's own contract to `System`.
         unsafe { System.dealloc(p, l) }
     }
 }

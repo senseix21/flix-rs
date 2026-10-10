@@ -12,7 +12,9 @@ class SerialTransport:
         self._closed_error = Closed
         self.trusted_wired = not proxy
         self.requires_signing = proxy
-        self._lock = threading.Lock()
+        # Reads and writes use independent locks: the reader thread polls receive() in a
+        # tight loop, and one shared non-fair lock let it starve send() past its deadline.
+        self._read_lock = threading.Lock(); self._write_lock = threading.Lock()
         self.fd = os.open(path, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
         try:
             settings = termios.tcgetattr(self.fd)
@@ -30,7 +32,7 @@ class SerialTransport:
     def send(self, data):
         if not 0<len(data)<=280: raise ValueError('one bounded MAVLink frame per write')
         deadline = time.monotonic()+.5
-        with self._lock:
+        with self._write_lock:
             self._check(); remaining = memoryview(data)
             while remaining:
                 wait = deadline-time.monotonic()
@@ -41,7 +43,7 @@ class SerialTransport:
                 if count <= 0: raise self._closed_error('serial disconnected')
                 remaining = remaining[count:]
     def receive(self):
-        with self._lock:
+        with self._read_lock:
             self._check()
             if not select.select([self.fd], [], [], .01)[0]: return b''
             try: data = os.read(self.fd, 1120)
@@ -49,5 +51,5 @@ class SerialTransport:
             if not data: raise self._closed_error('serial disconnected')
             return data
     def close(self):
-        with self._lock:
+        with self._read_lock, self._write_lock:
             if self.fd >= 0: os.close(self.fd); self.fd = -1

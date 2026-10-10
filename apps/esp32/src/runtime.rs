@@ -25,6 +25,8 @@ pub struct Counters {
     pub overruns: u64,
     pub maximum_tick_us: u64,
     pub maximum_jitter_us: u64,
+    /// Samples with a register at its endpoint, per axis (gyro x/y/z, accel x/y/z).
+    pub imu_saturated_samples: [u64; 6],
 }
 pub struct Owner {
     pub flight: Flight,
@@ -46,6 +48,9 @@ pub struct Owner {
     last_rc: Tick,
     rc_channels: [u16; 8],
     rc_at: Tick,
+    /// Axes saturated since the last operator notice, and when that notice was sent.
+    saturation_pending: u8,
+    last_saturation_notice: Option<Tick>,
     last_tick: Option<Tick>,
     pub save_requested: bool,
     pub calibration_requested: bool,
@@ -71,6 +76,7 @@ impl Owner {
             overruns: 0,
             maximum_tick_us: 0,
             maximum_jitter_us: 0,
+            imu_saturated_samples: [0; 6],
         },
         timing: crate::metrics::Timing::EMPTY,
         log: Log::EMPTY,
@@ -87,6 +93,8 @@ impl Owner {
         last_rc: Tick(0),
         rc_channels: [u16::MAX; 8],
         rc_at: Tick(0),
+        saturation_pending: 0,
+        last_saturation_notice: None,
         last_tick: None,
         save_requested: false,
         calibration_requested: false,
@@ -121,6 +129,8 @@ impl Owner {
             last_rc: Tick(0),
             rc_channels: [u16::MAX; 8],
             rc_at: Tick(0),
+            saturation_pending: 0,
+            last_saturation_notice: None,
             last_tick: None,
             save_requested: false,
             calibration_requested: false,
@@ -179,6 +189,8 @@ impl Owner {
         self.last_motors = Tick(0);
         self.last_imu = Tick(0);
         self.last_rc = Tick(0);
+        self.saturation_pending = 0;
+        self.last_saturation_notice = None;
         self.log = Log::default();
         self.driver_restart_requested = false;
     }
@@ -242,6 +254,9 @@ impl Owner {
         } else {
             self.counters.reply_overflow = self.counters.reply_overflow.saturating_add(1);
         }
+    }
+    fn free_replies(&self) -> usize {
+        self.replies.iter().filter(|slot| slot.is_none()).count()
     }
     pub fn reply(&mut self) -> Option<Reply> {
         let reply = self.replies[0].take();
@@ -533,11 +548,14 @@ impl Owner {
                 self.log_cursor = None;
             }
         }
+        // A due stream that finds too few free reply slots stays due and is sent on a
+        // later tick instead of being dropped; reply_overflow then counts only real loss.
         if due(
             now,
             self.last_heartbeat,
             self.settings.get("MAV_RATE_SLOW").unwrap_or(0.0),
-        ) {
+        ) && self.free_replies() >= 2
+        {
             self.emit(
                 0,
                 &flight_protocol::telemetry::heartbeat(snapshot, self.pilot_acro),
@@ -566,7 +584,8 @@ impl Owner {
             now,
             self.last_attitude,
             self.settings.get("MAV_RATE_ATT").unwrap_or(0.0),
-        ) {
+        ) && self.free_replies() >= 1
+        {
             self.emit(
                 31,
                 &flight_protocol::telemetry::attitude_quaternion(snapshot, now),
@@ -577,7 +596,8 @@ impl Owner {
             now,
             self.last_motors,
             self.settings.get("MAV_RATE_MOT").unwrap_or(0.0),
-        ) {
+        ) && self.free_replies() >= 1
+        {
             self.emit(140, &flight_protocol::telemetry::motors(motors, now));
             self.last_motors = now;
         }
@@ -585,9 +605,13 @@ impl Owner {
             now,
             self.last_imu,
             self.settings.get("MAV_RATE_IMU").unwrap_or(0.0),
-        ) {
+        ) && self.free_replies() >= if sensor.is_some() { 2 } else { 0 }
+        {
             if let Some(sensor) = sensor {
+                // SCALED_IMU keeps upstream pyflix/QGC compatible; HIGHRES_IMU carries
+                // the unclipped float sample.
                 self.emit(26, &flight_protocol::telemetry::scaled_imu(sensor));
+                self.emit(105, &flight_protocol::telemetry::highres_imu(sensor));
             }
             self.last_imu = now;
         }
@@ -595,14 +619,41 @@ impl Owner {
             now,
             self.last_rc,
             self.settings.get("MAV_RATE_RC").unwrap_or(0.0),
-        ) {
+        ) && self.free_replies() >= 1
+        {
             self.emit(
                 35,
                 &flight_protocol::telemetry::rc(self.rc_channels, self.rc_at),
             );
             self.last_rc = now;
         }
+        // At most one STATUSTEXT warning per second naming every axis that saturated
+        // since the last one; a full reply queue defers it rather than losing it.
+        if self.saturation_pending != 0
+            && self.free_replies() >= 1
+            && self
+                .last_saturation_notice
+                .is_none_or(|last| now.age(last).is_none_or(|age| age >= 1_000_000))
+        {
+            self.emit(
+                253,
+                &flight_protocol::telemetry::imu_saturated(self.saturation_pending),
+            );
+            self.saturation_pending = 0;
+            self.last_saturation_notice = Some(now);
+        }
         motors
+    }
+    /// Record the driver's saturation mask for the sample passed to the next `tick`.
+    /// Reporting only: the controller still uses the clipped value.
+    pub fn record_imu_saturation(&mut self, mask: u8) {
+        let mask = mask & 0b11_1111;
+        for (axis, count) in self.counters.imu_saturated_samples.iter_mut().enumerate() {
+            if mask & (1 << axis) != 0 {
+                *count = count.saturating_add(1);
+            }
+        }
+        self.saturation_pending |= mask;
     }
     pub fn record_execution(&mut self, microseconds: u64) {
         self.timing.owner.record(microseconds);

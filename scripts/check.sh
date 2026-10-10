@@ -8,6 +8,9 @@ cargo fmt --manifest-path apps/esp32/firmware/Cargo.toml -- --check
 cargo fmt --manifest-path apps/proxy/firmware/Cargo.toml -- --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo clippy -p flight-proxy --all-targets --features host --locked -- -D warnings
+# Firmware bridges hold the audited unsafe FFI; lint them on a portable no_std target.
+cargo clippy --manifest-path apps/esp32/firmware/Cargo.toml --target thumbv7em-none-eabihf --locked --release -- -D warnings
+cargo clippy --manifest-path apps/proxy/firmware/Cargo.toml --target thumbv7em-none-eabihf --locked --release -- -D warnings
 cargo test --workspace --locked
 cargo build --workspace --locked --release
 cargo build -p flight-proxy --features host --locked --release

@@ -1,5 +1,24 @@
 #![no_std]
 #![forbid(unsafe_code)]
+// Panics in the portable core are visible, reasoned exceptions only.
+#![deny(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::dbg_macro,
+    clippy::print_stdout,
+    clippy::print_stderr
+)]
+// Lossy numeric conversions and exact float equality must state why they are sound.
+#![deny(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    clippy::cast_possible_wrap,
+    clippy::float_cmp
+)]
 pub mod ingress;
 pub mod peers;
 pub mod proxy;
@@ -87,11 +106,7 @@ pub fn console(bytes: &[u8]) -> Result<Console, Error> {
     }
 }
 fn f32_at(p: &[u8], offset: usize) -> f32 {
-    f32::from_le_bytes(
-        p[offset..offset + 4]
-            .try_into()
-            .expect("validated dialect length"),
-    )
+    f32::from_le_bytes([p[offset], p[offset + 1], p[offset + 2], p[offset + 3]])
 }
 fn i16_at(p: &[u8], offset: usize) -> i16 {
     i16::from_le_bytes([p[offset], p[offset + 1]])
@@ -102,6 +117,15 @@ fn destination(p: &[u8], system: usize, component: Option<usize>, local: u8) -> 
     }
     Ok(())
 }
+#[expect(
+    clippy::float_cmp,
+    reason = "MAVLink encodes integer command arguments as exact floats; tolerance would accept 0.5 as Stop"
+)]
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "each cast follows a range and integrality check: motor 1..=4, duration <= 0.1 s, mode 1..=3"
+)]
 pub fn event(packet: &Packet, local: u8) -> Result<Event, Error> {
     let p = &packet.payload;
     match packet.id {

@@ -3,6 +3,9 @@ name = "flight-proxy"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+publish = false
+[lints]
+workspace = true
 [features]
 default = []
 host = []

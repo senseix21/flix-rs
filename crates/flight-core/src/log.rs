@@ -58,6 +58,14 @@ impl<const N: usize> Log<N> {
         let start = if self.len == N { self.next } else { 0 };
         Some(self.entries[(start + index) % N])
     }
+    #[expect(
+        clippy::expect_used,
+        reason = "offset < total = 12 + len * 64, so every record index is < len"
+    )]
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "len <= N, a small compile-time ring capacity"
+    )]
     pub fn encode(&self, offset: usize, out: &mut [u8]) -> usize {
         // Format: FLXR, version u16=1, record size u16=64, count u32, then LE records.
         let total = 12 + self.len * 64;

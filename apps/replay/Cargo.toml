@@ -3,6 +3,9 @@ name = "flight-replay"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+publish = false
+[lints]
+workspace = true
 [dependencies]
 flight-core.workspace = true
 flight-protocol.workspace = true

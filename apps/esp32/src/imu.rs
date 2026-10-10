@@ -24,7 +24,13 @@ pub struct Mpu6050<B> {
     sum: Vec3,
     start: Option<Tick>,
     calibrated: bool,
+    saturation: u8,
 }
+/// Per-axis register saturation of the last sample, in the sensor frame: gyro x/y/z in
+/// bits 0..=2 and accelerometer x/y/z in bits 3..=5 (the Gazebo trace layout). A
+/// saturated axis read its register endpoint, so the true value may be larger.
+pub const GYRO_SATURATED: u8 = 0b000_111;
+pub const ACCEL_SATURATED: u8 = 0b111_000;
 impl<B: Bus> Mpu6050<B> {
     pub fn new(
         bus: B,
@@ -48,6 +54,7 @@ impl<B: Bus> Mpu6050<B> {
             sum: Vec3::ZERO,
             start: None,
             calibrated: false,
+            saturation: 0,
         })
     }
     pub fn configure(&mut self) -> Result<(), Error<B::Error>> {
@@ -82,7 +89,14 @@ impl<B: Bus> Mpu6050<B> {
         }
         let mut raw = [0; 14];
         self.bus.read(0x3b, &mut raw).map_err(Error::Bus)?;
-        let signed = |i: usize| f32::from(i16::from_be_bytes([raw[i], raw[i + 1]]));
+        let register = |i: usize| i16::from_be_bytes([raw[i], raw[i + 1]]);
+        let at_limit = |i: usize| matches!(register(i), i16::MIN | i16::MAX);
+        // Registers 0x3b..: accel x/y/z, temperature, gyro x/y/z (two bytes each).
+        self.saturation = [8, 10, 12, 0, 2, 4]
+            .into_iter()
+            .enumerate()
+            .fold(0, |mask, (bit, i)| mask | (u8::from(at_limit(i)) << bit));
+        let signed = |i: usize| f32::from(register(i));
         let acceleration = Vec3(signed(0), signed(2), signed(4)) * (GRAVITY / 8192.0);
         let gyro =
             Vec3(signed(8), signed(10), signed(12)) * (core::f32::consts::PI / (180.0 * 16.4));
@@ -116,6 +130,10 @@ impl<B: Bus> Mpu6050<B> {
             acceleration: inverse.body(a),
             calibrated: self.calibrated,
         })
+    }
+    /// Saturation mask of the most recent successful sample (see [`GYRO_SATURATED`]).
+    pub fn saturation(&self) -> u8 {
+        self.saturation
     }
     pub fn reset_calibration(&mut self) {
         self.calibrated = false;

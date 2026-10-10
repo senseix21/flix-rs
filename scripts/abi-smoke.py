@@ -16,4 +16,13 @@ assert output.state==1 and list(output.motors)==[0]*4
 assert library.flix_destroy(handle)==0
 assert library.flix_tick(handle,ctypes.byref(sample),ctypes.byref(output))==-2
 assert list(output.motors)==[0]*4
-print('C ABI: independent layout, stopped output, stale handle passed')
+class Input2(ctypes.Structure):_fields_=Input._fields_+[('saturation',ctypes.c_uint32),('reserved',ctypes.c_uint32)]
+library.flix_tick2.argtypes=[ctypes.c_uint64,ctypes.POINTER(Input2),ctypes.POINTER(Output)]
+assert ctypes.sizeof(Input2)==56 and Input2.saturation.offset==48
+handle=library.flix_create();assert handle
+sample2=Input2(2,1,0,0,(ctypes.c_float*3)(0,0,0),(ctypes.c_float*3)(0,0,9.80665),0b111111,0)
+assert library.flix_tick2(handle,ctypes.byref(sample2),ctypes.byref(output))==0 and output.state==1
+sample2.saturation=1<<6
+assert library.flix_tick2(handle,ctypes.byref(sample2),ctypes.byref(output))==-4 and list(output.motors)==[0]*4
+assert library.flix_destroy(handle)==0
+print('C ABI: independent v1/v2 layouts, stopped output, stale handle, v2 mask validation passed')

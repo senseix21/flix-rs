@@ -3,6 +3,9 @@ name = "flight-esp32"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
+publish = false
+[lints]
+workspace = true
 [lib]
 crate-type = ["rlib"]
 [features]

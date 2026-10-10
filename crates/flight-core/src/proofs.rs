@@ -1,0 +1,171 @@
+//! Kani model-checking harnesses: `cargo kani -p flight-core`. Each proof covers every
+//! value of its symbolic inputs, unlike the sampled property tests.
+use crate::control::{Intent, Pilot, mix};
+use crate::time::Clock32;
+use crate::{Flight, Limits, MotorFrame, Reason, Source, State, Tick, Vec3};
+
+fn any_state() -> State {
+    match kani::any::<u8>() % 6 {
+        0 => State::Boot,
+        1 => State::Standby,
+        2 => State::Maintenance,
+        3 => State::Armed,
+        4 => State::Failsafe,
+        _ => State::Fault,
+    }
+}
+
+fn any_source() -> Source {
+    match kani::any::<u8>() % 3 {
+        0 => Source::Pilot,
+        1 => Source::Automatic,
+        _ => Source::Rc,
+    }
+}
+
+/// A Flight in an arbitrary lifecycle state with arbitrary authority bookkeeping.
+/// Float-valued estimator and controller state are left at their defaults; the
+/// properties below do not read them.
+fn any_flight() -> Flight {
+    let mut f = Flight::BOOT;
+    f.issuer = kani::any();
+    f.state = any_state();
+    f.generation = kani::any();
+    f.selected = if kani::any() {
+        Some(any_source())
+    } else {
+        None
+    };
+    f.previous = if kani::any() {
+        Some(Tick(kani::any()))
+    } else {
+        None
+    };
+    f.sample = if kani::any() {
+        Some(Tick(kani::any()))
+    } else {
+        None
+    };
+    f.healthy = kani::any();
+    f.calibrated = kani::any();
+    if kani::any() {
+        f.leases[kani::any::<usize>() % 3] = Some(crate::safety::Lease {
+            intent: Intent::Stabilized(Pilot {
+                roll: 0.0,
+                pitch: 0.0,
+                yaw: 0.0,
+                thrust: kani::any(),
+            }),
+            at: Tick(kani::any()),
+        });
+    }
+    if kani::any() {
+        f.diagnostic = Some((
+            [kani::any(), kani::any(), kani::any(), kani::any()],
+            Tick(kani::any()),
+        ));
+    }
+    f
+}
+
+fn any_frame() -> MotorFrame {
+    MotorFrame {
+        issuer: kani::any(),
+        values: [kani::any(), kani::any(), kani::any(), kani::any()],
+        generation: kani::any(),
+        issued: Tick(kani::any()),
+        expires: Tick(kani::any()),
+    }
+}
+
+/// SAF-08: the mixer either refuses or returns four finite outputs in [0, 1].
+#[kani::proof]
+fn mix_outputs_are_bounded() {
+    let out = mix(kani::any(), Vec3(kani::any(), kani::any(), kani::any()));
+    if let Some(motors) = out {
+        for m in motors {
+            assert!(m.is_finite() && (0.0..=1.0).contains(&m));
+        }
+    }
+}
+
+/// Integer clock: a forward step within half a wrap advances monotonically by exactly
+/// that step, a backward or ambiguous step is refused, and nothing panics.
+#[kani::proof]
+fn clock32_extension_is_monotonic() {
+    let mut clock = Clock32::default();
+    let first: u32 = kani::any();
+    let Some(Tick(start)) = clock.extend(first) else {
+        panic!("first sample always accepted");
+    };
+    assert_eq!(start, u64::from(first));
+    let second: u32 = kani::any();
+    let delta = second.wrapping_sub(first);
+    match clock.extend(second) {
+        Some(Tick(next)) => {
+            assert!(delta <= i32::MAX as u32);
+            assert_eq!(next, start + u64::from(delta));
+        }
+        None => assert!(delta > i32::MAX as u32),
+    }
+}
+
+/// SAF-01/02/08: for any frame, state and time, the final gate returns finite values in
+/// [0, 1], and exactly zero unless the owner is Armed or in Maintenance.
+#[kani::proof]
+#[kani::unwind(5)]
+fn commit_is_bounded_and_stopped_states_are_zero() {
+    let f = any_flight();
+    let out = f.commit(any_frame(), Tick(kani::any()));
+    for m in out {
+        assert!(m.is_finite() && (0.0..=1.0).contains(&m));
+    }
+    if !matches!(f.state, State::Armed | State::Maintenance) {
+        assert!(out == [0.0; 4]);
+    }
+}
+
+/// SAF-01: a frame from another issuer or an older generation never reaches the motors.
+#[kani::proof]
+#[kani::unwind(5)]
+fn commit_rejects_foreign_or_stale_authority() {
+    let f = any_flight();
+    let frame = any_frame();
+    let out = f.commit(frame, Tick(kani::any()));
+    if frame.issuer != f.issuer || frame.generation != f.generation || f.issuer == 0 {
+        assert!(out == [0.0; 4]);
+    }
+}
+
+/// SAF-01/05: disarm always leaves Armed and Maintenance, and no operation other than
+/// `arm` can enter Armed. Unwind 7 covers `Tuning::valid`'s six-vector check.
+#[kani::proof]
+#[kani::unwind(7)]
+fn only_arm_enters_armed_and_disarm_always_leaves() {
+    let mut f = any_flight();
+    let before = f.state;
+    match kani::any::<u8>() % 7 {
+        0 => {
+            f.disarm();
+            assert!(!matches!(f.state, State::Armed | State::Maintenance));
+            return;
+        }
+        1 => f.fault(Reason::Tilt),
+        2 => {
+            f.clear_fault();
+        }
+        3 => {
+            f.select(any_source());
+        }
+        4 => {
+            f.maintenance();
+        }
+        5 => f.reset(),
+        _ => {
+            f.reconfigure(crate::control::Tuning::DEFAULT, Limits::DEFAULT);
+        }
+    }
+    if before != State::Armed {
+        assert!(f.state != State::Armed);
+    }
+}
