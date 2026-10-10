@@ -41,9 +41,9 @@ sim-scenarios:
 PARITY_SCENARIOS := pitch-pulse level-thrust
 sim-parity:
 	docker build -t flix-rust-gazebo:local -f adapters/gazebo/Dockerfile .
-	mkdir -p .local
-	git -C ../flix archive --format=tar 1f5b268271536e45a9377d1c5317d3eb6f3c3bba > .local/legacy-baseline.tar
-	python3 scripts/fetch-legacy-mavlink.py
+	# Prepare inside the container: earlier container steps leave .local owned by root.
+	docker run --rm -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh -c \
+	  'git config --global --add safe.directory /legacy && mkdir -p .local && git -C /legacy archive --format=tar 1f5b268271536e45a9377d1c5317d3eb6f3c3bba > .local/legacy-baseline.tar && python3 scripts/fetch-legacy-mavlink.py > /dev/null'
 	set -e; for s in $(PARITY_SCENARIOS); do \
 	  docker run --rm --init -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-legacy-scenario.sh $$s /work/.local/qualification/parity/legacy-$$s || true; \
 	  docker run --rm --init -e FLIX_IMU_PROFILE=mpu6050-4g-lpf01 -v "$(CURDIR):/work" -v "$(CURDIR)/../flix:/legacy:ro" -w /work flix-rust-gazebo:local sh scripts/gazebo-scenario.sh $$s /work/.local/qualification/parity/rust-$$s; \
