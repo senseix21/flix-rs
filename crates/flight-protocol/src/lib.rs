@@ -12,6 +12,13 @@
     clippy::print_stdout,
     clippy::print_stderr
 )]
+// Lossy numeric conversions and exact float equality must state why they are sound.
+#![deny(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    clippy::cast_possible_wrap,
+    clippy::float_cmp
+)]
 pub mod ingress;
 pub mod peers;
 pub mod proxy;
@@ -110,6 +117,15 @@ fn destination(p: &[u8], system: usize, component: Option<usize>, local: u8) -> 
     }
     Ok(())
 }
+#[expect(
+    clippy::float_cmp,
+    reason = "MAVLink encodes integer command arguments as exact floats; tolerance would accept 0.5 as Stop"
+)]
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "each cast follows a range and integrality check: motor 1..=4, duration <= 0.1 s, mode 1..=3"
+)]
 pub fn event(packet: &Packet, local: u8) -> Result<Event, Error> {
     let p = &packet.payload;
     match packet.id {

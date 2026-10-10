@@ -12,6 +12,13 @@
     clippy::print_stdout,
     clippy::print_stderr
 )]
+// Lossy numeric conversions and exact float equality must state why they are sound.
+#![deny(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    clippy::cast_possible_wrap,
+    clippy::float_cmp
+)]
 use flight_core::control::Tuning;
 use flight_core::{Limits, Vec3};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -105,6 +112,11 @@ impl Settings {
     pub fn at(&self, index: usize) -> Option<f32> {
         self.values.get(index).copied()
     }
+    #[expect(
+        clippy::float_cmp,
+        clippy::cast_possible_truncation,
+        reason = "exact integrality test; the schema test keeps integer ranges within +/-2^24"
+    )]
     fn scalar(index: usize, value: f32) -> bool {
         let p = &PARAMETERS[index];
         value.is_finite()
@@ -125,6 +137,11 @@ impl Settings {
         *self = candidate;
         Ok(())
     }
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "scalar checks run first: MOT_PWM_RES is an integer in 0..=14"
+    )]
     pub fn validate(&self) -> Result<(), Error> {
         if self
             .values
@@ -228,6 +245,11 @@ impl Settings {
         clippy::expect_used,
         reason = "names come from the generated schema; a missing key is a build defect"
     )]
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "validated SF_RC_LOSS_TIME is 0.001..=1.0 s, so microseconds fit u64"
+    )]
     pub fn limits(&self) -> Limits {
         Limits {
             command_us: (self.get("SF_RC_LOSS_TIME").expect("schema") * 1e6) as u64,
@@ -265,7 +287,11 @@ pub fn encode(settings: &Settings, sequence: u64) -> Result<[u8; RECORD_SIZE], E
     let mut b = [0; RECORD_SIZE];
     b[..4].copy_from_slice(b"FLXC");
     b[4..6].copy_from_slice(&1u16.to_le_bytes());
-    b[6..8].copy_from_slice(&(COUNT as u16).to_le_bytes());
+    b[6..8].copy_from_slice(
+        &u16::try_from(COUNT)
+            .map_err(|_| Error::Storage)?
+            .to_le_bytes(),
+    );
     b[8..16].copy_from_slice(&sequence.to_le_bytes());
     for (i, v) in settings.values.iter().enumerate() {
         b[16 + i * 4..20 + i * 4].copy_from_slice(&v.to_le_bytes());

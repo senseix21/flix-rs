@@ -18,9 +18,26 @@ pub fn heartbeat(snapshot: Snapshot, pilot_acro: bool) -> [u8; 9] {
     p[8] = 3;
     p
 }
+/// MAVLink `time_boot_ms` is a u32 that wraps after about 49.7 days of uptime.
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "MAVLink time_boot_ms wraps by definition"
+)]
+fn boot_ms(at: Tick) -> u32 {
+    (at.0 / 1000) as u32
+}
+/// SCALED_IMU fields are i16 (mg, mrad/s). Values outside the range saturate and NaN
+/// reports 0: gyro above about 32.7 rad/s (1,875 deg/s) is clipped in telemetry only.
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "float-to-int `as` saturates; clipping is the intended telemetry behaviour"
+)]
+fn saturating_i16(value: f32) -> i16 {
+    value as i16
+}
 pub fn attitude(snapshot: Snapshot, at: Tick) -> [u8; 28] {
     let mut p = [0; 28];
-    p[..4].copy_from_slice(&((at.0 / 1000) as u32).to_le_bytes());
+    p[..4].copy_from_slice(&boot_ms(at).to_le_bytes());
     let v = snapshot.estimate.attitude.angles();
     let r = snapshot.estimate.rates;
     for (i, f) in [v.0, -v.1, -v.2, r.0, -r.1, -r.2].iter().enumerate() {
@@ -30,7 +47,7 @@ pub fn attitude(snapshot: Snapshot, at: Tick) -> [u8; 28] {
 }
 pub fn attitude_quaternion(snapshot: Snapshot, at: Tick) -> [u8; 32] {
     let mut p = [0; 32];
-    p[..4].copy_from_slice(&((at.0 / 1000) as u32).to_le_bytes());
+    p[..4].copy_from_slice(&boot_ms(at).to_le_bytes());
     let [w, x, y, z] = snapshot.estimate.attitude.array();
     let r = snapshot.estimate.rates;
     for (i, f) in [w, x, -y, -z, r.0, -r.1, -r.2].iter().enumerate() {
@@ -40,7 +57,7 @@ pub fn attitude_quaternion(snapshot: Snapshot, at: Tick) -> [u8; 32] {
 }
 pub fn scaled_imu(sensor: flight_core::Sensor) -> [u8; 22] {
     let mut p = [0; 22];
-    p[..4].copy_from_slice(&((sensor.at.0 / 1000) as u32).to_le_bytes());
+    p[..4].copy_from_slice(&boot_ms(sensor.at).to_le_bytes());
     let a = sensor.acceleration;
     let g = sensor.gyro;
     let scale = 1000.0 / flight_core::control::GRAVITY;
@@ -55,13 +72,13 @@ pub fn scaled_imu(sensor: flight_core::Sensor) -> [u8; 22] {
     .iter()
     .enumerate()
     {
-        p[4 + i * 2..6 + i * 2].copy_from_slice(&(*f as i16).to_le_bytes());
+        p[4 + i * 2..6 + i * 2].copy_from_slice(&saturating_i16(*f).to_le_bytes());
     }
     p
 }
 pub fn rc(channels: [u16; 8], at: Tick) -> [u8; 22] {
     let mut p = [0; 22];
-    p[..4].copy_from_slice(&((at.0 / 1000) as u32).to_le_bytes());
+    p[..4].copy_from_slice(&boot_ms(at).to_le_bytes());
     for (i, v) in channels.iter().enumerate() {
         p[4 + i * 2..6 + i * 2].copy_from_slice(&v.to_le_bytes());
     }
@@ -78,6 +95,11 @@ pub fn unknown_battery() -> [u8; 36] {
 }
 /// Only pack voltage is measured; current, temperature, energy and capacity stay unknown.
 /// No invented per-cell measurements: MAVLink permits total voltage in first slot.
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "0 < volts * 1000 < 65535 is checked before the conversion"
+)]
 pub fn battery_voltage(volts: f32, cells: u8) -> [u8; 36] {
     let mut p = unknown_battery();
     if !volts.is_finite() || volts <= 0.0 || !(1..=10).contains(&cells) || volts * 1000.0 >= 65535.0

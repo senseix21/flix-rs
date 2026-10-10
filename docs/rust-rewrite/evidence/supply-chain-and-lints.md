@@ -50,6 +50,29 @@ the summary line:
 These should be fixed per module with focused tests, not by bulk allow-listing. Casts and float
 comparisons in the safety and protocol paths come first.
 
+## Cast and float-comparison review (follow-up)
+
+The core crates now also deny `cast_possible_truncation`, `cast_sign_loss`,
+`cast_possible_wrap` and `float_cmp`. All 38 findings were reviewed; none was a live defect
+under current invariants.
+
+- **Removed by construction:** `wire::crc` and `wire::encode` take bytes via `to_le_bytes` and
+  `u8::try_from`; the record header count uses `u16::try_from(COUNT)`.
+- **Telemetry helpers:** `boot_ms` (MAVLink `time_boot_ms` wraps after about 49.7 days by
+  definition) and `saturating_i16`.
+- **Finding:** `SCALED_IMU` reports gyro in mrad/s as i16. The MPU6050's ±2000 deg/s range
+  (34.9 rad/s) exceeds i16, so gyro above about 1,875 deg/s saturates in telemetry. Control
+  is unaffected.
+- **Reasoned `#[expect]`:** `flight_protocol::event` (MAVLink integer arguments are exact
+  floats; a tolerance would accept 0.5 as Stop; every cast follows a range check),
+  `Settings::scalar`, `validate`, `limits` and `telemetry::battery_voltage`.
+- **New `crates/flight-config/tests/schema_invariants.rs`:** checks the schema facts those
+  reasons depend on. Integer parameters stay within ±2^24, `MOT_PWM_RES` <= 31 (shift),
+  `SF_RC_LOSS_TIME` fits microseconds, and defaults supply every tuning and limit key.
+
+Verification: `scripts/check.sh` exit 0 (54 Rust tests, 34 Python, 400 parity cases); both
+Xtensa archives build; `scripts/fuzz.sh 20` exit 0 for all six targets.
+
 ## Verification
 
 `scripts/check.sh` exit 0 (50 Rust tests, 34 Python tests, 400 parity cases, max error 4.77e-7);

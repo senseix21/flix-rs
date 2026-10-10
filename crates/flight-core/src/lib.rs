@@ -12,6 +12,13 @@
     clippy::print_stdout,
     clippy::print_stderr
 )]
+// Lossy numeric conversions and exact float equality must state why they are sound.
+#![deny(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    clippy::cast_possible_wrap,
+    clippy::float_cmp
+)]
 
 pub mod battery;
 pub mod control;
