@@ -50,6 +50,9 @@ def main():
     trace.bind(('127.0.0.1',14560));trace.settimeout(.2)
     client=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);client.setblocking(False)
     replies=Decoder();saturation_notices=[]
+    # The plugin sends replies only to an endpoint learned from an accepted frame and
+    # forgets it on every reset; only limits seen while it is known must be reported.
+    endpoint_known=False;reportable_limited_ticks=0
     def drain_replies():
         # Owner replies go to the learned client endpoint; keep only STATUSTEXT warnings.
         while True:
@@ -91,6 +94,7 @@ def main():
                 now=record['sim_us']
                 if record['kind']=='command':
                     commands+=1
+                    if record['accepted']:endpoint_known=True
                     frame=bytes.fromhex(record['frame_hex'])
                     if record['accepted'] and int.from_bytes(frame[7:10],'little') in (69,82): last_setpoint_at=now
                     if record['accepted'] and len(frame)>=40 and int.from_bytes(frame[7:10],'little')==76 and int.from_bytes(frame[38:40],'little')==400 and struct.unpack_from('<f',frame,10)[0]==0:
@@ -98,11 +102,14 @@ def main():
                     continue
                 ticks+=1
                 last_tick=record
-                if record.get('sensor_limit_mask',0):limited_ticks+=1
                 raw=record.get('raw_acceleration_body_m_s2',[])
                 if raw and all(v is not None for v in raw):max_raw_acceleration=max(max_raw_acceleration,math.sqrt(sum(v*v for v in raw)))
                 if 'landing_contact' in scenario and record['state']==5:contact_fault=record
                 reset_observed=(previous_now is not None and now<previous_now) if args.reset_kind!='model' else (reset_generation is not None and record['generation']!=reset_generation)
+                if reset_observed:endpoint_known=False
+                if record.get('sensor_limit_mask',0):
+                    limited_ticks+=1
+                    if endpoint_known:reportable_limited_ticks+=1
                 if stage=='resetting' and reset_observed:
                     reset_seen=True;stage='reset-settling';disarm_at=now
                     if record['state'] not in contract['native_reset']['allowed_stopped_states'] or record['source'] is not None or record['motors']!=[0.]*4:
@@ -241,7 +248,7 @@ def main():
         expected=scenario['timing_gap_at_us']+scenario['timing_gap_us']
         if first_fault is None or first_fault['reason']!=6 or abs(first_fault['sim_us']-expected)>1000 or first_fault['motors']!=[0.]*4:failures.append('owner gap did not stop at declared boundary')
     if scenario.get('landing_contact') and (contact_fault is not None or limited_ticks==0):failures.append('landing contact fault or range observation missing')
-    if args.engine=='rust' and limited_ticks and not any(n['text'].startswith('IMU saturated:') for n in saturation_notices):
+    if args.engine=='rust' and reportable_limited_ticks and not any(n['text'].startswith('IMU saturated:') for n in saturation_notices):
         failures.append('range-limited samples not reported to operator')
     if max_tilt>scenario['max_armed_tilt_degrees']:failures.append('tilt envelope exceeded')
     if max_height<scenario['min_lift_m']:failures.append('minimum lift not observed')
@@ -249,7 +256,7 @@ def main():
     if not args.native_reset and (stop_ack_at is None or stopped_at is None or stopped_at-stop_ack_at>scenario['disarm_stop_us']):
         failures.append('stop boundary unverified or exceeded')
     if 'loss_after_us' in scenario and (loss_zero_at is None or loss_zero_at-armed_at>scenario['loss_after_us']+scenario['lease_us']+1000): failures.append('lease stop boundary unverified or exceeded')
-    result=dict(version=1,limited_ticks=limited_ticks,saturation_notices=saturation_notices,max_raw_acceleration_m_s2=max_raw_acceleration,contact_fault=contact_fault,gap_zero_ticks=gap_zero_ticks,mode_rearmed=mode_rearmed,diagnostic_seen=diagnostic_seen,saturated=saturated,recovered_output=recovered_output,queued_frames=queued_frames,queued_controls_before_reset=queued_controls_before_reset,reset_kind=args.reset_kind,explicit_reset_recovery=recovered,reset_fault=reset_fault,loss_zero_at_us=loss_zero_at,reconnect_without_arm_checked=reconnect_started,native_reset=args.native_reset,reset_seen=reset_seen,
+    result=dict(version=1,limited_ticks=limited_ticks,reportable_limited_ticks=reportable_limited_ticks,saturation_notices=saturation_notices,max_raw_acceleration_m_s2=max_raw_acceleration,contact_fault=contact_fault,gap_zero_ticks=gap_zero_ticks,mode_rearmed=mode_rearmed,diagnostic_seen=diagnostic_seen,saturated=saturated,recovered_output=recovered_output,queued_frames=queued_frames,queued_controls_before_reset=queued_controls_before_reset,reset_kind=args.reset_kind,explicit_reset_recovery=recovered,reset_fault=reset_fault,loss_zero_at_us=loss_zero_at,reconnect_without_arm_checked=reconnect_started,native_reset=args.native_reset,reset_seen=reset_seen,
                 native_recovery_status=('latched-fault-needs-explicit-clear' if last_tick and last_tick['state']==5 else 'stopped') if args.native_reset else None,reset_error=reset_error,engine=args.engine,scenario=scenario['name'],profile=contract['profile'],requirements=scenario['requirements'],
                 status='fail' if failures else 'pass',failures=sorted(set(failures)),ticks=ticks,
                 command_events=commands,dropped_ticks=dropped,invalid_packets=invalid,
