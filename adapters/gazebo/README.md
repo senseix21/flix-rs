@@ -11,6 +11,15 @@ scenarios in isolated containers with no published browser ports. The existing
 browser container is separate. Trace loss fails a measurement; do not treat
 unobserved intervals as a stop guarantee.
 
+## Host ABI versions
+
+`flix_tick` takes the 48-byte version 1 input. `flix_tick2` takes the 56-byte version 2
+input, which appends the plugin's MPU6050 range-limit mask (gyro x/y/z bits 0..=2,
+accel x/y/z bits 3..=5) and a reserved word. The owner turns the mask into the same
+per-axis counters and `IMU saturated:` STATUSTEXT warning as the firmware driver.
+Unknown mask bits, a nonzero reserved word or a version mismatch return -4 with
+stopped output. The plugin uses version 2; version 1 callers keep working.
+
 ## Reset
 
 `ModelPlugin::Reset` revokes the owner, its pending commands, frames and transfer

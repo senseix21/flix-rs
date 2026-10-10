@@ -67,7 +67,7 @@ class FlixRust final : public ModelPlugin {
     sendto(socket_fd, packet.data(), 24+length, MSG_DONTWAIT,
            reinterpret_cast<sockaddr *>(&trace_endpoint), sizeof(trace_endpoint));
   }
-  void trace_tick(const FlixInput &input, const FlixOutput &output) {
+  void trace_tick(const FlixInput2 &input, const FlixOutput &output) {
     if (!tracing) return;
     FlixObservation observation{};
     if (flix_observe(handle, &observation) != 0) return;
@@ -201,7 +201,7 @@ public:
       }
     }
     const auto gyro = imu->AngularVelocity(), acc = imu->LinearAcceleration();
-    FlixInput input{1,
+    FlixInput2 input{2,
                     1,
                     now,
                     now,
@@ -239,7 +239,8 @@ public:
       output.now_us = now;
       for (auto &motor : output.motors) motor = 0;
     } else {
-      if (flix_tick(handle, &input, &output) != 0) return;
+      input.saturation = sensor_limit_mask;
+      if (flix_tick2(handle, &input, &output) != 0) return;
       last_output = output;
     }
     if (output.state != reported_state || output.reason != reported_reason) {

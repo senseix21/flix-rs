@@ -17,7 +17,7 @@
 | RC | SBUS flags, channel/calibration bounds, explicit stopped takeover | First eight calibrated channels; receiver wiring/coexistence open |
 | ESP-NOW | Four provisioned encrypted peers, bounded callback queue, overload stop | Optional SDK adapter unqualified; ≤250-byte compatibility profile |
 | IMU telemetry | SCALED_IMU kept; HIGHRES_IMU (105) added at the same MAV_RATE_IMU | Upstream pyflix still reads SCALED_IMU; QGC inspector display unverified |
-| IMU saturation | Per-axis register-endpoint counters; STATUSTEXT warning at most 1 Hz | Detection only; no control response. Gazebo ABI does not carry the plugin's mask to the owner |
+| IMU saturation | Per-axis register-endpoint counters; STATUSTEXT warning at most 1 Hz | Detection only; no control response. Gazebo reaches the owner through ABI v2 (`flix_tick2`) |
 | Telemetry rates | Due streams deferred, not dropped, when reply slots are full | Legacy delivered RC_CHANNELS_RAW at ~8 Hz of 10 Hz configured; target UART capacity unmeasured |
 | Gazebo | Per-instance handles; same output gate; no truth-yaw correction | Gazebo 11 plugin compiled and loaded; parameter/disarm round trip passes; flight scenarios open |
 

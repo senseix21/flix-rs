@@ -9,7 +9,7 @@ import struct
 import subprocess
 import time
 from gazebo_trace import decode, tilt
-from pyflix.client import pack
+from pyflix.client import Decoder, pack
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -48,7 +48,17 @@ def main():
     trace=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
     trace.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,4*1024*1024)
     trace.bind(('127.0.0.1',14560));trace.settimeout(.2)
-    client=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+    client=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);client.setblocking(False)
+    replies=Decoder();saturation_notices=[]
+    def drain_replies():
+        # Owner replies go to the learned client endpoint; keep only STATUSTEXT warnings.
+        while True:
+            try: data=client.recv(512)
+            except (BlockingIOError,OSError): return
+            for message,payload in replies.feed(data):
+                if message==253:
+                    text=payload[1:51].split(b'\0',1)[0].decode('ascii','replace')
+                    saturation_notices.append(dict(sim_us=last_tick['sim_us'] if last_tick else None,severity=payload[0],text=text))
     total=sum(s['duration_us'] for s in scenario['segments'])
     stage='warmup';start=None;armed_at=None;disarm_at=None;last_control=-1000000
     ticks=0;commands=0;dropped=0;last_sequence=None;invalid=0;max_tilt=0.;max_height=0.
@@ -72,6 +82,7 @@ def main():
                     queued_controls_before_reset=True
                     reset_process=subprocess.Popen([str(ROOT/'target/gazebo-plugin/flix-world-reset'),'model-resume'],stdout=reset_client_log,stderr=subprocess.STDOUT)
                     stage='resetting'
+                drain_replies()
                 try: data,_=trace.recvfrom(512)
                 except socket.timeout: continue
                 try: record=decode(data)
@@ -214,6 +225,7 @@ def main():
                 reset_process.kill();reset_process.wait();failures.append('native reset client deadline expired')
         if reset_client_log is not None:reset_client_log.close()
         for _ in range(3):command(400,0)
+        time.sleep(.05);drain_replies()
         client.close();trace.close()
     if dropped or invalid:failures.append('trace incomplete')
     if first_fault and not scenario['expect_fault_while_commanding']:failures.append('fault during commanded flight')
@@ -229,13 +241,15 @@ def main():
         expected=scenario['timing_gap_at_us']+scenario['timing_gap_us']
         if first_fault is None or first_fault['reason']!=6 or abs(first_fault['sim_us']-expected)>1000 or first_fault['motors']!=[0.]*4:failures.append('owner gap did not stop at declared boundary')
     if scenario.get('landing_contact') and (contact_fault is not None or limited_ticks==0):failures.append('landing contact fault or range observation missing')
+    if args.engine=='rust' and limited_ticks and not any(n['text'].startswith('IMU saturated:') for n in saturation_notices):
+        failures.append('range-limited samples not reported to operator')
     if max_tilt>scenario['max_armed_tilt_degrees']:failures.append('tilt envelope exceeded')
     if max_height<scenario['min_lift_m']:failures.append('minimum lift not observed')
     if args.native_reset and not reset_seen:failures.append('native reset not observed')
     if not args.native_reset and (stop_ack_at is None or stopped_at is None or stopped_at-stop_ack_at>scenario['disarm_stop_us']):
         failures.append('stop boundary unverified or exceeded')
     if 'loss_after_us' in scenario and (loss_zero_at is None or loss_zero_at-armed_at>scenario['loss_after_us']+scenario['lease_us']+1000): failures.append('lease stop boundary unverified or exceeded')
-    result=dict(version=1,limited_ticks=limited_ticks,max_raw_acceleration_m_s2=max_raw_acceleration,contact_fault=contact_fault,gap_zero_ticks=gap_zero_ticks,mode_rearmed=mode_rearmed,diagnostic_seen=diagnostic_seen,saturated=saturated,recovered_output=recovered_output,queued_frames=queued_frames,queued_controls_before_reset=queued_controls_before_reset,reset_kind=args.reset_kind,explicit_reset_recovery=recovered,reset_fault=reset_fault,loss_zero_at_us=loss_zero_at,reconnect_without_arm_checked=reconnect_started,native_reset=args.native_reset,reset_seen=reset_seen,
+    result=dict(version=1,limited_ticks=limited_ticks,saturation_notices=saturation_notices,max_raw_acceleration_m_s2=max_raw_acceleration,contact_fault=contact_fault,gap_zero_ticks=gap_zero_ticks,mode_rearmed=mode_rearmed,diagnostic_seen=diagnostic_seen,saturated=saturated,recovered_output=recovered_output,queued_frames=queued_frames,queued_controls_before_reset=queued_controls_before_reset,reset_kind=args.reset_kind,explicit_reset_recovery=recovered,reset_fault=reset_fault,loss_zero_at_us=loss_zero_at,reconnect_without_arm_checked=reconnect_started,native_reset=args.native_reset,reset_seen=reset_seen,
                 native_recovery_status=('latched-fault-needs-explicit-clear' if last_tick and last_tick['state']==5 else 'stopped') if args.native_reset else None,reset_error=reset_error,engine=args.engine,scenario=scenario['name'],profile=contract['profile'],requirements=scenario['requirements'],
                 status='fail' if failures else 'pass',failures=sorted(set(failures)),ticks=ticks,
                 command_events=commands,dropped_ticks=dropped,invalid_packets=invalid,

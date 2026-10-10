@@ -81,33 +81,65 @@ pub extern "C" fn flix_reset(handle: u64) -> i32 {
     owner.reset();
     0
 }
+/// Version 2 input: version 1 plus the MPU6050 range-limit mask from the plugin.
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct Input2 {
+    pub version: u32,
+    pub calibrated: u32,
+    pub now_us: u64,
+    pub sample_us: u64,
+    pub gyro: [f32; 3],
+    pub acceleration: [f32; 3],
+    /// Gyro x/y/z bits 0..=2, accel x/y/z bits 3..=5; other bits must be zero.
+    pub saturation: u32,
+    pub reserved: u32,
+}
 /// # Safety
 /// input/output must be valid aligned objects for the call; they must not alias.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn flix_tick(handle: u64, input: *const Input, output: *mut Output) -> i32 {
-    if input.is_null()
-        || output.is_null()
-        || (input as usize) % align_of::<Input>() != 0
-        || (output as usize) % align_of::<Output>() != 0
-    {
+    if input.is_null() || output.is_null() || !input.is_aligned() || !output.is_aligned() {
         return -3;
     }
-    // SAFETY: validated alignment/null; object lifetime/extent/nonaliasing are caller contract.
-    let input = unsafe { *input };
-    // Initialize stopped output before checking handle or input version.
-    // SAFETY: validated alignment/null; extent/nonaliasing are caller contract.
-    unsafe {
-        output.write(Output {
-            version: 1,
-            state: 5,
-            reason: 5,
-            reserved: 0,
-            now_us: input.now_us,
-            generation: 0,
-            motors: [0.0; 4],
-        });
+    // SAFETY: non-null and aligned (checked); extent/lifetime/nonaliasing are caller contract.
+    let (input, output) = unsafe { (*input, &mut *output) };
+    let valid = input.version == 1;
+    tick(handle, input, 0, valid, output)
+}
+/// # Safety
+/// input/output must be valid aligned objects for the call; they must not alias.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn flix_tick2(handle: u64, input: *const Input2, output: *mut Output) -> i32 {
+    if input.is_null() || output.is_null() || !input.is_aligned() || !output.is_aligned() {
+        return -3;
     }
-    if input.version != 1 || input.calibrated > 1 {
+    // SAFETY: non-null and aligned (checked); extent/lifetime/nonaliasing are caller contract.
+    let (input, output) = unsafe { (*input, &mut *output) };
+    let valid = input.version == 2 && input.saturation & !0x3f == 0 && input.reserved == 0;
+    let base = Input {
+        version: input.version,
+        calibrated: input.calibrated,
+        now_us: input.now_us,
+        sample_us: input.sample_us,
+        gyro: input.gyro,
+        acceleration: input.acceleration,
+    };
+    // Masked to six bits, so the cast cannot truncate; invalid masks are rejected above.
+    tick(handle, base, (input.saturation & 0x3f) as u8, valid, output)
+}
+fn tick(handle: u64, input: Input, saturation: u8, valid: bool, output: &mut Output) -> i32 {
+    // Initialize stopped output before checking handle or input version.
+    *output = Output {
+        version: 1,
+        state: 5,
+        reason: 5,
+        reserved: 0,
+        now_us: input.now_us,
+        generation: 0,
+        motors: [0.0; 4],
+    };
+    if !valid || input.calibrated > 1 {
         return -4;
     }
     let Ok(mut registry) = REGISTRY.lock() else {
@@ -131,20 +163,18 @@ pub unsafe extern "C" fn flix_tick(handle: u64, input: *const Input, output: *mu
         ),
         calibrated: input.calibrated != 0,
     };
+    owner.record_imu_saturation(saturation);
     let motors = owner.tick(Tick(input.now_us), Some(sample));
     let snapshot = owner.flight.snapshot();
-    // SAFETY: same output object contract as above. No borrowed pointer is stored.
-    unsafe {
-        output.write(Output {
-            version: 1,
-            state: snapshot.state as u32,
-            reason: snapshot.reason as u32,
-            reserved: 0,
-            now_us: input.now_us,
-            generation: snapshot.generation,
-            motors,
-        });
-    }
+    *output = Output {
+        version: 1,
+        state: snapshot.state as u32,
+        reason: snapshot.reason as u32,
+        reserved: 0,
+        now_us: input.now_us,
+        generation: snapshot.generation,
+        motors,
+    };
     0
 }
 /// Simulation transport is explicitly unauthenticated bench traffic. Never link this host ABI into firmware.

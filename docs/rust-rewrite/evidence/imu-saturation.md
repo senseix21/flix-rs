@@ -54,9 +54,8 @@ must include it.
 
 ## Unresolved
 
-- The Gazebo ABI `Input` (48 bytes, version 1) does not carry the plugin's mask, so simulated
-  saturation is visible in traces but not in owner counters or STATUSTEXT. Carrying it requires
-  an ABI version change.
+- Gazebo now carries the mask through ABI v2; see
+  [gazebo-abi-v2](gazebo-abi-v2.md).
 - The counters are not exported yet. The frozen 52-value metrics snapshot would need a version 2.
 - Physical saturation behaviour, including whether the MPU6050 holds exactly at the endpoint
   under DLPF=1, is unverified on hardware.
