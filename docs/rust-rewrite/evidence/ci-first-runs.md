@@ -9,7 +9,8 @@ repository's first remote runs; before this, CI was "configured but has not run 
 | 38024039087 | `ba7f562` | fail: legacy fixture compile (`atol`) | pass | fail: git dubious ownership | pass |
 | 38024959087 | `c3e6ee7` | fail: proxy serial write deadline | pass | fail: native-reset notice check | pass |
 | 38025743862 | `7a0d395` | fail: proxy serial write deadline | pass | **pass** (all scenarios) | pass |
-| (4th) | `52b7435` | fail: legacy fixture compile (`isfinite`, libstdc++) | pass | pass | pass |
+| 38026624336 | `52b7435` | fail: legacy fixture compile (`isfinite`, libstdc++) | pass | pass | pass |
+| 38027769029 | `1287590` | **pass** | pass | **pass** | pass |
 
 ## Defects found, all present before this branch
 
@@ -42,6 +43,9 @@ correctly required no notice.
 Finding: almost every scenario saturates all three accelerometer axes once, apparently at spawn or
 first ground contact. This is a simulator start-up artifact to investigate separately; it is not
 evidence about hardware.
+
+Run 38027769029 is the first fully green run: all four jobs passed, including the proxy serial
+round trip and the parity check against the pinned legacy source.
 
 ## Local Linux reproduction of the contracts job
 
