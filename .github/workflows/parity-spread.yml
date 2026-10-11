@@ -1,0 +1,33 @@
+name: Parity spread
+# Temporary experiment (evidence/plant-parity): repeat the paired C++/Rust
+# comparison to measure run-to-run variation. Remove after recording results.
+on:
+  push:
+    branches: [investigate/plant-parity]
+    paths: [.github/workflows/parity-spread.yml]
+jobs:
+  pair:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        run: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: flix-rust
+      - uses: actions/checkout@v4
+        with:
+          repository: okalachev/flix
+          ref: 1f5b268271536e45a9377d1c5317d3eb6f3c3bba
+          path: flix
+      - name: Paired comparison
+        working-directory: flix-rust
+        run: make sim-parity || true
+      - name: Keep comparison results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-${{ matrix.run }}
+          path: flix-rust/.local/qualification/parity/compare-*.json
