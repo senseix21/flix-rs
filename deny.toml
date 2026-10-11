@@ -25,8 +25,8 @@ exceptions = [
 ]
 
 [licenses.private]
-# Project crates are publish = false and have no licence until one is chosen.
-ignore = true
+# Project crates are Apache-2.0 (LICENSE, NOTICE) and are checked like dependencies.
+ignore = false
 
 [bans]
 multiple-versions = "warn"
