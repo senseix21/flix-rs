@@ -53,3 +53,16 @@ fn imu_saturated_statustext_matches_c_library_for_every_mask() {
     }
     assert_eq!(cases, 63);
 }
+
+#[test]
+fn generic_statustext_matches_c_library() {
+    // The saturation fixture is plain WARNING STATUSTEXT; the generic encoder used for
+    // fault and denial notices (ADR 003 D3) must produce the same bytes.
+    for line in STATUS_FIXTURE.lines().filter(|l| !l.starts_with('#')) {
+        let (_, payload) = line.split_once(' ').expect("mask and payload");
+        let bytes = hex(payload);
+        let end = bytes[1..51].iter().position(|b| *b == 0).unwrap_or(50);
+        let encoded = flight_protocol::telemetry::statustext(bytes[0], &bytes[1..1 + end]);
+        assert_eq!(encoded.as_slice(), bytes);
+    }
+}

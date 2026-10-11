@@ -32,6 +32,73 @@ enum Op {
     },
 }
 
+/// Every STATUSTEXT the owner may send (saturation and ADR 003 D3 notices).
+fn check_notice(severity: u8, text: &str) {
+    const REASONS: [&str; 13] = [
+        "none",
+        "disarmed",
+        "not ready",
+        "command expired",
+        "sensor expired",
+        "invalid numeric",
+        "clock",
+        "generation",
+        "tilt",
+        "maintenance expired",
+        "configuration",
+        "power",
+        "sensor init",
+    ];
+    const ARM: [&str; 15] = [
+        "busy",
+        "battery",
+        "refused",
+        "no owner",
+        "booting",
+        "maintenance",
+        "already armed",
+        "failsafe",
+        "fault",
+        "standby",
+        "sensor",
+        "calibration",
+        "sensor stale",
+        "no command",
+        "thrust not low",
+    ];
+    if let Some(axes) = text.strip_prefix("IMU saturated:") {
+        assert_eq!(severity, 4, "{text}");
+        for word in axes.split(' ').filter(|w| !w.is_empty()) {
+            assert!(
+                ["gx", "gy", "gz", "ax", "ay", "az"].contains(&word),
+                "{text}"
+            );
+        }
+    } else if let Some(reason) = text.strip_prefix("fault: ") {
+        assert_eq!(severity, 2, "{text}");
+        assert!(REASONS.contains(&reason), "{text}");
+    } else if let Some(reason) = text.strip_prefix("failsafe: ") {
+        assert_eq!(severity, 4, "{text}");
+        assert!(REASONS.contains(&reason), "{text}");
+    } else if let Some(why) = text.strip_prefix("arm denied: ") {
+        assert_eq!(severity, 4, "{text}");
+        assert!(ARM.contains(&why), "{text}");
+    } else if let Some(why) = text.strip_prefix("clear denied: ") {
+        assert_eq!(severity, 4, "{text}");
+        assert!(
+            [
+                "configuration (reflash)",
+                "generation (reboot)",
+                "sensor init"
+            ]
+            .contains(&why),
+            "{text}"
+        );
+    } else {
+        panic!("unexpected notice {severity}: {text}");
+    }
+}
+
 struct Harness {
     owner: Owner,
     radio: RadioSession,
@@ -96,18 +163,10 @@ impl Harness {
             };
             let b = &reply.bytes[..reply.len];
             if b.len() >= 12 && u32::from_le_bytes([b[7], b[8], b[9], 0]) == 253 {
-                let text = &b[11..b.len() - 2];
-                assert_eq!(b[10], 4, "STATUSTEXT severity");
-                assert!(text.starts_with(b"IMU saturated:"), "{text:?}");
-                let words = text
-                    .split(|c| *c == b' ' || *c == 0)
-                    .filter(|w| !w.is_empty());
-                for word in words.skip(2) {
-                    assert!(
-                        [&b"gx"[..], b"gy", b"gz", b"ax", b"ay", b"az"].contains(&word),
-                        "unknown axis {word:?}"
-                    );
-                }
+                let field = &b[11..b.len() - 2];
+                let end = field.iter().position(|c| *c == 0).unwrap_or(field.len());
+                let text = core::str::from_utf8(&field[..end]).expect("ASCII notice");
+                check_notice(b[10], text);
             }
             if b.len() >= 12 && u32::from_le_bytes([b[7], b[8], b[9], 0]) == 105 {
                 let p = &b[10..b.len() - 2];

@@ -28,6 +28,34 @@ pub enum Reason {
     MaintenanceExpired = 9,
     Configuration = 10,
     Power = 11,
+    /// The IMU driver failed to configure (bus, identity or readback). Recoverable only
+    /// after a rebuilt driver passes again (ADR 003 D2).
+    SensorInit = 12,
+}
+impl Reason {
+    /// Short operator-facing name, used in STATUSTEXT (ADR 003 D3).
+    pub fn label(self) -> &'static str {
+        match self {
+            Reason::None => "none",
+            Reason::Disarmed => "disarmed",
+            Reason::NotReady => "not ready",
+            Reason::CommandExpired => "command expired",
+            Reason::SensorExpired => "sensor expired",
+            Reason::InvalidNumeric => "invalid numeric",
+            Reason::Clock => "clock",
+            Reason::Generation => "generation",
+            Reason::Tilt => "tilt",
+            Reason::MaintenanceExpired => "maintenance expired",
+            Reason::Configuration => "configuration",
+            Reason::Power => "power",
+            Reason::SensorInit => "sensor init",
+        }
+    }
+    /// Faults that only a rebuilt owner may leave (ADR 003 D1). Every exit from Fault
+    /// (`clear_fault`, `reset`) consults this one predicate.
+    pub fn latched(self) -> bool {
+        matches!(self, Reason::Configuration | Reason::Generation)
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
@@ -89,6 +117,36 @@ impl Limits {
 pub(crate) struct Lease {
     pub(crate) intent: Intent,
     pub(crate) at: Tick,
+}
+/// The first arming precondition that is not met. `Flight::arm` uses this same check,
+/// so the reported cause cannot drift from the rule (ADR 003 D3).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ArmBlock {
+    NoOwner,
+    State(State),
+    Sensor,
+    Calibration,
+    SensorStale,
+    NoCommand,
+    Thrust,
+}
+impl ArmBlock {
+    pub fn label(self) -> &'static str {
+        match self {
+            ArmBlock::NoOwner => "no owner",
+            ArmBlock::State(State::Boot) => "booting",
+            ArmBlock::State(State::Maintenance) => "maintenance",
+            ArmBlock::State(State::Armed) => "already armed",
+            ArmBlock::State(State::Failsafe) => "failsafe",
+            ArmBlock::State(State::Fault) => "fault",
+            ArmBlock::State(State::Standby) => "standby",
+            ArmBlock::Sensor => "sensor",
+            ArmBlock::Calibration => "calibration",
+            ArmBlock::SensorStale => "sensor stale",
+            ArmBlock::NoCommand => "no command",
+            ArmBlock::Thrust => "thrust not low",
+        }
+    }
 }
 /// Only Flight can authorize frames. Copying a frame does not extend its authority.
 #[derive(Clone, Copy, Debug)]
@@ -184,9 +242,10 @@ impl Flight {
     pub fn stopped_maintenance(&self) -> bool {
         self.state == State::Maintenance && self.diagnostic.is_none()
     }
+    /// Revoke all authority and return to Boot, except that a latched fault stays latched.
     pub fn reset(&mut self) {
         self.invalidate();
-        if self.generation == u64::MAX {
+        if self.state == State::Fault && self.reason.latched() {
             return;
         }
         self.state = State::Boot;
@@ -237,10 +296,7 @@ impl Flight {
         self.invalidate();
     }
     pub fn clear_fault(&mut self) -> bool {
-        if self.state != State::Fault
-            || self.generation == u64::MAX
-            || self.reason == Reason::Configuration
-        {
+        if self.state != State::Fault || self.reason.latched() {
             return false;
         }
         self.state = State::Boot;
@@ -301,21 +357,32 @@ impl Flight {
         let lease = self.leases[self.selected?.index()]?;
         (now.age(lease.at)? <= self.limits.command_us).then_some(lease)
     }
-    pub fn arm(&mut self, now: Tick) -> bool {
+    /// The first unmet arming precondition at `now`, or `None` if `arm` would proceed.
+    pub fn arm_blocker(&self, now: Tick) -> Option<ArmBlock> {
+        let fresh = |t: Option<Tick>| {
+            t.is_some_and(|t| now.age(t).is_some_and(|age| age <= self.limits.sensor_us))
+        };
         if self.issuer == 0 {
-            return false;
+            Some(ArmBlock::NoOwner)
+        } else if self.state != State::Standby {
+            Some(ArmBlock::State(self.state))
+        } else if !self.healthy {
+            Some(ArmBlock::Sensor)
+        } else if !self.calibrated {
+            Some(ArmBlock::Calibration)
+        } else if !fresh(self.previous) || !fresh(self.sample) {
+            Some(ArmBlock::SensorStale)
+        } else {
+            match self.lease(now) {
+                None => Some(ArmBlock::NoCommand),
+                // NaN thrust fails the comparison and therefore blocks arming.
+                Some(l) if l.intent.thrust() < 0.05 => None,
+                Some(_) => Some(ArmBlock::Thrust),
+            }
         }
-        let ready = matches!(self.state, State::Standby)
-            && self.healthy
-            && self.calibrated
-            && self
-                .previous
-                .is_some_and(|t| now.age(t).is_some_and(|age| age <= self.limits.sensor_us))
-            && self
-                .sample
-                .is_some_and(|t| now.age(t).is_some_and(|age| age <= self.limits.sensor_us))
-            && self.lease(now).is_some_and(|l| l.intent.thrust() < 0.05);
-        if !ready {
+    }
+    pub fn arm(&mut self, now: Tick) -> bool {
+        if self.arm_blocker(now).is_some() {
             return false;
         }
         // Keep the just-validated lease; invalidate prior frames without erasing it.
