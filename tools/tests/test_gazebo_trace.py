@@ -45,3 +45,13 @@ class TraceTests(unittest.TestCase):
         self.assertEqual(record['sensor_limit_mask'],56)
         self.assertEqual(record['raw_acceleration_body_m_s2'],[135,-139,132])
         with self.assertRaises(ValueError):decode(frame[:-1])
+class ReasonRangeTests(unittest.TestCase):
+    def test_sensor_init_accepted_and_next_code_rejected(self):
+        # ADR 003 D2 adds SensorInit = 12; 13 remains invalid.
+        values=[0.0]*(VALUES.size//4)
+        for reason,ok in ((12,True),(13,False)):
+            frame=HEADER_V2.pack(b'FLXT',2,20000,4,5,reason,0xffffffff,0,8,9999)+VALUES.pack(*values)
+            if ok:self.assertEqual(decode(frame)['reason'],12)
+            else:
+                with self.assertRaises(ValueError):decode(frame)
+

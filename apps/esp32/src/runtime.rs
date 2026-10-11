@@ -28,6 +28,15 @@ pub struct Counters {
     /// Samples with a register at its endpoint, per axis (gyro x/y/z, accel x/y/z).
     pub imu_saturated_samples: [u64; 6],
 }
+/// One queued operator message (STATUSTEXT), ADR 003 D3.
+#[derive(Clone, Copy, PartialEq, Eq)]
+struct Notice {
+    severity: u8,
+    text: [u8; 50],
+    len: u8,
+}
+const MAV_SEVERITY_CRITICAL: u8 = 2;
+const MAV_SEVERITY_WARNING: u8 = 4;
 pub struct Owner {
     pub flight: Flight,
     pub settings: Settings,
@@ -51,10 +60,18 @@ pub struct Owner {
     /// Axes saturated since the last operator notice, and when that notice was sent.
     saturation_pending: u8,
     last_saturation_notice: Option<Tick>,
+    /// Bounded operator notices awaiting a free reply slot; the last one sent, for
+    /// suppressing identical repeats within one second; the last reported lifecycle.
+    notices: [Option<Notice>; 4],
+    last_notice: Option<(Notice, Tick)>,
+    reported: Option<(State, flight_core::Reason)>,
     last_tick: Option<Tick>,
     pub save_requested: bool,
     pub calibration_requested: bool,
     pub driver_restart_requested: bool,
+    /// Operator asked to clear a `SensorInit` fault; firmware rebuilds the driver and
+    /// reports through `sensor_retry_result` (ADR 003 D2).
+    pub sensor_retry_requested: bool,
     pilot_acro: bool,
     battery: Option<flight_core::battery::Guard>,
     battery_reading: flight_core::battery::Reading,
@@ -95,10 +112,14 @@ impl Owner {
         rc_at: Tick(0),
         saturation_pending: 0,
         last_saturation_notice: None,
+        notices: [None; 4],
+        last_notice: None,
+        reported: None,
         last_tick: None,
         save_requested: false,
         calibration_requested: false,
         driver_restart_requested: false,
+        sensor_retry_requested: false,
         pilot_acro: false,
         battery: None,
         battery_reading: flight_core::battery::Reading::Unavailable,
@@ -131,10 +152,14 @@ impl Owner {
             rc_at: Tick(0),
             saturation_pending: 0,
             last_saturation_notice: None,
+            notices: [None; 4],
+            last_notice: None,
+            reported: None,
             last_tick: None,
             save_requested: false,
             calibration_requested: false,
             driver_restart_requested: false,
+            sensor_retry_requested: false,
             pilot_acro: false,
             battery: None,
             battery_reading: flight_core::battery::Reading::Unavailable,
@@ -191,8 +216,12 @@ impl Owner {
         self.last_rc = Tick(0);
         self.saturation_pending = 0;
         self.last_saturation_notice = None;
+        self.notices = [None; 4];
+        self.last_notice = None;
+        self.reported = None;
         self.log = Log::default();
         self.driver_restart_requested = false;
+        self.sensor_retry_requested = false;
     }
     /// Stopped enrollment invalidates cached outputs, commands and queued replies.
     /// Caller must hold exclusive stopped Maintenance.
@@ -255,6 +284,65 @@ impl Owner {
             self.counters.reply_overflow = self.counters.reply_overflow.saturating_add(1);
         }
     }
+    /// Queue an operator notice `prefix` + `detail`. Identical text within one second
+    /// is suppressed; a full queue drops the notice and counts it as reply overflow.
+    fn notice(&mut self, severity: u8, prefix: &str, detail: &str) {
+        let mut text = [0u8; 50];
+        let mut len = 0;
+        for part in [prefix.as_bytes(), detail.as_bytes()] {
+            let n = part.len().min(50 - len);
+            text[len..len + n].copy_from_slice(&part[..n]);
+            len += n;
+        }
+        // len <= 50 by construction.
+        let notice = Notice {
+            severity,
+            text,
+            len: u8::try_from(len).unwrap_or(50),
+        };
+        let now = self.last_tick.unwrap_or(Tick(0));
+        if self.last_notice.is_some_and(|(last, at)| {
+            last == notice && now.age(at).is_some_and(|age| age < 1_000_000)
+        }) {
+            return;
+        }
+        self.last_notice = Some((notice, now));
+        if let Some(slot) = self.notices.iter_mut().find(|n| n.is_none()) {
+            *slot = Some(notice);
+        } else {
+            self.counters.reply_overflow = self.counters.reply_overflow.saturating_add(1);
+        }
+    }
+    fn report_transition(&mut self) {
+        let snapshot = self.flight.snapshot();
+        let now = (snapshot.state, snapshot.reason);
+        if self.reported == Some(now) {
+            return;
+        }
+        self.reported = Some(now);
+        match snapshot.state {
+            State::Fault => self.notice(MAV_SEVERITY_CRITICAL, "fault: ", snapshot.reason.label()),
+            State::Failsafe => {
+                self.notice(MAV_SEVERITY_WARNING, "failsafe: ", snapshot.reason.label())
+            }
+            _ => {}
+        }
+    }
+    fn flush_notices(&mut self) {
+        while self.free_replies() >= 1 {
+            let Some(notice) = self.notices[0].take() else {
+                break;
+            };
+            self.notices.rotate_left(1);
+            self.emit(
+                253,
+                &flight_protocol::telemetry::statustext(
+                    notice.severity,
+                    &notice.text[..usize::from(notice.len)],
+                ),
+            );
+        }
+    }
     fn free_replies(&self) -> usize {
         self.replies.iter().filter(|slot| slot.is_none()).count()
     }
@@ -288,12 +376,26 @@ impl Owner {
     fn dispatch(&mut self, event: Event, now: Tick) {
         match event {
             Event::Arm => {
-                let accepted = !self.driver_restart_requested
-                    && (self.battery.is_none() || self.battery_health.permits_arm())
-                    && !self.calibration_requested
-                    && !self.save_requested
-                    && self.flight.arm(now);
+                let owner_block = if self.driver_restart_requested
+                    || self.calibration_requested
+                    || self.save_requested
+                {
+                    Some("busy")
+                } else if self.battery.is_some() && !self.battery_health.permits_arm() {
+                    Some("battery")
+                } else {
+                    None
+                };
+                let accepted = owner_block.is_none() && self.flight.arm(now);
                 self.ack(400, accepted);
+                if !accepted {
+                    let why = owner_block.unwrap_or_else(|| {
+                        self.flight
+                            .arm_blocker(now)
+                            .map_or("refused", flight_core::ArmBlock::label)
+                    });
+                    self.notice(MAV_SEVERITY_WARNING, "arm denied: ", why);
+                }
             }
             Event::Select(source) => {
                 let accepted = self.flight.select(source);
@@ -410,7 +512,21 @@ impl Owner {
                     }
                 }
                 Console::ClearFault => {
-                    self.flight.clear_fault();
+                    let snapshot = self.flight.snapshot();
+                    if snapshot.state == State::Fault
+                        && snapshot.reason == flight_core::Reason::SensorInit
+                    {
+                        // Clearing must prove the sensor works; never just drop the flag.
+                        self.sensor_retry_requested = true;
+                    } else if snapshot.state == State::Fault && snapshot.reason.latched() {
+                        let how = match snapshot.reason {
+                            flight_core::Reason::Configuration => "configuration (reflash)",
+                            _ => "generation (reboot)",
+                        };
+                        self.notice(MAV_SEVERITY_WARNING, "clear denied: ", how);
+                    } else {
+                        self.flight.clear_fault();
+                    }
                 }
                 Console::Save => {
                     self.save_requested = self.flight.stopped_maintenance();
@@ -548,6 +664,9 @@ impl Owner {
                 self.log_cursor = None;
             }
         }
+        // Operator notices (faults, failsafe, denials) go before periodic telemetry.
+        self.report_transition();
+        self.flush_notices();
         // A due stream that finds too few free reply slots stays due and is sent on a
         // later tick instead of being dropped; reply_overflow then counts only real loss.
         if due(
@@ -654,6 +773,19 @@ impl Owner {
             }
         }
         self.saturation_pending |= mask;
+    }
+    /// Firmware result of a requested driver rebuild for a `SensorInit` fault. Only a
+    /// passing rebuild clears it; a failing one leaves the owner faulted.
+    pub fn sensor_retry_result(&mut self, configured: bool) {
+        self.sensor_retry_requested = false;
+        let snapshot = self.flight.snapshot();
+        if snapshot.state == State::Fault && snapshot.reason == flight_core::Reason::SensorInit {
+            if configured {
+                self.flight.clear_fault();
+            } else {
+                self.notice(MAV_SEVERITY_WARNING, "clear denied: ", "sensor init");
+            }
+        }
     }
     pub fn record_execution(&mut self, microseconds: u64) {
         self.timing.owner.record(microseconds);

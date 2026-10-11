@@ -24,7 +24,7 @@ def decode(data):
         raise ValueError('Trace length')
     fields=header.unpack_from(data)
     magic, version, now, generation, state, reason, source, valid, sequence = fields[:9]
-    if magic != b'FLXT' or state > 5 or reason > 11 or source not in (0,1,2,0xffffffff) or valid > 1:
+    if magic != b'FLXT' or state > 5 or reason > 12 or source not in (0,1,2,0xffffffff) or valid > 1:
         raise ValueError('Trace header')
     values = VALUES.unpack_from(data, header.size)
     record = dict(kind='tick',version=version,sim_us=now,generation=generation,
