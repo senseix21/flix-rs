@@ -79,6 +79,25 @@ passed on arm64 only because its pre-arm drift happened to be small in that run.
 **CI.** `make sim-parity` (in the Gazebo job) builds the pinned legacy plugin (SDL2 added to the
 pinned image) and runs the pairs on x86 with the `lpf01` profile.
 
+## x86 CI results (pinned image, Gazebo 11.10.2)
+
+`make sim-parity` in the Gazebo CI job, Rust side `mpu6050-4g-lpf01`, rule stable-interval:
+
+| Run | Commit | Scenario | Acceptance | Attitude | Motor (stable) | Position | Unexpected ticks |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: |
+| 38076118073 | `6ca8165` | pitch-pulse | pass | 0.236° | 0.064 | 0.048 m | 0 |
+| 38089194412 | `c285593` | pitch-pulse | pass | 0.373° | 0.065 | 0.321 m | 0 |
+| 38089194412 | `c285593` | level-thrust | pass | 0.546° | 0.073 | 0.330 m | 0 |
+
+(Run 38076118073 stopped after pitch-pulse on a Makefile bug, since fixed; level-thrust was not
+reported there.)
+
+**Margin finding.** Position difference varies 0.05–0.33 m between x86 runs of the same commit
+(limit 0.5 m), much more than on arm64 (0.03–0.06 m). Even with matched sensor filtering, the
+uncorrected estimators still diverge between engines by an amount that depends on the run's resting
+chatter. Its magnitude has not been characterized statistically. With n=2, the gate may be flaky; a
+repeated-run distribution (e.g. 10 pairs) is needed before treating 0.5 m as a reliable gate.
+
 ## Unresolved, and decisions needed
 
 - **Default simulated sensor.** The Rust firmware configures DLPF_CFG=1 (about 184 Hz accel
