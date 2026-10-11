@@ -1,0 +1,380 @@
+[
+ {
+  "scenario": "acro-level",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 11.589298719490742,
+   "max_lift_m": 0.1435068203136325,
+   "limited_ticks": 8,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 11.631719778114325,
+   "max_lift_m": 0.1422781152650714,
+   "limited_ticks": 10,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "auto-level",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 3.654794751356987,
+   "max_lift_m": 0.26576733123511076,
+   "limited_ticks": 1,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 3.8141764721324454,
+   "max_lift_m": 0.26380159985274076,
+   "limited_ticks": 4,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "axis-pulses",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 3.6747662914252004,
+   "max_lift_m": 1.2521153939887881,
+   "limited_ticks": 1,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 3.816763099644183,
+   "max_lift_m": 1.2489955676719546,
+   "limited_ticks": 5,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "diagnostic-stop",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 0.0,
+   "max_lift_m": 0.0,
+   "limited_ticks": 0,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 0.0,
+   "max_lift_m": 0.0,
+   "limited_ticks": 0,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "landing-contact",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 11.802205165585534,
+   "max_lift_m": 0.07932860683649778,
+   "limited_ticks": 9,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 11.507726047469344,
+   "max_lift_m": 0.11630741786211729,
+   "limited_ticks": 13,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "late-client",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": null,
+   "max_lift_m": null,
+   "limited_ticks": null,
+   "stop_latency_sim_us": null
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": null,
+   "max_lift_m": null,
+   "limited_ticks": null,
+   "stop_latency_sim_us": null,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "lease-loss-reconnect",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 3.7306703258616944,
+   "max_lift_m": 0.46887757908552885,
+   "limited_ticks": 1,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 3.8172778456403433,
+   "max_lift_m": 0.46637418400496244,
+   "limited_ticks": 5,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "level-thrust",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 4.950817883002058,
+   "max_lift_m": 5.0873166574165225,
+   "limited_ticks": 1,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 4.193166909061381,
+   "max_lift_m": 5.0963450921699405,
+   "limited_ticks": 6,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "long-level",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 3.7942415885774685,
+   "max_lift_m": 16.34586491715163,
+   "limited_ticks": 0,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 3.8165456808720246,
+   "max_lift_m": 16.333369876258075,
+   "limited_ticks": 0,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "mode-change",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 12.323825891047541,
+   "max_lift_m": 0.3753730310127139,
+   "limited_ticks": 11,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 12.310386755398623,
+   "max_lift_m": 0.37346723210066557,
+   "limited_ticks": 11,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "model-reset",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 4.020215924280477,
+   "max_lift_m": 5.104201461188495,
+   "limited_ticks": 1,
+   "stop_latency_sim_us": null
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 4.195123969906995,
+   "max_lift_m": 5.0962912095710635,
+   "limited_ticks": 1,
+   "stop_latency_sim_us": null,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "native-reset",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 4.028909599893918,
+   "max_lift_m": 5.102808143012226,
+   "limited_ticks": 1,
+   "stop_latency_sim_us": null
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 4.195180131637131,
+   "max_lift_m": 5.0963570130988955,
+   "limited_ticks": 1,
+   "stop_latency_sim_us": null,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "pitch-pulse",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 4.258640008497224,
+   "max_lift_m": 5.619689132086933,
+   "limited_ticks": 1,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 4.191455784736231,
+   "max_lift_m": 5.617799426428974,
+   "limited_ticks": 6,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "queued-model-reset",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 4.387264831447057,
+   "max_lift_m": 5.097852851264179,
+   "limited_ticks": 1,
+   "stop_latency_sim_us": null
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 4.18537555669126,
+   "max_lift_m": 5.0965258134528995,
+   "limited_ticks": 1,
+   "stop_latency_sim_us": null,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "saturation-recovery",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 3.77222713964581,
+   "max_lift_m": 0.1702646417543292,
+   "limited_ticks": 2,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 3.8155336243686113,
+   "max_lift_m": 0.1696647359058261,
+   "limited_ticks": 4,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "sensor-invalid",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 3.8952826629831785,
+   "max_lift_m": 0.12285249959677458,
+   "limited_ticks": 2,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 3.8117011710762125,
+   "max_lift_m": 0.12183694075793028,
+   "limited_ticks": 3,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "sensor-stale",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 4.176870192320978,
+   "max_lift_m": 0.12212541233748198,
+   "limited_ticks": 6,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 3.8175255582359373,
+   "max_lift_m": 0.12183992099016905,
+   "limited_ticks": 3,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "time-reset",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 5.039320847371154,
+   "max_lift_m": 5.0847555650398135,
+   "limited_ticks": 1,
+   "stop_latency_sim_us": null
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 4.188440553649495,
+   "max_lift_m": 5.096431399695575,
+   "limited_ticks": 6,
+   "stop_latency_sim_us": null,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "timing-gap",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": 3.928468442864494,
+   "max_lift_m": 0.12243169080466032,
+   "limited_ticks": 6,
+   "stop_latency_sim_us": 0
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": 3.8123119699549743,
+   "max_lift_m": 0.12183984648436308,
+   "limited_ticks": 3,
+   "stop_latency_sim_us": 0,
+   "failures": []
+  }
+ },
+ {
+  "scenario": "two-models",
+  "rigid": {
+   "status": "pass",
+   "max_tilt_degrees": [
+    3.878028140982812,
+    3.457005124166424
+   ],
+   "max_lift_m": [
+    0.12111033017635345,
+    0.12075985486507415
+   ],
+   "limited_ticks": null,
+   "stop_latency_sim_us": [
+    0,
+    0
+   ]
+  },
+  "soft": {
+   "status": "pass",
+   "max_tilt_degrees": [
+    3.826918975996862,
+    3.817292344593361
+   ],
+   "max_lift_m": [
+    0.1208367448568344,
+    0.12045604999065398
+   ],
+   "limited_ticks": null,
+   "stop_latency_sim_us": [
+    0,
+    0
+   ],
+   "failures": []
+  }
+ }
+]
