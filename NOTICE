@@ -1,0 +1,28 @@
+Flix RS
+Copyright 2026 the Flix RS contributors.
+
+This repository's original work is licensed under the Apache License, Version 2.0
+(see LICENSE), except as stated below.
+
+Flix RS is an independent Rust rewrite of the Flix quadcopter firmware by
+Oleg Kalachev (https://github.com/okalachev/flix). It re-implements the original
+behaviour from the pinned revision 1f5b268271536e45a9377d1c5317d3eb6f3c3bba; it does
+not contain the original firmware source code. The upstream repository publishes no
+licence, so no rights in upstream material are granted by this repository.
+
+Not covered by the Apache License in this repository:
+
+  docs/img/flix.svg, docs/img/flix.jpg, docs/img/flix1.1.jpg,
+  docs/img/simulator1.png, docs/img/esp32.jpg, docs/img/gy-521.jpg
+      Copied unchanged from the upstream Flix repository. Copyright Oleg Kalachev
+      and their respective creators. Provenance and hashes: docs/img/README.md.
+
+  docs/img/flix-rs-logo-v2.png
+      Derived from the upstream flix.svg logo. Same terms as that logo.
+
+At build or test time some tools fetch, include or patch the pinned upstream
+checkout (legacy parity fixtures, Gazebo comparison plugin and model). That
+material is not redistributed here and remains under upstream terms.
+
+Third-party Rust dependencies keep their own licences; `deny.toml` lists the
+licences accepted for them.
