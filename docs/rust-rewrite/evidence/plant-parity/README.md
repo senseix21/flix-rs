@@ -98,6 +98,45 @@ uncorrected estimators still diverge between engines by an amount that depends o
 chatter. Its magnitude has not been characterized statistically. With n=2, the gate may be flaky; a
 repeated-run distribution (e.g. 10 pairs) is needed before treating 0.5 m as a reliable gate.
 
+## Run-to-run spread and the contact fix (user-approved 2026-10-11)
+
+**Rigid contact is flaky.** Ten x86 CI pairs (workflow run 38098993941; 9 of 10 artifacts
+retrieved, files in `rigid-spread/`), Rust `lpf01`:
+
+| Scenario | Pass | Position min / median / max | Max attitude |
+| --- | ---: | ---: | ---: |
+| pitch-pulse | 8/9 | 0.007 / 0.111 / 0.528 m | 0.68° |
+| level-thrust | 8/9 | 0.037 / 0.189 / 0.538 m | 0.98° |
+
+About one run in five would fail CI on noise.
+
+**Soft contact removes the cause.** `scripts/gazebo-contact.py soft` gives the model's collision a
+critically damped 30 Hz contact derived from the 65 g mass (kp 2309 N/m, kd 24.5 N·s/m, 0.28 mm
+sag), applied to both engines' model copies. Local arm64, default (unfiltered) Rust sensor:
+
+| | Rigid | Soft |
+| --- | ---: | ---: |
+| Resting lateral acceleration | 8.6 m/s² | 0.10 m/s² |
+| Landed gate passes | 0.5–0.9% | 100% |
+| Position vs C++ | 0.13–0.37 m | 0.004–0.007 m |
+| Attitude vs C++ | 0.23–0.69° | 0.03° |
+
+Ten x86 CI pairs with soft contact (workflow run on `ac50879`, files in `soft-spread/`):
+
+| Scenario | Pass | Position min / median / max | Max attitude | Max motor (stable) |
+| --- | ---: | ---: | ---: | ---: |
+| pitch-pulse | 10/10 | 0.0050 / 0.0076 / 0.0175 m | 0.051° | 0.033 |
+| level-thrust | 10/10 | 0.0044 / 0.0085 / 0.0144 m | 0.033° | 0.006 |
+
+The worst case uses 3.5% of the position limit. `make sim-parity` now uses soft contact for both
+engines and the default Rust sensor (`acceptance.json`: `plant_contact: soft`,
+`rust_imu_profile: mpu6050-4g`). The `lpf01` and `dlpf1` profiles stay available but are no longer
+needed for the comparison.
+
+**Scope.** Only the paired comparison uses soft contact. Default scenarios, the browser session and
+all other CI scenarios keep the rigid legacy plant. Whether to make soft contact the default plant
+(it would also make landing saturation counts more realistic) is a separate decision.
+
 ## Unresolved, and decisions needed
 
 - **Default simulated sensor.** The Rust firmware configures DLPF_CFG=1 (about 184 Hz accel
@@ -111,5 +150,4 @@ repeated-run distribution (e.g. 10 pairs) is needed before treating 0.5 m as a r
   (see [gazebo-accel-saturation](../gazebo-accel-saturation.md)). Fixing it changes the frozen plant.
 - **Hardware relevance.** A real MPU6050 always filters, and a resting airframe does not chatter at
   500 Hz. Still, the landed gate's sensitivity to vibration should be checked on the bench (R5).
-- n = 1 run per configuration on arm64. Repeat on the CI x86 image before treating the numbers as
-  qualification evidence.
+- Resolved: run-to-run spread measured on x86 (10 runs each, rigid and soft), above.
