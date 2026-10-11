@@ -375,8 +375,7 @@
     "limits_status": "predeclared exploratory thresholds; failure is a finding, not permission to retune",
     "acceptance_rule": "stable-interval: outside logged MANUAL_CONTROL transition ticks every aligned tick is within the limits, no violation falls outside a transition tick, and at most two boundary ticks are unmatched. Full-tick parity is reported but cannot pass while Rust applies inputs before control (recorded safety correction).",
     "rust_imu_profile": "mpu6050-4g",
-    "rust_imu_profile_reason": "Default Rust sensor. Both engines share the soft-contact plant (scripts/gazebo-contact.py), which removes the rigid-contact chatter that made the comparison depend on simulated sensor filtering. See evidence/plant-parity.",
-    "plant_contact": "soft"
+    "rust_imu_profile_reason": "Default Rust sensor. Both engines share the soft-contact plant (scripts/gazebo-contact.py), which removes the rigid-contact chatter that made the comparison depend on simulated sensor filtering. See evidence/plant-parity."
   },
   "native_reset": {
     "time_only_position_jump_m": 0.05,
@@ -417,5 +416,7 @@
     "stop_us": 1000,
     "stopped_observation_us": 500000
   },
-  "sensor_profile": "mpu6050-4g"
+  "sensor_profile": "mpu6050-4g",
+  "plant_contact": "soft",
+  "plant_contact_note": "Default since 2026-10-11: critically damped 30 Hz body contact (scripts/gazebo-contact.py). FLIX_CONTACT=rigid reproduces the legacy near-rigid plant used by evidence recorded before that date."
 }

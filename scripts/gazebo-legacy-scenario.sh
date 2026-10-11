@@ -4,7 +4,7 @@ cd /work
 mkdir -p /tmp/flix-legacy
  tar -xf .local/legacy-baseline.tar -C /tmp/flix-legacy
 python3 scripts/instrument-legacy.py /tmp/flix-legacy
-python3 scripts/gazebo-contact.py /tmp/flix-legacy/gazebo/models/flix/flix.sdf "${FLIX_CONTACT:-rigid}"
+python3 scripts/gazebo-contact.py /tmp/flix-legacy/gazebo/models/flix/flix.sdf "${FLIX_CONTACT:-soft}"
 cmake -S /tmp/flix-legacy/gazebo -B /tmp/flix-legacy-build -DCMAKE_CXX_FLAGS='-I/work/.local/legacy-mavlink/MAVLink'
 cmake --build /tmp/flix-legacy-build -j2
 export GAZEBO_MODEL_PATH=/tmp/flix-legacy/gazebo/models

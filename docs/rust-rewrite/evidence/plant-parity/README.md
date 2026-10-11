@@ -133,9 +133,49 @@ engines and the default Rust sensor (`acceptance.json`: `plant_contact: soft`,
 `rust_imu_profile: mpu6050-4g`). The `lpf01` and `dlpf1` profiles stay available but are no longer
 needed for the comparison.
 
-**Scope.** Only the paired comparison uses soft contact. Default scenarios, the browser session and
-all other CI scenarios keep the rigid legacy plant. Whether to make soft contact the default plant
-(it would also make landing saturation counts more realistic) is a separate decision.
+**Scope.** Superseded on 2026-10-11: soft contact is now the default plant (next section).
+
+## Soft contact as the default plant (user decision 2026-10-11)
+
+Every launcher (scenarios, smoke check, browser session, legacy comparison) now applies
+`scripts/gazebo-contact.py soft` unless `FLIX_CONTACT=rigid`. Evidence recorded before 2026-10-11 used
+the rigid plant; reproduce it with `FLIX_CONTACT=rigid`.
+
+Re-baseline: every CI scenario on x86, rigid (run 38025743862) against soft (run 38103224480; raw
+values in `soft-default-rebaseline.json`; `two-models` values are per model):
+
+| Scenario | Status | Max tilt (°) rigid → soft | Max lift (m) | Range-limited ticks | Stop latency (sim µs) |
+| --- | --- | --- | --- | --- | --- |
+| acro-level | pass → pass | 11.59 → 11.63 | 0.14 → 0.14 | 8 → 10 | 0 → 0 |
+| auto-level | pass → pass | 3.65 → 3.81 | 0.27 → 0.26 | 1 → 4 | 0 → 0 |
+| axis-pulses | pass → pass | 3.67 → 3.82 | 1.25 → 1.25 | 1 → 5 | 0 → 0 |
+| diagnostic-stop | pass → pass | 0.00 → 0.00 | 0.00 → 0.00 | 0 → 0 | 0 → 0 |
+| landing-contact | pass → pass | 11.80 → 11.51 | 0.08 → 0.12 | 9 → 13 | 0 → 0 |
+| late-client | pass → pass | — → — | — → — | — → — | — → — |
+| lease-loss-reconnect | pass → pass | 3.73 → 3.82 | 0.47 → 0.47 | 1 → 5 | 0 → 0 |
+| level-thrust | pass → pass | 4.95 → 4.19 | 5.09 → 5.10 | 1 → 6 | 0 → 0 |
+| long-level | pass → pass | 3.79 → 3.82 | 16.35 → 16.33 | 0 → 0 | 0 → 0 |
+| mode-change | pass → pass | 12.32 → 12.31 | 0.38 → 0.37 | 11 → 11 | 0 → 0 |
+| model-reset | pass → pass | 4.02 → 4.20 | 5.10 → 5.10 | 1 → 1 | — → — |
+| native-reset | pass → pass | 4.03 → 4.20 | 5.10 → 5.10 | 1 → 1 | — → — |
+| pitch-pulse | pass → pass | 4.26 → 4.19 | 5.62 → 5.62 | 1 → 6 | 0 → 0 |
+| queued-model-reset | pass → pass | 4.39 → 4.19 | 5.10 → 5.10 | 1 → 1 | — → — |
+| saturation-recovery | pass → pass | 3.77 → 3.82 | 0.17 → 0.17 | 2 → 4 | 0 → 0 |
+| sensor-invalid | pass → pass | 3.90 → 3.81 | 0.12 → 0.12 | 2 → 3 | 0 → 0 |
+| sensor-stale | pass → pass | 4.18 → 3.82 | 0.12 → 0.12 | 6 → 3 | 0 → 0 |
+| time-reset | pass → pass | 5.04 → 4.19 | 5.08 → 5.10 | 1 → 6 | — → — |
+| timing-gap | pass → pass | 3.93 → 3.81 | 0.12 → 0.12 | 6 → 3 | 0 → 0 |
+| two-models | pass → pass | 3.88/3.46 → 3.83/3.82 | 0.12/0.12 → 0.12/0.12 | — → — | 0/0 → 0/0 |
+
+- All scenarios pass on soft contact with unchanged acceptance envelopes. No envelope needed
+  changing.
+- Tilt, lift and stop latency are unchanged within about 1° and 0.04 m; stop latency stays 0.
+- Range-limited ticks rise after drops (level-thrust, pitch-pulse, time-reset 1 → 6). The rigid
+  plant stopped a fall in one 1 ms step. The soft contact spreads it over several milliseconds, so
+  more samples sit above ±4 g. That matches a real airframe better. Each case still produces an
+  operator notice.
+- Ground chatter is gone. That removes the main source of simulated sensor noise; real airframe
+  vibration must come from bench measurements (R5), not the simulator.
 
 ## Unresolved, and decisions needed
 
