@@ -33,9 +33,9 @@ The GitHub repository is named `flix-rs`. Existing crate names, scripts, and Doc
 
 **Development software; physical flight qualification is incomplete.** Firmware builds and simulation checks provide evidence for their stated workloads. They do not establish safe motor operation, target timing, radio reliability, or real flight behavior.
 
-The latest verification includes 49 Rust tests, 34 Python tests, 20 Gazebo scenarios, exact ESP32-S3 SDK builds, and signed QGroundControl discovery and parameter loading. Full C++/Rust plant comparisons still fail their original limits. Manual QGroundControl flight controls and physical hardware qualification remain open.
+Every push runs five CI jobs: 76 Rust and 37 Python tests, 7 Kani proofs, 6 fuzz targets, supply-chain checks, 20 Gazebo scenario runs and the paired C++/Rust comparison (now passing on a soft-contact plant). Manual QGroundControl flight controls and all physical hardware qualification remain open.
 
-See the [software acceptance report](docs/rust-rewrite/software-acceptance.md) for results, failures, commands, and trace provenance.
+See the [current status](docs/rust-rewrite/status.md) for the summary and evidence links. The [software acceptance report](docs/rust-rewrite/software-acceptance.md) records the 2026-10-05 state.
 
 ## Capabilities
 
@@ -222,29 +222,33 @@ This establishes portability; it is not an ESP32 target build. Follow the [devel
 
 ## Verification status
 
-Recorded results from the latest [software acceptance report](docs/rust-rewrite/software-acceptance.md):
+Current results; details in [current status](docs/rust-rewrite/status.md):
 
 | Check | Result |
 | --- | --- |
 | Formatting, generated contracts, and Clippy | Passed |
-| Rust / Python tests | 49 / 34 passed |
+| Rust / Python tests | 76 / 37 passed |
+| Kani model-checking proofs | 7 passed |
+| Fuzzing (6 targets) | No crashes |
+| Supply chain (cargo-deny) | Passed |
 | Legacy scalar oracle | 400 cases passed |
 | Simulator ABI safety scenarios | 14 passed |
-| Actual Gazebo scenarios | 20 passed with complete final traces |
+| Actual Gazebo scenarios | 20 runs passed on the soft-contact plant |
 | ESP32-S3 SDK builds | Default flight, ESP-NOW flight, and proxy passed |
 | QGroundControl v5.0.8 | Signed discovery, protocol negotiation, and all 96 parameters verified |
 | Clean source build, local package installation, and rollback | Passed |
-| Full C++/Rust plant parity | Failed under the original comparison limits |
+| Paired C++/Rust plant comparison | Passed (stable-interval rule; 20/20 x86 pairs, worst 17.5 mm) |
 | Manual QGroundControl flight controls | Unverified |
 | Physical sensor, output, radio, timing, and flight qualification | Open |
 
-Scalar agreement and finite simulator scenarios have different scopes from full plant equivalence. The failed comparisons are preserved with their original thresholds. The next parity work is identical-input replay and estimator-state comparison; no controller gains or tolerances were changed to turn those failures into passes.
+The earlier comparison failure was caused by rigid ground-contact chatter in the simulator, not by the controller; see [plant parity](docs/rust-rewrite/evidence/plant-parity/README.md). No controller gains or limits were changed. Full-tick parity still differs at stick transitions by design.
 
 ## Documentation
 
 | Document | Purpose |
 | --- | --- |
-| [Software acceptance report](docs/rust-rewrite/software-acceptance.md) | Latest measurements, failed comparisons, and delivery evidence |
+| [Current status](docs/rust-rewrite/status.md) | Current verification, open gates and evidence links |
+| [Software acceptance report](docs/rust-rewrite/software-acceptance.md) | 2026-10-05 measurements and delivery evidence (historical) |
 | [Evidence index](docs/rust-rewrite/evidence/software-five/index.json) | Raw trace and log inventory with hashes |
 | [Completion report](docs/rust-rewrite/completion-report.md) | Implemented scope and remaining gates |
 | [Remaining plan](docs/rust-rewrite/remaining-plan.md) | Outstanding software and hardware work |

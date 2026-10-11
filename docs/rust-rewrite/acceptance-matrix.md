@@ -1,5 +1,7 @@
 # Remaining acceptance matrix
 
+> **Historical record.** For the current state see [status](status.md).
+
 Latest five-item software work and retained failures: [software acceptance](software-acceptance.md).
 Current implementation and per-scenario results: [reset/metrics integration](reset-metrics-integration.md).
 This first inventory is retained as the baseline; its awaiting software entries

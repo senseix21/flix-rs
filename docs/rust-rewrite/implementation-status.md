@@ -1,5 +1,7 @@
 # Rust rewrite implementation report
 
+> **Historical record.** For the current state see [status](status.md).
+
 Latest five-item software work and retained failures: [software acceptance](software-acceptance.md).
 Latest transport software: [USB / ESP-NOW proxy integration](proxy-integration.md).
 

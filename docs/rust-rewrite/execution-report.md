@@ -1,5 +1,7 @@
 # Remaining-phase execution report
 
+> **Historical record.** For the current state see [status](status.md).
+
 Subsequent delivery: [reset, instance isolation and timing capture](reset-metrics-integration.md).
 The counts and sizes below describe the preceding integration pass. The newer
 report records current verification and supersedes the wired-metrics software gap.

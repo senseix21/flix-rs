@@ -1,5 +1,7 @@
 # Software acceptance: remaining five items
 
+> **Historical record.** For the current state see [status](status.md).
+
 This work follows `AGENTS.md`. It does not qualify a physical aircraft.
 
 [Evidence index](evidence/software-five/index.json) records raw traces, logs and hashes.
