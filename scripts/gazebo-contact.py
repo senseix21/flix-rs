@@ -4,7 +4,8 @@
 Default Gazebo/ODE contact is near-rigid: the 65 g body chatters at the 1 ms step
 and arrests landings within one step. `soft` gives the body collision a critically
 damped 30 Hz contact (kp = m*wn^2, kd = 2*m*wn), 0.28 mm static sag. Applied to both
-engines' copies of the model so paired runs share one plant. Default: unchanged."""
+engines' copies of the model so paired runs share one plant. Default plant since
+2026-10-11; `FLIX_CONTACT=rigid` reproduces the legacy near-rigid contact."""
 import sys
 import xml.etree.ElementTree as ET
 

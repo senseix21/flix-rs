@@ -48,7 +48,7 @@ if os.environ.get('FLIX_TWO_MODELS')=='1':
     ET.SubElement(include,'pose').text='0 2 0.0138 0 0 0'
     world.write('/tmp/flix-two-models.world')
 PY
-python3 scripts/gazebo-contact.py /tmp/flix-models/flix/flix.sdf "${FLIX_CONTACT:-rigid}"
+for sdf in /tmp/flix-models/*/flix.sdf; do python3 scripts/gazebo-contact.py "$sdf" "${FLIX_CONTACT:-soft}"; done
 export GAZEBO_MODEL_PATH=/tmp/flix-models
 export GAZEBO_PLUGIN_PATH=/work/target/gazebo-plugin
 export GAZEBO_MODEL_DATABASE_URI=''
