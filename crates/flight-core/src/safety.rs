@@ -182,7 +182,8 @@ pub struct Flight {
     controller: Controller,
     tuning: Tuning,
     limits: Limits,
-    pub(crate) diagnostic: Option<([f32; 4], Tick)>,
+    /// Active diagnostic permit: values and its window `[start, expiry)`.
+    pub(crate) diagnostic: Option<([f32; 4], Tick, Tick)>,
     last_kind: Option<u8>,
 }
 impl Default for Flight {
@@ -423,7 +424,7 @@ impl Flight {
         if self.state != State::Maintenance {
             return false;
         }
-        self.diagnostic = Some((values, expires));
+        self.diagnostic = Some((values, now, expires));
         true
     }
     pub fn tick(&mut self, now: Tick, sensor: Option<Sensor>) -> MotorFrame {
@@ -495,8 +496,9 @@ impl Flight {
                 self.invalidate();
             }
         } else if self.state == State::Maintenance {
-            if let Some((m, expiry)) = self.diagnostic {
-                if now < expiry {
+            if let Some((m, start, expiry)) = self.diagnostic {
+                // A clock that steps back (possible after reset) must not run it early.
+                if start <= now && now < expiry {
                     values = m;
                 } else {
                     self.reason = Reason::MaintenanceExpired;
@@ -541,7 +543,9 @@ impl Flight {
             return [0.0; 4];
         }
         if self.state == State::Maintenance
-            && self.diagnostic.is_none_or(|(_, expiry)| now >= expiry)
+            && self
+                .diagnostic
+                .is_none_or(|(_, start, expiry)| now < start || now >= expiry)
         {
             return [0.0; 4];
         }
