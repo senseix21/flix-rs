@@ -250,3 +250,20 @@ fn transition_stress_stop_dominates_at_every_seeded_step() {
         assert_eq!(f.commit(frame, at), [0.0; 4]);
     }
 }
+#[test]
+fn diagnostic_never_runs_before_its_issue_time() {
+    // Found by the property test in CI: reset() forgets the last tick time, so a later
+    // tick may be earlier than the diagnostic's issue time without a clock fault.
+    let mut f = Flight::default();
+    f.tick(Tick(1), Some(sensor(1)));
+    f.reset();
+    f.disarm();
+    assert!(f.maintenance());
+    assert!(f.diagnostic([0.0, 0.0, 0.0, 0.05], Tick(1), 1));
+    // A fresh, uncalibrated sample at t=0, as in the shrunk CI case.
+    let mut sample = sensor(0);
+    sample.calibrated = false;
+    let frame = f.tick(Tick(0), Some(sample));
+    assert_eq!(f.snapshot().state, State::Maintenance);
+    assert_eq!(f.commit(frame, Tick(0)), [0.0; 4]);
+}

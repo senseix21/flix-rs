@@ -82,6 +82,7 @@ fn any_flight() -> Flight {
         f.diagnostic = Some((
             [kani::any(), kani::any(), kani::any(), kani::any()],
             Tick(kani::any()),
+            Tick(kani::any()),
         ));
     }
     f
@@ -220,4 +221,21 @@ fn latched_faults_never_leave_fault() {
         }
     }
     assert!(f.state == State::Fault);
+}
+
+/// A maintenance diagnostic reaches the motors only inside its own window
+/// `[start, expiry)`, for any clock value, including one earlier than the issue time.
+#[kani::proof]
+#[kani::unwind(5)]
+fn diagnostic_only_inside_its_window() {
+    let f = any_flight();
+    kani::assume(f.state == State::Maintenance);
+    let now = Tick(kani::any());
+    let out = f.commit(any_frame(), now);
+    let inside = f
+        .diagnostic
+        .is_some_and(|(_, start, expiry)| start <= now && now < expiry);
+    if !inside {
+        assert!(out == [0.0; 4]);
+    }
 }
