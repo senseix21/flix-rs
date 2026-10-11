@@ -97,6 +97,14 @@ pub fn highres_imu(sensor: flight_core::Sensor) -> [u8; 63] {
     p[62] = 0; // sensor instance id
     p
 }
+/// STATUSTEXT (253) payload: severity, then text truncated to the 50-byte field.
+pub fn statustext(severity: u8, text: &[u8]) -> [u8; 54] {
+    let mut p = [0; 54];
+    p[0] = severity;
+    let n = text.len().min(50);
+    p[1..1 + n].copy_from_slice(&text[..n]);
+    p
+}
 /// STATUSTEXT (253) severity WARNING naming saturated IMU axes, e.g.
 /// "IMU saturated: gx az". Mask bits: gyro x/y/z 0..=2, accel x/y/z 3..=5 (sensor frame).
 pub fn imu_saturated(mask: u8) -> [u8; 54] {

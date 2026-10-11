@@ -261,3 +261,7 @@ Scalar agreement and finite simulator scenarios have different scopes from full 
 Changes follow [`AGENTS.md`](AGENTS.md): explicit ownership, bounded work, measurable acceptance criteria, preserved safety contracts, and factual reporting of verification limits. Read the relevant implementation and specification before changing flight behavior.
 
 The original Flix design is credited to [its upstream project](https://github.com/okalachev/flix). The reviewed baseline is revision `1f5b268271536e45a9377d1c5317d3eb6f3c3bba`. Legacy assets and reference material retain their upstream provenance; consult the [source record](docs/legacy-source.md) before redistributing them.
+
+## License
+
+The original work in this repository is licensed under the [Apache License 2.0](LICENSE). Upstream Flix publishes no licence, so the upstream images in `docs/img/` and the derived Flix RS wordmark are **not** covered; see [`NOTICE`](NOTICE).

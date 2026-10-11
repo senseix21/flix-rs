@@ -7,6 +7,7 @@ default-members = ["crates/flight-core", "crates/flight-protocol", "crates/fligh
 edition = "2024"
 rust-version = "1.85"
 version = "0.1.0"
+license = "Apache-2.0"
 
 [workspace.dependencies]
 flight-core = { path = "crates/flight-core" }

@@ -15,6 +15,24 @@ fn any_state() -> State {
     }
 }
 
+fn any_reason() -> Reason {
+    match kani::any::<u8>() % 13 {
+        0 => Reason::None,
+        1 => Reason::Disarmed,
+        2 => Reason::NotReady,
+        3 => Reason::CommandExpired,
+        4 => Reason::SensorExpired,
+        5 => Reason::InvalidNumeric,
+        6 => Reason::Clock,
+        7 => Reason::Generation,
+        8 => Reason::Tilt,
+        9 => Reason::MaintenanceExpired,
+        10 => Reason::Configuration,
+        11 => Reason::Power,
+        _ => Reason::SensorInit,
+    }
+}
+
 fn any_source() -> Source {
     match kani::any::<u8>() % 3 {
         0 => Source::Pilot,
@@ -30,6 +48,7 @@ fn any_flight() -> Flight {
     let mut f = Flight::BOOT;
     f.issuer = kani::any();
     f.state = any_state();
+    f.reason = any_reason();
     f.generation = kani::any();
     f.selected = if kani::any() {
         Some(any_source())
@@ -62,6 +81,7 @@ fn any_flight() -> Flight {
     if kani::any() {
         f.diagnostic = Some((
             [kani::any(), kani::any(), kani::any(), kani::any()],
+            Tick(kani::any()),
             Tick(kani::any()),
         ));
     }
@@ -167,5 +187,55 @@ fn only_arm_enters_armed_and_disarm_always_leaves() {
     }
     if before != State::Armed {
         assert!(f.state != State::Armed);
+    }
+}
+
+/// ADR 003 D1: a latched fault (configuration, generation) never leaves Fault through any
+/// operation, including `reset`. Recovery is rebuilding the owner, as a reboot does.
+#[kani::proof]
+#[kani::unwind(7)]
+fn latched_faults_never_leave_fault() {
+    let mut f = any_flight();
+    kani::assume(f.state == State::Fault);
+    kani::assume(matches!(
+        f.reason,
+        Reason::Configuration | Reason::Generation
+    ));
+    match kani::any::<u8>() % 7 {
+        0 => f.disarm(),
+        1 => {
+            f.clear_fault();
+        }
+        2 => {
+            f.select(any_source());
+        }
+        3 => {
+            f.maintenance();
+        }
+        4 => f.reset(),
+        5 => {
+            f.reconfigure(crate::control::Tuning::DEFAULT, Limits::DEFAULT);
+        }
+        _ => {
+            f.arm(Tick(kani::any()));
+        }
+    }
+    assert!(f.state == State::Fault);
+}
+
+/// A maintenance diagnostic reaches the motors only inside its own window
+/// `[start, expiry)`, for any clock value, including one earlier than the issue time.
+#[kani::proof]
+#[kani::unwind(5)]
+fn diagnostic_only_inside_its_window() {
+    let f = any_flight();
+    kani::assume(f.state == State::Maintenance);
+    let now = Tick(kani::any());
+    let out = f.commit(any_frame(), now);
+    let inside = f
+        .diagnostic
+        .is_some_and(|(_, start, expiry)| start <= now && now < expiry);
+    if !inside {
+        assert!(out == [0.0; 4]);
     }
 }

@@ -17,8 +17,8 @@ ESP32 firmware, proxy firmware and fuzz. Result on 2026-10-10: every workspace r
   linked into firmware: `libfuzzer-sys` (NCSA; bundles LLVM libFuzzer source, fuzz workspace
   only) and `unicode-ident` (Unicode-3.0; proc-macro build dependency of the fuzz workspace).
 - **Sources:** crates.io only. No unknown registries or git sources.
-- **Project crates:** now `publish = false` and skipped by the licence check, because no
-  project licence has been chosen. This must be revisited when a licence is added.
+- **Project crates:** `publish = false` and licensed Apache-2.0 (2026-10-11, see `LICENSE` and
+  `NOTICE`); the licence check now covers them like dependencies.
 
 ## Panic lints in the portable core
 
