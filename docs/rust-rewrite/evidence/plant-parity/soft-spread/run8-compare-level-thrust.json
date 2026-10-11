@@ -1,0 +1,214 @@
+{
+  "status": "fail",
+  "samples": 3501,
+  "violation_ticks": [
+    502
+  ],
+  "boundary_unmatched_ticks": [],
+  "metrics": {
+    "max_attitude_difference_degrees": 0.02716947197275364,
+    "max_motor_absolute_difference": 0.45045337080955505,
+    "max_position_difference_m": 0.014374729081051604
+  },
+  "thresholds": {
+    "max_attitude_difference_degrees": 5.0,
+    "max_motor_absolute_difference": 0.1,
+    "max_position_difference_m": 0.5
+  },
+  "first_threshold_violation": {
+    "relative_tick": 502,
+    "metrics": {
+      "max_attitude_difference_degrees": 2.6781832797797937e-05,
+      "max_motor_absolute_difference": 0.45045337080955505,
+      "max_position_difference_m": 7.039387170051385e-09
+    },
+    "rust": {
+      "kind": "tick",
+      "version": 3,
+      "sim_us": 2506000,
+      "generation": 4,
+      "state": 3,
+      "reason": 0,
+      "source": 0,
+      "target_attitude_valid": true,
+      "sequence": 2505,
+      "numeric_valid": true,
+      "sample_us": 2506000,
+      "sample_time_provenance": "input-v2",
+      "position_world_m": [
+        -1.5248156159941573e-07,
+        2.529425842112687e-07,
+        0.0136505626142025
+      ],
+      "pose_wxyz": [
+        1.0,
+        -9.164266884909011e-06,
+        -5.524969765247079e-06,
+        5.12297357313507e-11
+      ],
+      "velocity_world_m_s": [
+        -6.168360044966903e-08,
+        -6.6406124688001e-07,
+        2.587763810879551e-05
+      ],
+      "gyro_body_rad_s": [
+        -0.00030128558864817023,
+        0.00030634074937552214,
+        -0.0014334804145619273
+      ],
+      "acceleration_body_m_s2": [
+        -0.07767654955387115,
+        0.09185684472322464,
+        9.817055702209473
+      ],
+      "estimate_wxyz": [
+        1.0,
+        -8.727914246264845e-05,
+        -3.657640627352521e-05,
+        -6.083522384869866e-05
+      ],
+      "estimated_rates_rad_s": [
+        -0.0007025902159512043,
+        0.00014557514805346727,
+        3.5716890124604106e-05
+      ],
+      "target_rates_rad_s": [
+        0.0010473229922354221,
+        0.00043898061267100275,
+        3.663533425424248e-05
+      ],
+      "target_wxyz": [
+        1.0,
+        0.0,
+        0.0,
+        -5.472614066093229e-05
+      ],
+      "motors": [
+        0.600358784198761,
+        0.5996940732002258,
+        0.5996406674385071,
+        0.6003065705299377
+      ],
+      "raw_gyro_body_rad_s": [
+        -0.00030128558864817023,
+        0.00030634074937552214,
+        -0.0014334804145619273
+      ],
+      "raw_acceleration_body_m_s2": [
+        -0.07767654955387115,
+        0.09185684472322464,
+        9.817055702209473
+      ],
+      "sensor_limit_mask": 0
+    },
+    "legacy": {
+      "kind": "tick",
+      "version": 1,
+      "sim_us": 2507000,
+      "generation": 0,
+      "state": 3,
+      "reason": 0,
+      "source": 0,
+      "target_attitude_valid": true,
+      "sequence": 2506,
+      "numeric_valid": true,
+      "sample_us": 2507000,
+      "sample_time_provenance": "assumed-tick-v1",
+      "position_world_m": [
+        -1.5367734818028111e-07,
+        2.592921362065681e-07,
+        0.013650565408170223
+      ],
+      "pose_wxyz": [
+        1.0,
+        -9.394320841238368e-06,
+        -5.568295364355436e-06,
+        5.141099698735552e-11
+      ],
+      "velocity_world_m_s": [
+        9.838740311352012e-08,
+        -2.865518311523374e-08,
+        2.6071566026075743e-05
+      ],
+      "gyro_body_rad_s": [
+        -0.00043161428766325116,
+        -0.001340195070952177,
+        -0.00048456256627105176
+      ],
+      "acceleration_body_m_s2": [
+        -0.008916889317333698,
+        -0.0072051724418997765,
+        9.779609680175781
+      ],
+      "estimate_wxyz": [
+        1.0,
+        -0.00013496044266503304,
+        0.00010696964454837143,
+        -3.2844334782566875e-05
+      ],
+      "estimated_rates_rad_s": [
+        0.0004894051817245781,
+        -0.0007855616277083755,
+        -0.00045723214861936867
+      ],
+      "target_rates_rad_s": [
+        0.0,
+        0.0,
+        -5.6544842664152384e-05
+      ],
+      "target_wxyz": [
+        1.0,
+        0.0,
+        0.0,
+        -4.228291072649881e-05
+      ],
+      "motors": [
+        0.14990541338920593,
+        0.1502264440059662,
+        0.14985418319702148,
+        0.1500139832496643
+      ]
+    }
+  },
+  "command_transition_ticks": [
+    -1,
+    0,
+    2,
+    502
+  ],
+  "stable_interval_characterization": {
+    "status": "pass",
+    "samples": 3498,
+    "violation_ticks": [],
+    "boundary_unmatched_ticks": [],
+    "metrics": {
+      "max_attitude_difference_degrees": 0.02716947197275364,
+      "max_motor_absolute_difference": 0.004821121692657471,
+      "max_position_difference_m": 0.014374729081051604
+    },
+    "thresholds": {
+      "max_attitude_difference_degrees": 5.0,
+      "max_motor_absolute_difference": 0.1,
+      "max_position_difference_m": 0.5
+    },
+    "first_threshold_violation": null
+  },
+  "dispatch_difference_classification": {
+    "status": "explained",
+    "unexpected_violation_ticks": [],
+    "contract": "Only actual logged MANUAL_CONTROL transition ticks may differ; no widened time window."
+  },
+  "full_tick_parity_remains_open": true,
+  "acceptance": {
+    "rule": "stable-interval",
+    "status": "pass"
+  },
+  "profile": "paired-Gazebo11-nominal",
+  "hardware_test": false,
+  "differences": [
+    "Legacy truth-yaw injection disabled in disposable comparison copy.",
+    "Legacy acceleration input retains its 0.1 filter; Rust uses MPU6050 range limits and retains raw input in trace v3.",
+    "Legacy controller processes MAVLink after control; Rust stop preempts tick.",
+    "Legacy state/reason/generation observation is descriptive, not a Rust lifecycle contract."
+  ]
+}

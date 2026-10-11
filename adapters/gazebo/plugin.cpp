@@ -33,6 +33,16 @@ class FlixRust final : public ModelPlugin {
   uint64_t test_gap_at = 0, test_gap_us = 0;
   FlixOutput last_output{};
   bool ideal_imu = false;
+  // Comparison profile only: the legacy plugin's 0.1 first-order accelerometer
+  // filter (its stand-in for the MPU6050 DLPF), starting from zero like legacy.
+  bool legacy_acc_filter = false;
+  std::array<float,3> acc_filtered{};
+  // MPU6050 DLPF_CFG=1 as configured by the firmware: first-order approximation of the
+  // 184 Hz accel / 188 Hz gyro bandwidth at the 1 kHz sample rate. Order and group
+  // delay are not specified by the datasheet; this models bandwidth only.
+  bool dlpf1 = false;
+  std::array<float,6> dlpf_state{};
+  bool dlpf_started = false;
   std::array<float,6> raw_imu{};
   uint32_t sensor_limit_mask = 0;
   bool open_socket() {
@@ -114,6 +124,9 @@ public:
     previous = UINT64_MAX;
     test_fault_injected = false;
     last_output = {};
+    acc_filtered = {};
+    dlpf_state = {};
+    dlpf_started = false;
     // Owner queues are only one layer. Closing also discards unread kernel
     // datagrams, including old mode/arm packets queued while physics paused.
     if (socket_fd >= 0) { close(socket_fd); socket_fd = -1; }
@@ -151,9 +164,12 @@ public:
     tracing = trace_port != 0;
     if (config->HasElement("imu_profile")) {
       const auto profile = config->Get<std::string>("imu_profile");
-      if (profile != "mpu6050-4g" && profile != "ideal")
+      if (profile != "mpu6050-4g" && profile != "ideal" && profile != "mpu6050-4g-lpf01" &&
+          profile != "mpu6050-4g-dlpf1")
         throw std::runtime_error("invalid IMU profile");
+      dlpf1 = profile == "mpu6050-4g-dlpf1";
       ideal_imu = profile == "ideal";
+      legacy_acc_filter = profile == "mpu6050-4g-lpf01";
     }
     // Explicit isolated test profile only; production/default SDF has no fault.
     if (config->HasElement("test_sensor_fault")) {
@@ -207,6 +223,23 @@ public:
                     now,
                     {float(gyro.X()), float(gyro.Y()), float(gyro.Z())},
                     {float(acc.X()), float(acc.Y()), float(acc.Z())}};
+    if (dlpf1) {
+      constexpr float acc_alpha = 0.685f, gyro_alpha = 0.693f;
+      for (int i=0;i<3;i++) {
+        float *g = &input.gyro[i], *a = &input.acceleration[i];
+        if (!dlpf_started) { dlpf_state[i] = *g; dlpf_state[i+3] = *a; }
+        dlpf_state[i] += gyro_alpha * (*g - dlpf_state[i]);
+        dlpf_state[i+3] += acc_alpha * (*a - dlpf_state[i+3]);
+        *g = dlpf_state[i]; *a = dlpf_state[i+3];
+      }
+      dlpf_started = true;
+    }
+    if (legacy_acc_filter) {
+      for (int i=0;i<3;i++) {
+        acc_filtered[i] += 0.1f * (input.acceleration[i] - acc_filtered[i]);
+        input.acceleration[i] = acc_filtered[i];
+      }
+    }
     sensor_limit_mask = 0;
     // Match the configured MPU6050 signed-register ranges before calibration.
     // Keep invalid nonfinite observations invalid, never turn them into bounds.

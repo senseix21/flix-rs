@@ -48,7 +48,7 @@ jobs:
 
   gazebo:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,6 +64,9 @@ jobs:
       - name: Finite traced physics probes
         working-directory: flix-rust
         run: make sim-scenarios
+      - name: Paired C++/Rust plant comparison
+        working-directory: flix-rust
+        run: make sim-parity
       - name: Preserve simulator evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -78,11 +78,16 @@ def main():
         'unexpected_violation_ticks':sorted(unexpected),
         'contract':'Only actual logged MANUAL_CONTROL transition ticks may differ; no widened time window.'}
     result['full_tick_parity_remains_open']=result['status']!='pass'
+    # Acceptance rule (fixtures/simulator/acceptance.json comparison.acceptance_rule).
+    stable=result['stable_interval_characterization']
+    result['acceptance']=dict(
+        rule='stable-interval',
+        status='pass' if stable['status']=='pass' and result['dispatch_difference_classification']['status']=='explained' else 'fail')
     result.update(profile='paired-Gazebo11-nominal',hardware_test=False,
       differences=['Legacy truth-yaw injection disabled in disposable comparison copy.',
                    'Legacy acceleration input retains its 0.1 filter; Rust uses MPU6050 range limits and retains raw input in trace v3.',
                    'Legacy controller processes MAVLink after control; Rust stop preempts tick.',
                    'Legacy state/reason/generation observation is descriptive, not a Rust lifecycle contract.'])
     args.output.write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result,indent=2))
-    return result['status']!='pass'
+    return result['acceptance']['status']!='pass'
 if __name__=='__main__':raise SystemExit(main())
