@@ -87,8 +87,8 @@ Run on the fast harness by patching the harness at runtime (not committed):
 
 - Anything about hardware, radio links, real timing or real positioning (S3, S4).
 - On-board position control (S2). The position loop here runs on the ground and is S1-only.
-- The `swarm` CI job has not run on GitHub yet; the Crazyswarm2 results above are local (arm64).
-  CI uses the same Dockerfile on amd64.
-- `scripts/check.sh` stops at `scripts/legacy-parity.py` on this host because the legacy checkout
-  `../flix` is missing locally (unrelated to this change). The steps after it, including the swarm
-  steps, were run individually and passed; CI checks out the legacy repository and runs all of them.
+- The Crazyswarm2 numbers above are from the local arm64 run. The `swarm` CI job (amd64, same
+  Dockerfile) passed on PR #8 in GitHub Actions runs 38296795420 and 38296803293 on 2026-10-13.
+- `scripts/check.sh` stops at `scripts/legacy-parity.py` on the dev host because the legacy checkout
+  `../flix` is missing locally (unrelated to this change). The `contracts` CI job, which has it, ran
+  the full script including the swarm steps and passed on PR #8.
