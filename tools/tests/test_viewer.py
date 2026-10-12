@@ -17,6 +17,12 @@ class ViewerTests(unittest.TestCase):
         self.assertEqual(viewer.parse_pose(block)['position'], [1.,2.,3.])
         self.assertIsNone(viewer.parse_pose(block.replace('"flix"','"flix::body"')))
 
+    def test_swarm_models_are_named_and_others_ignored(self):
+        block='pose { name: "flix3" position {x: 1 y: 2 z: 3} orientation {x: 0 y: 0 z: 0 w: 1}}'
+        self.assertEqual(viewer.parse_pose(block)['name'], 'flix3')
+        for other in ('flix9', 'flix12', 'flix3::body', 'ground', 'xflix1'):
+            self.assertIsNone(viewer.parse_pose(block.replace('"flix3"', f'"{other}"')))
+
     def test_malformed_pose_does_not_replace_live_state(self):
         for block in ['', 'pose {}', 'pose {name: "flix"}', 'pose {name: "flix" position {x: nan y: 0 z: 0} orientation {x: 0 y: 0 z: 0 w: 1}}', 'pose {name: "flix" position {x: 0 y: 0 z: 0} orientation {x: 0 y: 0 z: 0 w: 0}}']:
             self.assertIsNone(viewer.parse_pose(block))

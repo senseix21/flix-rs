@@ -10,7 +10,7 @@ from flix_swarm.owner import ARMED, Capacity, Messages, Owner
 from flix_swarm.plant import GRAVITY, HALF_SIZE, Plant, hover_thrust
 from flix_swarm.position import PositionController, attitude_for
 from flix_swarm.swarm import PlanRejected, Swarm, closest_approach
-from flix_swarm.vehicle import Link
+from flix_swarm.vehicle import Ground, Link
 
 
 class Geometry(unittest.TestCase):
@@ -93,6 +93,26 @@ class Links(unittest.TestCase):
         link.send(b'b', 0)
         self.assertEqual(link.lost, 2)
         self.assertEqual(list(link.due(100)), [])
+
+
+class Grounds(unittest.TestCase):
+    def test_ground_alone_provisions_then_waits(self):
+        ground = Ground('g', 12)
+        frames = [ground.outgoing(t, (0, 0, 0), (0, 0, 0)) for t in range(1000, 8000, 1000)]
+        self.assertEqual(sum(f is not None for f in frames), 4)  # maintenance, two PARAM_SETs, exit
+        self.assertEqual(ground.phase, 'provisioning')
+        self.assertFalse(ground.request_arm(8000))
+
+    def test_release_only_after_a_completed_stop(self):
+        ground = Ground('g', 12)
+        for phase in ('lost', 'refused', 'armed'):
+            ground.phase = phase
+            ground.release()
+            self.assertEqual(ground.phase, phase)
+        ground.phase = 'standby'
+        ground.request_stop(5000)
+        ground.release()
+        self.assertEqual((ground.phase, ground.stop_requested_us), ('standby', None))
 
 
 class Owners(unittest.TestCase):
