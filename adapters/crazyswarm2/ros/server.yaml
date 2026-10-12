@@ -1,0 +1,9 @@
+/crazyflie_server:
+  ros__parameters:
+    sim:
+      max_dt: 0.0          # step as fast as the host allows; time is simulated
+      backend: flix        # adapters/crazyswarm2/ros/flix_backend.py
+      controller: flix     # adapters/crazyswarm2/ros/flix_sil.py
+      visualizations:
+        rviz:
+          enabled: false

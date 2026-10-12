@@ -1,0 +1,99 @@
+{
+ "scenario": "stop",
+ "passed": true,
+ "thresholds": {
+  "hover_error_m": 0.05,
+  "separation_observed_m": 0.25,
+  "stop_latency_us": 2000
+ },
+ "marks": {
+  "hover": 5885000,
+  "after-stop": 6885000
+ },
+ "checks": [
+  {
+   "name": "three drones traced",
+   "passed": true,
+   "drones": [
+    "cf1",
+    "cf2",
+    "cf3"
+   ]
+  },
+  {
+   "name": "unique system IDs",
+   "passed": true,
+   "system_ids": {
+    "cf1": 11,
+    "cf2": 12,
+    "cf3": 13
+   }
+  },
+  {
+   "name": "cf1 armed",
+   "passed": true,
+   "events": [
+    [
+     1390000,
+     "armed",
+     3000
+    ]
+   ]
+  },
+  {
+   "name": "cf2 armed",
+   "passed": true,
+   "events": [
+    [
+     1390000,
+     "armed",
+     3000
+    ]
+   ]
+  },
+  {
+   "name": "cf3 armed",
+   "passed": true,
+   "events": [
+    [
+     1390000,
+     "armed",
+     3000
+    ]
+   ]
+  },
+  {
+   "name": "cf1 hover error",
+   "passed": true,
+   "error_m": 0.0081
+  },
+  {
+   "name": "cf2 hover error",
+   "passed": true,
+   "error_m": 0.0082
+  },
+  {
+   "name": "cf3 hover error",
+   "passed": true,
+   "error_m": 0.0082
+  },
+  {
+   "name": "cf1 output stopped",
+   "passed": true,
+   "latency_us": 1000,
+   "state": 1
+  },
+  {
+   "name": "cf2 output stopped",
+   "passed": true,
+   "latency_us": 1000,
+   "state": 1
+  },
+  {
+   "name": "cf3 output stopped",
+   "passed": true,
+   "latency_us": 1000,
+   "state": 1
+  }
+ ]
+}
