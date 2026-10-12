@@ -1,6 +1,8 @@
 # Flix Swarm Flight Specification
 
-Date: 2026-10-12. Status: **proposed, not accepted**. Nothing described here is implemented.
+Date: 2026-10-12, updated 2026-10-13. Status: **S1 in progress**. SD-01, SD-03 and SD-04 were accepted
+on 2026-10-13 when the user asked to proceed with implementation; the other decisions remain open.
+Stage S1 (simulation only) is implemented; S2 to S4 are not started.
 Delivery work: [swarm plan](swarm-plan.md). Base requirements: [Rust rewrite specification](rust-rewrite-spec.md).
 
 ## In plain terms
@@ -46,6 +48,8 @@ Checked against `main` at `ccf1761`:
   another system ID.
 - The Gazebo ABI creates each instance with `Owner::default()`, so every simulated drone starts
   with system ID 1. The registry holds at most 8 instances (`adapters/gazebo/src/lib.rs`).
+  (S1 finding, 2026-10-13: the operator path `maintenance`, `PARAM_SET MAV_SYS_ID`, `exit` changes
+  the ID through `flix_receive`, so S1 needed no ABI change.)
 - The simulator sends `calibrated = 1` IMU samples in the body frame, which skips `flight_esp32::imu`.
 - Crazyswarm2 (pinned for evaluation at `f1e0995`, 2026-09-11) commands positions only:
   `Takeoff`, `Land`, `GoTo`, trajectories, `cmdFullState`. Its simulator steps physics every
@@ -118,10 +122,10 @@ Accuracy figures are vendor-class expectations, not measurements. S3 measures th
 
 | ID | Decision | Proposed position | Must close before |
 | --- | --- | --- | --- |
-| SD-01 | Adopt swarm flight as a project requirement | Proposed in this document | S1 starts |
+| SD-01 | Adopt swarm flight as a project requirement | **Accepted 2026-10-13** | S1 starts |
 | SD-02 | Where the position loop runs | Ground in S1 (sim only); on the drone from S2 | S2 starts |
-| SD-03 | Coordinator | Crazyswarm2, pinned and kept outside the Cargo workspace; ROS 2 never enters the firmware or `flight-core` | S1 gate |
-| SD-04 | Where the Crazyswarm2 integration lives | `adapters/crazyswarm2/` in this repository: Python SIL module, Flix plant parameters, Dockerfile, pinned upstream commit and a small patch; MIT notice kept | S1 starts |
+| SD-03 | Coordinator | **Accepted 2026-10-13**: Crazyswarm2, pinned and kept outside the Cargo workspace; ROS 2 never enters the firmware or `flight-core` | S1 gate |
+| SD-04 | Where the Crazyswarm2 integration lives | **Accepted 2026-10-13**: `adapters/crazyswarm2/` in this repository: Python SIL module, Flix plant parameters, Dockerfile, pinned upstream commit and a small patch; MIT notice kept | S1 starts |
 | SD-05 | Position input message | Candidates `ATT_POS_MOCAP` (138) or `VISION_POSITION_ESTIMATE` (102) for ground-measured position; on-board driver if UWB tags measure locally | S2 protocol work |
 | SD-06 | Position setpoint message | Candidate `SET_POSITION_TARGET_LOCAL_NED` (84) with a documented supported mask | S2 protocol work |
 | SD-07 | Positioning system | UWB proposed; open | S3 starts |

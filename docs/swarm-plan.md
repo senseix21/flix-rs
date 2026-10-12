@@ -1,6 +1,6 @@
 # Flix Swarm Flight Plan
 
-Date: 2026-10-12. Status: **proposed**. Requirements: [swarm specification](swarm-spec.md).
+Date: 2026-10-12, updated 2026-10-13. Status: **S1 in progress**; S2 to S4 not started. Requirements: [swarm specification](swarm-spec.md).
 
 ## In plain terms
 
@@ -31,28 +31,28 @@ flowchart TD
 Deliverable: a Crazyswarm2 script flies three simulated Flix drones through a formation. Each
 drone runs the real `Owner` and is commanded only through MAVLink AUTO attitude setpoints.
 
-* [ ] S1-01: Accept SD-01, SD-03 and SD-04, or revise them.
-* [ ] S1-02: Give each simulated drone its own system ID (SWM-01, SWM-11). First check whether a
+* [x] S1-01: Accept SD-01, SD-03 and SD-04, or revise them.
+* [x] S1-02: Give each simulated drone its own system ID (SWM-01, SWM-11). First check whether a
   `PARAM_SET` of `MAV_SYS_ID` in Standby through `flix_receive` works. If not, add a versioned ABI
   call that creates an instance with a validated system ID. ABI tests cover duplicate, zero and
   out-of-range IDs.
-* [ ] S1-03: Confirm or change the 8-instance registry bound (SD-08). Test creation at the bound
+* [x] S1-03: Confirm or change the 8-instance registry bound (SD-08). Test creation at the bound
   and the refusal above it.
-* [ ] S1-04: Add `adapters/crazyswarm2/` with the pinned upstream commit, a small patch that adds a
+* [x] S1-04: Add `adapters/crazyswarm2/` with the pinned upstream commit, a small patch that adds a
   `flix` controller option to `crazyflie_sil.py`, and a Python module that loads
   `libflight_gazebo` through `ctypes`.
-* [ ] S1-05: Add a Flix plant to the Crazyswarm2 simulator using the same mass, arm length, thrust
+* [x] S1-05: Add a Flix plant to the Crazyswarm2 simulator using the same mass, arm length, thrust
   and torque constants and motor asymmetry as the Gazebo plugin (`adapters/gazebo/plugin.cpp`).
   Record the source of every constant.
-* [ ] S1-06: Generate IMU samples from the simulated state: body-frame rates and specific force,
+* [x] S1-06: Generate IMU samples from the simulated state: body-frame rates and specific force,
   with the same MPU6050 range limits as the Gazebo plugin. Call `flix_tick2` every second physics
   step (1 kHz, since Crazyswarm2 steps at 0.5 ms).
-* [ ] S1-07: Write the ground position loop: position target to attitude quaternion and thrust,
+* [x] S1-07: Write the ground position loop: position target to attitude quaternion and thrust,
   with bounded tilt and thrust. Send it as `SET_ATTITUDE_TARGET` packets through `flix_receive`
   at a fixed rate shorter than the AUTO lease. Arm each drone with an explicit request (SWM-02).
-* [ ] S1-08: Add a Docker image (arm64, ROS 2 Jazzy, Crazyswarm2, our release library) that runs
+* [x] S1-08: Add a Docker image (arm64, ROS 2 Jazzy, Crazyswarm2, our release library) that runs
   on Colima the same way the Gazebo image does.
-* [ ] S1-09: Scenarios and checks, each with a recorded trace:
+* [x] S1-09: Scenarios and checks, each with a recorded trace:
   - one drone: takeoff, hover, `GoTo`, land;
   - three drones: formation change, minimum pair distance reported (SWM-12);
   - swarm stop: every drone's output reaches zero on the next tick (SWM-03);
@@ -60,7 +60,21 @@ drone runs the real `Owner` and is commanded only through MAVLink AUTO attitude 
   - one drone gets a sensor fault: only that drone stops (SWM-04);
   - one drone refuses to arm: the script reports it and does not fly that drone (SWM-02);
   - eight drones: setpoint rate and latency recorded (SWM-13).
-* [ ] S1-10: Add a CI job, or extend the gazebo job, that runs the three-drone scenario.
+* [x] S1-10: Add a CI job, or extend the gazebo job, that runs the three-drone scenario.
+
+S1 notes (2026-10-13):
+- S1-01: SD-01, SD-03 and SD-04 accepted.
+- S1-02: no ABI change needed. Each owner is provisioned through `maintenance`, `PARAM_SET`
+  `SF_RC_LOSS_TIME` (0.3 s) and `MAV_SYS_ID`, then `exit`; the ground waits for both `PARAM_VALUE`
+  confirmations before the drone counts as ready.
+- S1-03: the 8-owner bound is kept; the `load` scenario flies 8 drones and checks a ninth is refused.
+- S1-04: `adapters/crazyswarm2/` with `ros/crazyflie_server.patch` against Crazyswarm2 `f1e0995`.
+  The patch also adds `arm` services and a working `emergency`, which the stock simulator lacks.
+- S1-06: `flix_tick2` runs every 1 ms physics step; the `flix` backend steps at 1 kHz instead of
+  Crazyswarm2's 0.5 ms, with two 0.5 ms integrator substeps inside the plant.
+- S1-09: the full list runs in the fast harness (`flix_swarm.scenarios`, on every push via
+  `scripts/check.sh`). The Crazyswarm2 path runs formation, swarm stop and partial arming through
+  stock `crazyflie_py` (`make swarm-sim`, CI job `swarm`).
 
 Gate: all S1-09 scenarios pass in CI on the pinned images. Evidence goes in
 `docs/rust-rewrite/evidence/swarm-s1/`. This proves coordination works with the real Flix control

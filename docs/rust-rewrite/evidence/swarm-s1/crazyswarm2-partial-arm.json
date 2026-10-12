@@ -1,0 +1,85 @@
+{
+ "scenario": "partial-arm",
+ "passed": true,
+ "thresholds": {
+  "hover_error_m": 0.05,
+  "separation_observed_m": 0.25,
+  "stop_latency_us": 2000
+ },
+ "marks": {
+  "hover": 6025000,
+  "landed": 9025000
+ },
+ "checks": [
+  {
+   "name": "three drones traced",
+   "passed": true,
+   "drones": [
+    "cf1",
+    "cf2",
+    "cf3"
+   ]
+  },
+  {
+   "name": "unique system IDs",
+   "passed": true,
+   "system_ids": {
+    "cf1": 11,
+    "cf2": 12,
+    "cf3": 13
+   }
+  },
+  {
+   "name": "cf1 armed",
+   "passed": true,
+   "events": [
+    [
+     1530000,
+     "armed",
+     3000
+    ]
+   ]
+  },
+  {
+   "name": "cf3 armed",
+   "passed": true,
+   "events": [
+    [
+     1530000,
+     "armed",
+     3000
+    ]
+   ]
+  },
+  {
+   "name": "cf1 hover error",
+   "passed": true,
+   "error_m": 0.008
+  },
+  {
+   "name": "cf3 hover error",
+   "passed": true,
+   "error_m": 0.0082
+  },
+  {
+   "name": "cf1 landed and stopped",
+   "passed": true,
+   "z_m": 0.0135,
+   "state": 1
+  },
+  {
+   "name": "cf3 landed and stopped",
+   "passed": true,
+   "z_m": 0.0135,
+   "state": 1
+  },
+  {
+   "name": "cf2 never armed",
+   "passed": true
+  },
+  {
+   "name": "cf2 stayed on the ground",
+   "passed": true
+  }
+ ]
+}

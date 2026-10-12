@@ -74,6 +74,23 @@ jobs:
           name: simulator-probes
           path: flix-rust/.local/qualification/
 
+  swarm:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: flix-rust
+      - name: Crazyswarm2 coordinating simulated Flix drones
+        working-directory: flix-rust
+        run: make swarm-sim
+      - name: Preserve swarm evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: swarm-s1
+          path: flix-rust/.local/qualification/swarm-s1/
+
   fuzz:
     runs-on: ubuntu-24.04
     timeout-minutes: 30

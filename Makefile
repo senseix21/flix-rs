@@ -1,4 +1,4 @@
-.PHONY: check demo build sim-check sim-scenarios
+.PHONY: check demo build sim-check sim-scenarios swarm-sim
 check:
 	sh scripts/check.sh
 demo:
@@ -50,3 +50,11 @@ sim-parity:
 	  docker run --rm -v "$(CURDIR):/work" -w /work flix-rust-gazebo:local python3 tools/gazebo-compare.py .local/qualification/parity/rust-$$s/trace.jsonl .local/qualification/parity/legacy-$$s/trace.jsonl --output .local/qualification/parity/compare-$$s.json > /dev/null || status=1; \
 	  python3 -c "import json,sys;r=json.load(open(sys.argv[1]));s=r['stable_interval_characterization'];d=r['dispatch_difference_classification'];print('parity',sys.argv[2],r['acceptance']['status'],'stable',{k:round(v,4) for k,v in s['metrics'].items()},'unexpected',len(d['unexpected_violation_ticks']),d['unexpected_violation_ticks'][:12],'unmatched',r['boundary_unmatched_ticks'][:12])" .local/qualification/parity/compare-$$s.json $$s; \
 	done; exit $$status
+
+SWARM_SCENARIOS := formation stop partial-arm
+# Crazyswarm2 coordinating simulated Flix drones (swarm plan S1). Results: .local/qualification/swarm-s1/.
+swarm-sim:
+	docker build -t flix-crazyswarm2:local -f adapters/crazyswarm2/Dockerfile adapters/crazyswarm2
+	set -e; for s in $(SWARM_SCENARIOS); do \
+	  docker run --rm --init -v "$(CURDIR):/work" -w /work flix-crazyswarm2:local sh scripts/crazyswarm2-scenario.sh $$s /work/.local/qualification/swarm-s1/crazyswarm2-$$s; \
+	done
