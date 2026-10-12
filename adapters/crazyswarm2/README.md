@@ -32,10 +32,11 @@ Real Gazebo physics, several Flix models, each with its own Rust plugin, flown b
 panel (system ID, ground phase, flight state, height, motor output). View only.
 
 ```sh
-# Apple Silicon (local arm64 image and legacy checkout, see the Gazebo notes):
+# Apple Silicon (local arm64 image and legacy checkout, see the Gazebo notes)
 make swarm-gazebo GAZEBO_IMAGE=flix-rust-gazebo:arm64 LEGACY=$PWD/.local/legacy-git
 # Elsewhere: make swarm-gazebo
-python3 tools/gazebo-viewer.py --swarm      # then open http://127.0.0.1:8765
+python3 tools/gazebo-viewer.py --swarm
+# then open http://127.0.0.1:8765
 ```
 
 The flight repeats: arm each drone, take off, zigzag, ring, a full turn of the ring one place at a
