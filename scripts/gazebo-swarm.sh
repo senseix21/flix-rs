@@ -19,9 +19,12 @@ export GAZEBO_MODEL_DATABASE_URI=''
 export ALSOFT_DRIVERS=null
 gzserver --verbose /tmp/flix-swarm/swarm.world &
 server=$!
-trap 'kill -TERM $server 2>/dev/null; wait $server 2>/dev/null' EXIT INT TERM
-if [ "$mode" = loop ]; then
-  PYTHONPATH=adapters/crazyswarm2:tools python3 -u -m flix_swarm.gazebo --drones "$count" --loop
-else
-  PYTHONPATH=adapters/crazyswarm2:tools python3 -u -m flix_swarm.gazebo --drones "$count"
-fi
+trap 'kill -TERM $server 2>/dev/null; exit 130' INT TERM
+loop=
+[ "$mode" = loop ] && loop=--loop
+status=0
+PYTHONPATH=adapters/crazyswarm2:tools python3 -u -m flix_swarm.gazebo --drones "$count" $loop || status=$?
+# Stopping gzserver ends it by SIGTERM; that is cleanup, not the result. Report the flight.
+kill -TERM $server 2>/dev/null || true
+wait $server 2>/dev/null || true
+exit $status
