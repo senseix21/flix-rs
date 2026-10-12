@@ -1,4 +1,5 @@
 use crate::math::wrap_angle;
+use crate::position::Target;
 use crate::{Quaternion, Vec3};
 pub const GRAVITY: f32 = 9.80665;
 
@@ -183,17 +184,23 @@ pub enum Intent {
         rates: Vec3,
         thrust: f32,
     },
+    /// Automatic only; `Flight` turns it into an attitude and thrust each tick (swarm S2).
+    Position(Target),
 }
 impl Intent {
+    /// Commanded collective thrust. A position intent chooses its own thrust, so it reports
+    /// full scale: it can never satisfy the low-thrust arming precondition or idle the motors.
     pub fn thrust(self) -> f32 {
         match self {
             Self::Stabilized(p) | Self::Acro(p) => p.thrust,
             Self::Attitude { thrust, .. } | Self::Rates { thrust, .. } => thrust,
+            Self::Position(_) => 1.0,
         }
     }
     pub fn valid(self) -> bool {
         match self {
             Self::Stabilized(p) | Self::Acro(p) => p.valid(),
+            Self::Position(target) => target.valid(),
             Self::Attitude {
                 feedforward,
                 thrust,
@@ -216,6 +223,7 @@ impl Intent {
             Self::Acro(_) => 1,
             Self::Attitude { .. } => 2,
             Self::Rates { .. } => 3,
+            Self::Position(_) => 4,
         }
     }
 }
@@ -245,7 +253,8 @@ impl Controller {
         t: Tuning,
     ) -> Option<[f32; 4]> {
         self.target_attitude = None;
-        if !intent.valid() {
+        // Position intents are resolved by `Flight` before reaching the attitude controller.
+        if !intent.valid() || matches!(intent, Intent::Position(_)) {
             return None;
         }
         if intent.thrust() < 0.1 {
@@ -277,6 +286,7 @@ impl Controller {
                 feedforward,
                 ..
             } => self.attitude_rates(orientation, feedforward, estimate, t)?,
+            Intent::Position(_) => return None,
         };
         self.target_rates = target;
         let error = (target - estimate.rates).array();

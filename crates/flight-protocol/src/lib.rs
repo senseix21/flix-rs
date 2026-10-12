@@ -25,6 +25,7 @@ pub mod proxy;
 pub mod telemetry;
 pub mod wire;
 use flight_core::control::{Intent, Pilot};
+use flight_core::position::Target;
 use flight_core::{Quaternion, Source, Vec3};
 use wire::Packet;
 
@@ -56,6 +57,9 @@ pub enum Event {
         duration_us: u32,
     },
     Setpoint(Source, Intent),
+    /// External position measurement, world NWU metres. Carries no target system: the
+    /// transport must deliver each drone only its own stream (swarm spec SD-05).
+    Position(Vec3),
     ParameterRead {
         index: i16,
         name: [u8; 16],
@@ -108,6 +112,22 @@ pub fn console(bytes: &[u8]) -> Result<Console, Error> {
 fn f32_at(p: &[u8], offset: usize) -> f32 {
     f32::from_le_bytes([p[offset], p[offset + 1], p[offset + 2], p[offset + 3]])
 }
+fn u16_at(p: &[u8], offset: usize) -> u16 {
+    u16::from_le_bytes([p[offset], p[offset + 1]])
+}
+/// MAVLink local NED to Flix world NWU: x unchanged, y and z negated.
+fn nwu(p: &[u8], offset: usize) -> Vec3 {
+    Vec3(
+        f32_at(p, offset),
+        -f32_at(p, offset + 4),
+        -f32_at(p, offset + 8),
+    )
+}
+/// SET_POSITION_TARGET_LOCAL_NED masks Flix accepts: position and yaw always used,
+/// acceleration, force and yaw rate ignored, velocity feedforward used or ignored as a whole.
+pub const POSITION_MASK_WITH_VELOCITY: u16 = 0x09C0;
+pub const POSITION_MASK: u16 = 0x09F8;
+const MAV_FRAME_LOCAL_NED: u8 = 1;
 fn i16_at(p: &[u8], offset: usize) -> i16 {
     i16::from_le_bytes([p[offset], p[offset + 1]])
 }
@@ -222,6 +242,38 @@ pub fn event(packet: &Packet, local: u8) -> Result<Event, Error> {
                 },
                 _ => Ok(Event::UnsupportedCommand(command)),
             }
+        }
+        84 => {
+            destination(p, 50, Some(51), local)?;
+            let mask = u16_at(p, 48);
+            if p[52] != MAV_FRAME_LOCAL_NED
+                || (mask != POSITION_MASK && mask != POSITION_MASK_WITH_VELOCITY)
+            {
+                return Err(Error::Unsupported);
+            }
+            let target = Target {
+                position: nwu(p, 4),
+                velocity: if mask == POSITION_MASK {
+                    Vec3::ZERO
+                } else {
+                    nwu(p, 16)
+                },
+                // NED yaw is clockwise from north; NWU yaw is counter-clockwise.
+                yaw: -f32_at(p, 40),
+            };
+            if !target.valid() {
+                return Err(Error::Numeric);
+            }
+            Ok(Event::Setpoint(Source::Automatic, Intent::Position(target)))
+        }
+        138 => {
+            // time_usec and the attitude quaternion are ignored: freshness is local arrival
+            // time and attitude comes from the IMU estimator. Covariance is not used.
+            let position = nwu(p, 24);
+            if !position.finite() {
+                return Err(Error::Numeric);
+            }
+            Ok(Event::Position(position))
         }
         82 => {
             destination(p, 36, Some(37), local)?;

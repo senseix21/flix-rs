@@ -11,8 +11,10 @@ fn valid_crc_arbitrary_payloads_exercise_all_ingress_decoders() {
         (69, 30),
         (76, 33),
         (82, 51),
+        (84, 53),
         (119, 12),
         (126, 81),
+        (138, 120),
     ];
     let mut seed = 0xdec0deu64;
     let mut policy = Policy::BenchUsb {
@@ -22,7 +24,7 @@ fn valid_crc_arbitrary_payloads_exercise_all_ingress_decoders() {
     for n in 0..20_000 {
         let (id, max) = definitions[n % definitions.len()];
         let length = n % (max + 1);
-        let mut payload = [0; 81];
+        let mut payload = [0; 120];
         for byte in &mut payload[..length] {
             seed = seed.wrapping_mul(6364136223846793005).wrapping_add(1);
             *byte = (seed >> 32) as u8;

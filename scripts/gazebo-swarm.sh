@@ -2,10 +2,12 @@
 # Gazebo with N Flix drones flown as a swarm; executed inside the Gazebo Docker image.
 # The browser viewer (tools/gazebo-viewer.py --swarm) reads poses from this container and the
 # coordinator's state from .local/gazebo-swarm.json.
-# Usage: sh scripts/gazebo-swarm.sh [COUNT] [loop|once]   (once: one flight, exit status = result)
+# Usage: sh scripts/gazebo-swarm.sh [COUNT] [loop|once] [ground|onboard]
+#   once: one flight, exit status = result. onboard: position loop in flight-core (swarm S2).
 set -eu
 count=${1:-3}
 mode=${2:-loop}
+loop_at=${3:-ground}
 cd /work
 target=/work/target/gazebo-swarm-$(uname -m)
 export CARGO_TARGET_DIR="$target"
@@ -22,6 +24,7 @@ server=$!
 trap 'kill -TERM $server 2>/dev/null; exit 130' INT TERM
 loop=
 [ "$mode" = loop ] && loop=--loop
+[ "$loop_at" = onboard ] && loop="$loop --onboard"
 status=0
 PYTHONPATH=adapters/crazyswarm2:tools python3 -u -m flix_swarm.gazebo --drones "$count" $loop || status=$?
 # Stopping gzserver ends it by SIGTERM; that is cleanup, not the result. Report the flight.

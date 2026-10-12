@@ -152,6 +152,15 @@ fn finite_intent(intent: Intent) -> bool {
             ..
         } => all(&[f.0, f.1, f.2, thrust]),
         Intent::Rates { rates: r, thrust } => all(&[r.0, r.1, r.2, thrust]),
+        Intent::Position(t) => all(&[
+            t.position.0,
+            t.position.1,
+            t.position.2,
+            t.velocity.0,
+            t.velocity.1,
+            t.velocity.2,
+            t.yaw,
+        ]),
     }
 }
 

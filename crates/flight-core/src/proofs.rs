@@ -16,7 +16,7 @@ fn any_state() -> State {
 }
 
 fn any_reason() -> Reason {
-    match kani::any::<u8>() % 13 {
+    match kani::any::<u8>() % 14 {
         0 => Reason::None,
         1 => Reason::Disarmed,
         2 => Reason::NotReady,
@@ -29,7 +29,8 @@ fn any_reason() -> Reason {
         9 => Reason::MaintenanceExpired,
         10 => Reason::Configuration,
         11 => Reason::Power,
-        _ => Reason::SensorInit,
+        12 => Reason::SensorInit,
+        _ => Reason::PositionExpired,
     }
 }
 

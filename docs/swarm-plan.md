@@ -1,6 +1,6 @@
 # Flix Swarm Flight Plan
 
-Date: 2026-10-12, updated 2026-10-13. Status: **S1 in progress**; S2 to S4 not started. Requirements: [swarm specification](swarm-spec.md).
+Date: 2026-10-12, updated 2026-10-13. Status: **S1 done in simulation; S2 core in progress**; S3 and S4 not started. Requirements: [swarm specification](swarm-spec.md).
 
 ## In plain terms
 
@@ -85,20 +85,38 @@ and safety code. It says nothing about hardware or about on-board position contr
 Deliverable: a simulated Flix drone holds and moves between positions with the position loop
 running inside `flight-core`, fed by a simulated positioning system with noise, delay and dropouts.
 
-* [ ] S2-01: Close SD-02, SD-05, SD-06 and SD-09. Write the position contracts: units, world frame,
+* [x] S2-01: Close SD-02, SD-05, SD-06 and SD-09. Write the position contracts: units, world frame,
   flight volume, freshness limits.
-* [ ] S2-02: Add a validated position sample type and a source lease for it (SWM-05). Property
+* [x] S2-02: Add a validated position sample type and a source lease for it (SWM-05). Property
   tests cover non-finite values, out-of-volume values, stale and out-of-order samples.
-* [ ] S2-03: Add a position and velocity estimator that fuses accelerometer data with external
+* [x] S2-03: Add a position and velocity estimator that fuses accelerometer data with external
   position. It must be `no_std` with no allocation in the tick, and report its health and sample age.
-* [ ] S2-04: Add `Intent::Position` and the position controller on top of the existing attitude
+* [x] S2-04: Add `Intent::Position` and the position controller on top of the existing attitude
   controller, with bounded tilt and thrust (SWM-06, SWM-08). Kani proofs cover output bounds.
-* [ ] S2-05: Add the failure response for lost position (SWM-07), with tests that fail if it is
+* [x] S2-05: Add the failure response for lost position (SWM-07), with tests that fail if it is
   removed.
-* [ ] S2-06: Decode and encode the chosen messages, test frame conversion in both directions
+* [x] S2-06: Decode and encode the chosen messages, test frame conversion in both directions
   (SWM-10), and add fuzz targets.
-* [ ] S2-07: Simulate the positioning system in Gazebo and in Crazyswarm2 (noise, delay, rate,
+* [x] S2-07: Simulate the positioning system in Gazebo and in Crazyswarm2 (noise, delay, rate,
   dropouts). Move the S1 ground loop onto the drone and rerun the S1 scenarios.
+
+S2 notes (2026-10-13):
+- S2-01: SD-02, SD-05, SD-06, SD-09 closed; SD-10 (takeoff into position control) and SD-11 (lost
+  position stops) added. Contracts live in `crates/flight-core/src/position.rs`.
+- S2-02: samples are rejected before any state change when non-finite, more than 0.5 m outside the
+  volume, not newer than the last sample, or outside the owner's clock window. There is no separate
+  source lease: freshness (200 ms) gates position control directly.
+- S2-03: fixed-gain observer (alpha 0.3, beta 0.1 per sample) over IMU prediction; `no_std`, no
+  allocation. Heading is the IMU estimate's: the external yaw is not fused yet, so the positioning
+  frame and the drone's yaw must start aligned (open item for S3).
+- S2-04: built-in `PositionTuning` constants, not operator parameters yet: new parameters change the
+  persisted settings record and need a schema migration. The z integral gain is 6 so a wrong hover
+  thrust guess (0.50 against about 0.54 in the plant) settles in about 5 s.
+- S2-06: dialect gains 84 and 138 with CRCs and lengths from the pinned MAVLink 2.0.33 headers.
+- S2-07: the fast harness runs all S1 scenarios plus `position-dropout`, `outside-volume` and
+  `noisy` (2 cm noise, 20 ms latency) with `--onboard`; the Gazebo coordinator has `--onboard`.
+- Not done yet: Kani proof of position controller output bounds; property tests over position
+  samples; heading alignment; parameters; Crazyswarm2 (ROS) path in on-board mode.
 
 Gate: S1 scenarios pass with the on-board loop; position dropout, out-of-volume setpoints and
 stale samples produce the required response; `no_std`, Clippy, Kani and fuzz jobs pass.

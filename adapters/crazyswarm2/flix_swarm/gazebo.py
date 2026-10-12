@@ -87,8 +87,8 @@ class Drone:
 
 
 class Coordinator:
-    def __init__(self, count, loop, output):
-        self.config = Config()
+    def __init__(self, count, loop, output, onboard=False):
+        self.config = Config(onboard=onboard)
         self.drones = [Drone(i, p, self.config) for i, p in enumerate(layout(count))]
         self.loop = loop
         self.output = pathlib.Path(output)
@@ -254,6 +254,7 @@ class Coordinator:
             'sim_us': now,
             'cycle': self.cycle,
             'message': self.message,
+            'position_loop': 'drone' if self.config.onboard else 'ground',
             'drones': [d.view() for d in self.drones],
         }
         try:
@@ -278,8 +279,10 @@ def main():
     parser.add_argument('--drones', type=int, default=3, choices=range(2, 9))
     parser.add_argument('--loop', action='store_true', help='repeat the flight until interrupted')
     parser.add_argument('--output', default=str(ROOT / '.local/gazebo-swarm.json'))
+    parser.add_argument('--onboard', action='store_true',
+                        help='S2: position loop in flight-core, fed by ATT_POS_MOCAP from traces')
     args = parser.parse_args()
-    return Coordinator(args.drones, args.loop, args.output).run()
+    return Coordinator(args.drones, args.loop, args.output, args.onboard).run()
 
 
 if __name__ == '__main__':

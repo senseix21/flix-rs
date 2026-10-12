@@ -1,4 +1,5 @@
 use crate::control::{Controller, Estimator, Intent, Tuning};
+use crate::position::{self, PositionTuning};
 use crate::{Tick, Vec3};
 use core::sync::atomic::{AtomicU32, Ordering};
 static NEXT_ISSUER: AtomicU32 = AtomicU32::new(1);
@@ -31,6 +32,8 @@ pub enum Reason {
     /// The IMU driver failed to configure (bus, identity or readback). Recoverable only
     /// after a rebuilt driver passes again (ADR 003 D2).
     SensorInit = 12,
+    /// Flying under position control without a fresh external position (swarm SWM-07).
+    PositionExpired = 13,
 }
 impl Reason {
     /// Short operator-facing name, used in STATUSTEXT (ADR 003 D3).
@@ -49,6 +52,7 @@ impl Reason {
             Reason::Configuration => "configuration",
             Reason::Power => "power",
             Reason::SensorInit => "sensor init",
+            Reason::PositionExpired => "position expired",
         }
     }
     /// Faults that only a rebuilt owner may leave (ADR 003 D1). Every exit from Fault
@@ -166,6 +170,7 @@ pub struct Snapshot {
     pub estimate: Estimator,
     pub target_rates: Vec3,
     pub target_attitude: Option<crate::Quaternion>,
+    pub position: position::Estimate,
 }
 pub struct Flight {
     pub(crate) issuer: u32,
@@ -185,6 +190,9 @@ pub struct Flight {
     /// Active diagnostic permit: values and its window `[start, expiry)`.
     pub(crate) diagnostic: Option<([f32; 4], Tick, Tick)>,
     last_kind: Option<u8>,
+    position_tuning: PositionTuning,
+    position: position::Estimate,
+    position_controller: position::Controller,
 }
 impl Default for Flight {
     #[expect(
@@ -213,6 +221,9 @@ impl Flight {
         limits: Limits::DEFAULT,
         diagnostic: None,
         last_kind: None,
+        position_tuning: PositionTuning::DEFAULT,
+        position: position::Estimate::EMPTY,
+        position_controller: position::Controller::EMPTY,
     };
 
     pub fn new(tuning: Tuning, limits: Limits) -> Option<Self> {
@@ -238,6 +249,7 @@ impl Flight {
             estimate: self.estimate,
             target_rates: self.controller.target_rates,
             target_attitude: self.controller.target_attitude,
+            position: self.position,
         }
     }
     pub fn stopped_maintenance(&self) -> bool {
@@ -255,6 +267,7 @@ impl Flight {
         self.previous = None;
         self.sample = None;
         self.estimate = Estimator::default();
+        self.position = position::Estimate::EMPTY;
         self.healthy = false;
         self.calibrated = false;
     }
@@ -266,6 +279,7 @@ impl Flight {
         self.tuning = tuning;
         self.limits = limits;
         self.estimate = Estimator::default();
+        self.position = position::Estimate::EMPTY;
         self.sample = None;
         self.calibrated = false;
         self.healthy = false;
@@ -279,6 +293,7 @@ impl Flight {
             self.reason = Reason::Generation;
         }
         self.controller = Controller::default();
+        self.position_controller = position::Controller::EMPTY;
         self.leases = [None; 3];
         self.diagnostic = None;
         self.last_kind = None;
@@ -305,10 +320,31 @@ impl Flight {
         self.previous = None;
         self.sample = None;
         self.estimate = Estimator::default();
+        self.position = position::Estimate::EMPTY;
         self.healthy = false;
         self.calibrated = false;
         self.invalidate();
         true
+    }
+    /// Accept one external position measurement (world NWU, metres) that arrived at local
+    /// time `at`. Rejects non-finite or out-of-volume values and stale or reordered samples
+    /// before any state changes (SWM-05). Does not grant control authority.
+    pub fn position(&mut self, measured: Vec3, at: Tick) -> bool {
+        let t = self.position_tuning;
+        if matches!(self.state, State::Fault | State::Maintenance)
+            || !t.volume.contains(measured, position::MEASUREMENT_MARGIN)
+        {
+            return false;
+        }
+        if let Some(now) = self.previous {
+            if at < now || at.age(now).is_none_or(|age| age > self.limits.gap_us) {
+                return false;
+            }
+        }
+        if self.position.measured.is_some_and(|old| at <= old) {
+            return false;
+        }
+        self.position.correct(measured, at, t).is_some()
     }
     pub fn select(&mut self, source: Source) -> bool {
         // A source transition requires explicit rearming; never inherits another lease.
@@ -330,9 +366,18 @@ impl Flight {
             return false;
         }
         if (source == Source::Automatic)
-            != matches!(intent, Intent::Attitude { .. } | Intent::Rates { .. })
+            != matches!(
+                intent,
+                Intent::Attitude { .. } | Intent::Rates { .. } | Intent::Position(_)
+            )
         {
             return false;
+        }
+        if let Intent::Position(target) = intent {
+            let t = self.position_tuning;
+            if !t.volume.contains(target.position, 0.0) || target.velocity.norm() > t.max_speed {
+                return false;
+            }
         }
         if let Some(now) = self.previous {
             if at < now || at.age(now).is_none_or(|age| age > self.limits.gap_us) {
@@ -343,7 +388,16 @@ impl Flight {
         if self.leases[index].is_some_and(|old| at < old.at) {
             return false;
         }
-        if self.last_kind.is_some_and(|kind| kind != intent.kind()) {
+        // Armed takeoff into position control: only from an idle automatic lease, which
+        // already holds the motors at idle (swarm spec SD-10).
+        let takeoff = matches!(intent, Intent::Position(_))
+            && self.leases[index].is_some_and(|old| {
+                matches!(old.intent, Intent::Attitude { .. } | Intent::Rates { .. })
+                    && old.intent.thrust() < 0.1
+            });
+        if takeoff && self.state == State::Armed {
+            self.position_controller = position::Controller::EMPTY;
+        } else if self.last_kind.is_some_and(|kind| kind != intent.kind()) {
             if self.state == State::Armed {
                 self.disarm();
                 return false;
@@ -458,6 +512,10 @@ impl Flight {
                             self.tuning,
                         )
                         .is_none()
+                    || self
+                        .position
+                        .predict(self.estimate.attitude, s.acceleration, dt)
+                        .is_none()
                 {
                     self.fault(Reason::InvalidNumeric);
                 } else {
@@ -475,17 +533,34 @@ impl Flight {
             if !self.calibrated {
                 self.fault(Reason::NotReady);
             } else if let Some(l) = self.lease(now) {
-                if matches!(l.intent, Intent::Stabilized(_))
+                let dt = elapsed.unwrap_or(0) as f32 * 1e-6;
+                let intent = match l.intent {
+                    // Position control flies only on a fresh external position (SWM-07).
+                    Intent::Position(target) if !self.position.fresh(now, self.position_tuning) => {
+                        Err(Reason::PositionExpired)
+                    }
+                    Intent::Position(target) => self
+                        .position_controller
+                        .update(target, self.position, dt, self.position_tuning)
+                        .map(|(orientation, thrust)| Intent::Attitude {
+                            orientation,
+                            feedforward: Vec3::ZERO,
+                            thrust,
+                        })
+                        .ok_or(Reason::InvalidNumeric),
+                    other => Ok(other),
+                };
+                if let Err(reason) = intent {
+                    self.fault(reason);
+                } else if matches!(l.intent, Intent::Stabilized(_) | Intent::Position(_))
                     && libm::acosf(self.estimate.attitude.body(Vec3::UP).2.clamp(-1.0, 1.0))
                         > self.limits.max_tilt
                 {
                     self.fault(Reason::Tilt);
-                } else if let Some(m) = self.controller.update(
-                    l.intent,
-                    self.estimate,
-                    elapsed.unwrap_or(0) as f32 * 1e-6,
-                    self.tuning,
-                ) {
+                } else if let Some(m) = intent.ok().and_then(|intent| {
+                    self.controller
+                        .update(intent, self.estimate, dt, self.tuning)
+                }) {
                     values = m;
                 } else {
                     self.fault(Reason::InvalidNumeric);

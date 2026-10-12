@@ -5,6 +5,7 @@ same vehicle runs in both. All ground-to-drone traffic is MAVLink through a boun
 """
 import collections
 import math
+import random
 
 from . import geometry as g
 from .imu import Imu
@@ -17,8 +18,16 @@ HEARTBEAT_TIMEOUT_US = 1_500_000
 
 
 class Config:
+    """`onboard`: the drone runs the position loop (swarm S2); the ground sends position samples
+    (ATT_POS_MOCAP) and position targets. Otherwise the ground runs it and sends attitudes (S1)."""
+
     def __init__(self, lease_s=0.3, setpoint_period_us=20_000, link_capacity=64,
-                 link_latency_us=0, imu_noise=True):
+                 link_latency_us=0, imu_noise=True, onboard=False, position_period_us=20_000,
+                 position_noise_m=0.0, seed=0):
+        self.onboard = onboard
+        self.position_period_us = position_period_us
+        self.position_noise_m = position_noise_m
+        self.seed = seed
         self.lease_s = lease_s
         self.setpoint_period_us = setpoint_period_us
         self.link_capacity = link_capacity
@@ -81,6 +90,10 @@ class Ground:
         self.events = []
         self.target = None
         self.next_setpoint_us = 0
+        self.next_position_us = 0
+        # Coordinator switch for dropout tests: stop sending position samples to this drone.
+        self.positioning = True
+        self.noise = random.Random(self.config.seed * 7919 + system_id)
         self.arm_requested_us = None
         self.arm_latency_us = None
         self.stop_requested_us = None
@@ -176,8 +189,18 @@ class Ground:
             self._lose(now_us, 'heartbeat timeout')
         if self.pending:
             return self.pending.popleft()
+        if (self.config.onboard and self.positioning and now_us >= self.next_position_us
+                and self.phase not in ('provisioning', 'lost')):
+            self.next_position_us = now_us + self.config.position_period_us
+            sigma = self.config.position_noise_m
+            measured = tuple(v + self.noise.gauss(0.0, sigma) for v in position) if sigma else position
+            return self.messages.mocap(measured)
         if self.phase != 'armed' or now_us < self.next_setpoint_us:
             return None
+        if self.config.onboard and self.target is not None:
+            self.next_setpoint_us = now_us + self.config.setpoint_period_us
+            point, speed, _, heading = self.target(now_us)
+            return self.messages.position_target(self.system_id, point, speed, heading)
         dt = self.config.setpoint_period_us * 1e-6
         self.next_setpoint_us = now_us + self.config.setpoint_period_us
         if self.target is None:
