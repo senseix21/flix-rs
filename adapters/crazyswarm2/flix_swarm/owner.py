@@ -147,10 +147,13 @@ class Messages:
                                            -yaw_nwu, 0.0, POSITION_MASK_WITH_VELOCITY, target, 1,
                                            MAV_FRAME_LOCAL_NED))
 
-    def mocap(self, position_nwu):
-        """ATT_POS_MOCAP. No target field: it must travel on this drone's own link."""
+    def mocap(self, position_nwu, attitude_flu=None):
+        """ATT_POS_MOCAP with the body FLU-to-world NWU attitude converted to FRD-to-NED.
+        Without an attitude the quaternion is zero ("unknown"), so Flix uses only the position.
+        No target field: it must travel on this drone's own link."""
         x, y, z = position_nwu
-        return self._frame(138, struct.pack('<Q7f', 0, 1.0, 0.0, 0.0, 0.0, x, -y, -z))
+        w, qx, qy, qz = attitude_flu if attitude_flu is not None else (0.0, 0.0, 0.0, 0.0)
+        return self._frame(138, struct.pack('<Q7f', 0, w, qx, -qy, -qz, x, -y, -z))
 
     def attitude(self, target, attitude_flu, thrust):
         """SET_ATTITUDE_TARGET. Body rates are sent as zero feedforward (mask 0)."""

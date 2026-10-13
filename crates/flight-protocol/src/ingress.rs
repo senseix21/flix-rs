@@ -7,8 +7,8 @@ pub struct Ingress {
     head: usize,
     len: usize,
     latest: [Option<(Event, Tick)>; 3],
-    /// Newest external position sample; older arrivals are rejected like setpoints.
-    position: Option<(Vec3, Tick)>,
+    /// Newest external position sample and heading; older arrivals are rejected like setpoints.
+    position: Option<(Vec3, Option<f32>, Tick)>,
     stop: bool,
     pub rejected: u64,
 }
@@ -29,11 +29,11 @@ impl Ingress {
                 Ok(())
             }
             Event::Heartbeat => Ok(()),
-            Event::Position(value) => {
-                if self.position.is_some_and(|(_, old)| at < old) {
+            Event::Position { position, yaw } => {
+                if self.position.is_some_and(|(_, _, old)| at < old) {
                     return Err(Error::Replay);
                 }
-                self.position = Some((value, at));
+                self.position = Some((position, yaw, at));
                 Ok(())
             }
             Event::Setpoint(source, _) => {
@@ -67,7 +67,7 @@ impl Ingress {
         self.position = None;
         true
     }
-    pub fn take_position(&mut self) -> Option<(Vec3, Tick)> {
+    pub fn take_position(&mut self) -> Option<(Vec3, Option<f32>, Tick)> {
         self.position.take()
     }
     pub fn take_setpoints(&mut self) -> [Option<(Event, Tick)>; 3] {
@@ -88,8 +88,8 @@ impl Ingress {
             flight.disarm();
             return;
         }
-        if let Some((value, at)) = self.take_position() {
-            flight.position(value, at);
+        if let Some((value, yaw, at)) = self.take_position() {
+            flight.position(value, yaw, at);
         }
         for (event, at) in self.take_setpoints().into_iter().flatten() {
             if let Event::Setpoint(source, intent) = event {

@@ -15,6 +15,8 @@ pub struct Volume {
     pub max: Vec3,
 }
 pub const MEASUREMENT_MARGIN: f32 = 0.5;
+/// Per-axis bound on the position loop's demanded acceleration, m/s^2.
+pub const MAX_DEMAND: f32 = 100.0;
 impl Volume {
     pub const DEFAULT: Self = Self {
         min: Vec3(-3.0, -3.0, 0.0),
@@ -41,8 +43,8 @@ impl Volume {
     }
 }
 
-/// Built-in position settings. Not operator parameters yet: adding parameters changes the
-/// persistent settings record and needs a schema version migration (swarm plan S2 follow-up).
+/// Position settings. Operators set them through the `POS_*` parameters (`flight-config`);
+/// `DEFAULT` matches the parameter defaults.
 #[derive(Clone, Copy, Debug)]
 pub struct PositionTuning {
     pub volume: Volume,
@@ -50,6 +52,9 @@ pub struct PositionTuning {
     pub sample_us: u64,
     /// Estimator correction per measurement: position fraction and velocity gain.
     pub alpha: f32,
+    /// Fraction of the heading error removed per external heading measurement. The first
+    /// heading measurement is applied in full.
+    pub heading_weight: f32,
     pub beta: f32,
     pub kp: Vec3,
     pub kd: Vec3,
@@ -68,6 +73,7 @@ impl PositionTuning {
         sample_us: 200_000,
         alpha: 0.3,
         beta: 0.1,
+        heading_weight: 0.05,
         kp: Vec3(6.0, 6.0, 8.0),
         kd: Vec3(4.0, 4.0, 5.0),
         ki: Vec3(1.0, 1.0, 6.0),
@@ -87,7 +93,7 @@ impl PositionTuning {
             && gains
             && self.sample_us > 0
             && self.sample_us <= 1_000_000
-            && [self.alpha, self.beta]
+            && [self.alpha, self.beta, self.heading_weight]
                 .iter()
                 .all(|x| x.is_finite() && *x > 0.0 && *x < 1.0)
             && self.integral_limit.is_finite()
@@ -136,12 +142,15 @@ pub struct Estimate {
     pub velocity: Vec3,
     /// Local arrival time of the last accepted measurement; `None` until the first one.
     pub measured: Option<Tick>,
+    /// Whether an external heading has been fused since the last reset.
+    pub heading: bool,
 }
 impl Estimate {
     pub const EMPTY: Self = Self {
         position: Vec3::ZERO,
         velocity: Vec3::ZERO,
         measured: None,
+        heading: false,
     };
     /// Integrate one IMU sample: body specific force rotated to world, minus gravity.
     pub fn predict(&mut self, attitude: Quaternion, specific_force: Vec3, dt: f32) -> Option<()> {
@@ -256,19 +265,36 @@ impl Controller {
                 t.ki.2,
             ),
         );
-        let vertical = (demand.2 + GRAVITY).max(0.2 * GRAVITY);
-        let horizontal = libm::sqrtf(demand.0 * demand.0 + demand.1 * demand.1);
-        let limit = vertical * libm::tanf(t.max_tilt);
-        let scale = if horizontal > limit {
-            limit / horizontal
-        } else {
-            1.0
-        };
-        let force = Vec3(demand.0 * scale, demand.1 * scale, vertical);
-        let thrust = (t.hover_thrust * force.norm() / GRAVITY).clamp(0.0, t.max_thrust);
-        let attitude = attitude_for(force, target.yaw)?;
-        thrust.is_finite().then_some((attitude, thrust))
+        let (force, thrust) = limit(demand, t)?;
+        Some((attitude_for(force, target.yaw)?, thrust))
     }
+}
+
+/// Bound a demanded acceleration (world, m/s^2, gravity excluded): vertical at least 0.2 g,
+/// tilt at most `max_tilt`, collective thrust in `[0, max_thrust]`. Returns the force direction
+/// to fly and the thrust, or `None` for non-finite input. Proven in `proofs.rs`.
+pub fn limit(demand: Vec3, t: PositionTuning) -> Option<(Vec3, f32)> {
+    if !demand.finite() {
+        return None;
+    }
+    // About 10 g per axis is far beyond what the airframe can produce; clamping first keeps
+    // every intermediate below f32 overflow, whatever the estimate or target.
+    let demand = Vec3(
+        demand.0.clamp(-MAX_DEMAND, MAX_DEMAND),
+        demand.1.clamp(-MAX_DEMAND, MAX_DEMAND),
+        demand.2.clamp(-MAX_DEMAND, MAX_DEMAND),
+    );
+    let vertical = (demand.2 + GRAVITY).max(0.2 * GRAVITY);
+    let horizontal = libm::sqrtf(demand.0 * demand.0 + demand.1 * demand.1);
+    let limit = vertical * libm::tanf(t.max_tilt);
+    let scale = if horizontal > limit {
+        limit / horizontal
+    } else {
+        1.0
+    };
+    let force = Vec3(demand.0 * scale, demand.1 * scale, vertical);
+    let thrust = (t.hover_thrust * force.norm() / GRAVITY).clamp(0.0, t.max_thrust);
+    (force.finite() && thrust.is_finite()).then_some((force, thrust))
 }
 
 /// Attitude whose body z points along `force` and whose body x faces `yaw` (world NWU).

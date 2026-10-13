@@ -4,6 +4,7 @@
  "seed": 1,
  "config": {
   "onboard": true,
+  "heading": true,
   "position_period_us": 20000,
   "position_noise_m": 0.0,
   "seed": 1,
@@ -204,7 +205,7 @@
  "report": {
   "sim_seconds": 10.568,
   "min_separation": {
-   "distance_m": 0.7059,
+   "distance_m": 0.7058,
    "pair": [
     "cf5",
     "cf6"

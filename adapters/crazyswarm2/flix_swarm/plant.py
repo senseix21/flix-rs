@@ -9,6 +9,8 @@ Sources, so the two plants stay comparable:
 
 Not modelled: motor lag, propeller drag, air drag, ground effect.
 """
+import math
+
 from . import geometry as g
 
 MASS = 0.065
@@ -39,10 +41,10 @@ def hover_thrust():
 
 
 class Plant:
-    def __init__(self, position):
+    def __init__(self, position, yaw=0.0):
         self.position = (position[0], position[1], HALF_SIZE[2])
         self.velocity = (0.0, 0.0, 0.0)
-        self.attitude = (1.0, 0.0, 0.0, 0.0)
+        self.attitude = (math.cos(yaw / 2), 0.0, 0.0, math.sin(yaw / 2))
         self.rates = (0.0, 0.0, 0.0)
 
     def step(self, motors, dt):

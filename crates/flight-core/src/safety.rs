@@ -1,5 +1,5 @@
 use crate::control::{Controller, Estimator, Intent, Tuning};
-use crate::position::{self, PositionTuning};
+use crate::position;
 use crate::{Tick, Vec3};
 use core::sync::atomic::{AtomicU32, Ordering};
 static NEXT_ISSUER: AtomicU32 = AtomicU32::new(1);
@@ -190,7 +190,6 @@ pub struct Flight {
     /// Active diagnostic permit: values and its window `[start, expiry)`.
     pub(crate) diagnostic: Option<([f32; 4], Tick, Tick)>,
     last_kind: Option<u8>,
-    position_tuning: PositionTuning,
     position: position::Estimate,
     position_controller: position::Controller,
 }
@@ -221,7 +220,6 @@ impl Flight {
         limits: Limits::DEFAULT,
         diagnostic: None,
         last_kind: None,
-        position_tuning: PositionTuning::DEFAULT,
         position: position::Estimate::EMPTY,
         position_controller: position::Controller::EMPTY,
     };
@@ -326,13 +324,15 @@ impl Flight {
         self.invalidate();
         true
     }
-    /// Accept one external position measurement (world NWU, metres) that arrived at local
-    /// time `at`. Rejects non-finite or out-of-volume values and stale or reordered samples
-    /// before any state changes (SWM-05). Does not grant control authority.
-    pub fn position(&mut self, measured: Vec3, at: Tick) -> bool {
-        let t = self.position_tuning;
+    /// Accept one external position measurement (world NWU, metres), optionally with a
+    /// heading (world NWU yaw, radians), that arrived at local time `at`. Rejects non-finite
+    /// or out-of-volume values and stale or reordered samples before any state changes
+    /// (SWM-05). A heading corrects the attitude estimate's yaw. Does not grant authority.
+    pub fn position(&mut self, measured: Vec3, yaw: Option<f32>, at: Tick) -> bool {
+        let t = self.tuning.position;
         if matches!(self.state, State::Fault | State::Maintenance)
             || !t.volume.contains(measured, position::MEASUREMENT_MARGIN)
+            || yaw.is_some_and(|y| !y.is_finite() || y.abs() > 2.0 * core::f32::consts::PI)
         {
             return false;
         }
@@ -344,7 +344,25 @@ impl Flight {
         if self.position.measured.is_some_and(|old| at <= old) {
             return false;
         }
-        self.position.correct(measured, at, t).is_some()
+        let mut estimate = self.estimate;
+        if let Some(yaw) = yaw {
+            let weight = if self.position.heading {
+                t.heading_weight
+            } else {
+                1.0
+            };
+            if estimate.correct_heading(yaw, weight).is_none() {
+                return false;
+            }
+        }
+        let mut next = self.position;
+        if next.correct(measured, at, t).is_none() {
+            return false;
+        }
+        next.heading |= yaw.is_some();
+        self.estimate = estimate;
+        self.position = next;
+        true
     }
     pub fn select(&mut self, source: Source) -> bool {
         // A source transition requires explicit rearming; never inherits another lease.
@@ -374,7 +392,7 @@ impl Flight {
             return false;
         }
         if let Intent::Position(target) = intent {
-            let t = self.position_tuning;
+            let t = self.tuning.position;
             if !t.volume.contains(target.position, 0.0) || target.velocity.norm() > t.max_speed {
                 return false;
             }
@@ -536,12 +554,12 @@ impl Flight {
                 let dt = elapsed.unwrap_or(0) as f32 * 1e-6;
                 let intent = match l.intent {
                     // Position control flies only on a fresh external position (SWM-07).
-                    Intent::Position(target) if !self.position.fresh(now, self.position_tuning) => {
+                    Intent::Position(target) if !self.position.fresh(now, self.tuning.position) => {
                         Err(Reason::PositionExpired)
                     }
                     Intent::Position(target) => self
                         .position_controller
-                        .update(target, self.position, dt, self.position_tuning)
+                        .update(target, self.position, dt, self.tuning.position)
                         .map(|(orientation, thrust)| Intent::Attitude {
                             orientation,
                             feedforward: Vec3::ZERO,

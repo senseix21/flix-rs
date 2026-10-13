@@ -4,6 +4,7 @@
  "seed": 1,
  "config": {
   "onboard": true,
+  "heading": true,
   "position_period_us": 20000,
   "position_noise_m": 0.02,
   "seed": 1,
@@ -78,7 +79,7 @@
   {
    "name": "cf2 landed and stopped",
    "passed": true,
-   "z_m": 0.016,
+   "z_m": 0.0159,
    "state": 1
   },
   {

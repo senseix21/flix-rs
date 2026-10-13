@@ -84,7 +84,7 @@ fn every_supported_intent_obeys_frame_expiry_and_disarm() {
     for intent in intents {
         let mut f = Flight::default();
         f.tick(Tick(0), Some(sensor(0)));
-        assert!(f.position(Vec3::ZERO, Tick(0)));
+        assert!(f.position(Vec3::ZERO, None, Tick(0)));
         let source = if intent.kind() >= 2 {
             Source::Automatic
         } else {

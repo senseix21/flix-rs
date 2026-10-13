@@ -283,6 +283,28 @@ def noisy(swarm, check):
     landed(swarm, check)
 
 
+def heading(swarm, check):
+    """S2: drones start facing 0.6, 2.0 and -2.5 rad. The IMU estimate starts at 0, so without
+    the measured heading their position loops would push in rotated directions."""
+    hover(swarm, check)
+    for d in swarm.drones:
+        # Targets face yaw 0: a drone that knows its real heading turns to it.
+        check(f'{d.name} turned to the target heading', abs(g.yaw(d.plant.attitude)) < 0.1,
+              start_yaw=HEADING_YAWS[int(d.name[2:]) - 1], yaw=round(g.yaw(d.plant.attitude), 3))
+    swarm.go_to({'cf1': (0.0, -0.3, 0.6), 'cf2': (0.6, 0.45, 0.6), 'cf3': (1.2, -0.3, 0.6)}, 2.5)
+    worst = {}
+    watch(swarm, 3.5, swarm.drones, worst)
+    for d in swarm.drones:
+        check(f'{d.name} formation error', error(d, swarm.now_us) < THRESHOLDS['hover_error_m'],
+              error_m=round(error(d, swarm.now_us), 4))
+    check('tilt bounded', worst['tilt'] < THRESHOLDS['max_tilt_deg'], max_tilt_deg=round(worst['tilt'], 2))
+    swarm.land(2.5)
+    landed(swarm, check)
+
+
+HEADING_YAWS = (0.6, 2.0, -2.5)
+
+
 def circle(count, radius=1.0):
     return [(radius * math.cos(2 * math.pi * i / count), radius * math.sin(2 * math.pi * i / count), 0.0)
             for i in range(count)]
@@ -302,6 +324,7 @@ ONBOARD = {
     'position-dropout': (LINE, position_dropout),
     'outside-volume': (LINE, outside_volume),
     'noisy': (LINE, noisy),
+    'heading': (LINE, heading),
 }
 NOISY = dict(position_noise_m=0.02, link_latency_us=20_000)
 
@@ -310,7 +333,8 @@ def run(name, output, config=None, seed=1):
     positions, body = {**SCENARIOS, **ONBOARD}[name]
     check = Checks()
     config = config or Config()
-    with Swarm(positions, seed=seed, config=config, separation=THRESHOLDS['separation_plan_m']) as swarm:
+    yaws = HEADING_YAWS if name.startswith('heading') else None
+    with Swarm(positions, seed=seed, config=config, separation=THRESHOLDS['separation_plan_m'], yaws=yaws) as swarm:
         try:
             body(swarm, check)
         except Exception as failure:  # record, then fail the scenario

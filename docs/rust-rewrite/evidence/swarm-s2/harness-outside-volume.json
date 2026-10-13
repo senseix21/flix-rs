@@ -4,6 +4,7 @@
  "seed": 1,
  "config": {
   "onboard": true,
+  "heading": true,
   "position_period_us": 20000,
   "position_noise_m": 0.0,
   "seed": 1,

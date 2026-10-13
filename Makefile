@@ -58,6 +58,8 @@ swarm-sim:
 	set -e; for s in $(SWARM_SCENARIOS); do \
 	  docker run --rm --init -v "$(CURDIR):/work" -w /work flix-crazyswarm2:local sh scripts/crazyswarm2-scenario.sh $$s /work/.local/qualification/swarm-s1/crazyswarm2-$$s; \
 	done
+	# Swarm S2: the same formation with the position loop in flight-core.
+	docker run --rm --init -v "$(CURDIR):/work" -w /work flix-crazyswarm2:local sh scripts/crazyswarm2-scenario.sh formation /work/.local/qualification/swarm-s2/crazyswarm2-formation drone
 
 # Gazebo swarm (scripts/gazebo-swarm.sh). On Apple Silicon use the local arm64 image and legacy
 # checkout: make swarm-gazebo GAZEBO_IMAGE=flix-rust-gazebo:arm64 LEGACY=$(CURDIR)/.local/legacy-git

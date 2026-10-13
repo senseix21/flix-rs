@@ -28,8 +28,8 @@ def closest_approach(a0, a1, b0, b1):
 
 
 class Drone:
-    def __init__(self, name, system_id, position, seed, config):
-        self.plant = Plant(position)
+    def __init__(self, name, system_id, position, seed, config, yaw=0.0):
+        self.plant = Plant(position, yaw)
         self.vehicle = Vehicle(name, system_id, seed, config)
         self.planner = Planner(self.plant.position)
         self.vehicle.target = None
@@ -40,14 +40,15 @@ class Drone:
 
 
 class Swarm:
-    def __init__(self, positions, seed=1, config=None, separation=0.3, first_id=11):
+    def __init__(self, positions, seed=1, config=None, separation=0.3, first_id=11, yaws=None):
         self.config = config or Config()
         self.separation = separation
         self.now_us = 0
         self.drones = []
         try:
             for i, position in enumerate(positions):
-                self.drones.append(Drone(f'cf{i + 1}', first_id + i, position, seed + i, self.config))
+                yaw = yaws[i] if yaws else 0.0
+                self.drones.append(Drone(f'cf{i + 1}', first_id + i, position, seed + i, self.config, yaw))
         except Exception:
             self.close()
             raise

@@ -1,6 +1,6 @@
 # Swarm S2: position control on the drone (simulation)
 
-Date: 2026-10-13. Base: branch `swarm/s2-position`, stacked on `swarm/gazebo-viewer` (`9e42987`).
+Date: 2026-10-13. Base: branch `swarm/s2-position` from `main` after #9 (`a0323c3`).
 Requirements: SWM-05 to SWM-10, SD-02, SD-05, SD-06, SD-09, SD-10, SD-11
 ([swarm spec](../../../swarm-spec.md)). Plan: S2-01 to S2-07. Hardware profile: none.
 **Simulation only.**
@@ -61,15 +61,25 @@ crates), `no_std` checks, fmt and dialect generation pass.
 plan at the end of each step: takeoff 14 mm; zigzag 21 mm; ring 7 to 13 mm; ring turns 8 to 27 mm;
 back to the line 23 to 24 mm; landing 5 to 11 mm. All three landed with zero output.
 
+## Follow-up (2026-10-13): proofs, heading, parameters, Crazyswarm2
+
+| Item | Change | Evidence |
+| --- | --- | --- |
+| Proofs | Limiter split into `position::limit`; demand clamped to 100 m/s^2 per axis first (Kani found that a 10^28 m/s^2 demand reached `finite / infinity`; harmless with real IEEE maths, but the clamp removes every overflow path) | Kani `position_limit_bounds_thrust_and_refuses_non_finite` passes in 2.2 s (all 8 harnesses pass with `-Z stubbing`). Property tests: limiter tilt bound with real `libm`; bounded output and stop-on-stale over random sample/target/tick sequences. Removing the freshness check fails the sequence property |
+| Heading | `ATT_POS_MOCAP` quaternion heading (FRD/NED to FLU/NWU) corrects the estimate's yaw: first sample in full, then 5 % per sample; a zero or non-unit quaternion means position only; an invalid heading rejects the sample | Core test (full then gradual, roll/pitch untouched, invalid rejected); wire test (NED yaw +0.5 is NWU -0.5; zero/NaN/non-unit give none). Harness `heading`: drones starting at 0.6, 2.0, -2.5 rad turn to the target heading (0.01 rad) and fly the formation within 4 to 16 mm. With heading disabled the same scenario fails (two drones end 6 to 7 m away) |
+| Parameters | 21 `POS_*` parameters (volume, freshness, estimator, gains, limits). Settings record version 2: 117 values, 488 bytes. Version 1 (96 values, 404 bytes) still loads with position defaults; the next save writes version 2 to the other slot. NVS read reports the stored length; C accepts exactly 404 or 488; a Rust compile-time assertion pins both sizes | Config tests: v1 migration keeps values and defaults the rest; v1/v2 header and length mismatches and CRC corruption refused; save over a v1 slot writes v2 to the other slot; parameters reach `Tuning::position`; empty volume or hover above max thrust refused as `CrossField`. Firmware Clippy (thumbv7em) passes. **The ESP-IDF image was not built and NVS was not exercised on a board** |
+| Crazyswarm2 | `FLIX_POSITION_LOOP=drone` puts `FlixSIL` in on-board mode; `make swarm-sim` adds an on-board formation run | Local arm64: `pass crazyswarm2 formation` with the loop on the drone; hover 21 mm, triangle 9 to 20 mm, line 10 to 15 mm, min pair distance 0.599 m (`crazyswarm2-formation.json`) |
+
+Host benchmark: core state 504 bytes on `main` before S2, 656 after the first S2 commit, 672 now
+(heading flag and tuning). Tick time varies 18 to 29 ms per 100,000 ticks on both builds, so no
+change is attributable.
+
 ## Not established
 
-- **Heading alignment.** The position loop uses the IMU's yaw estimate; the positioning system's
-  yaw is not fused. In simulation both start at zero. On hardware the frames must be aligned or
-  the external yaw fused (S3).
-- **Tuning is built in.** `PositionTuning::DEFAULT` (gains, volume, 200 ms limit, hover thrust 0.5)
-  is not yet operator-configurable; that needs new parameters and a settings schema migration.
-- **Not yet proven:** Kani bounds on the position controller; property tests over sample
-  sequences; the Crazyswarm2 (ROS) path in on-board mode; CI runs of this branch.
-- **Addressing.** `ATT_POS_MOCAP` has no target field. In simulation each drone has its own link;
-  on hardware each drone needs its own link or per-drone signing keys (SD-05).
-- Nothing here says anything about real positioning accuracy, radio latency or flight.
+- Anything on hardware: positioning accuracy and latency, radio, NVS migration on a real ESP32-S3,
+  flight. These wait for S3/S4 and the R3/R5 bench work.
+- The tilt bound is checked by property tests, not proven by Kani (the proof timed out).
+- Lost position stops the motors (SD-11). A flight profile that levels and ramps thrust down
+  instead is a separate, later decision.
+- `ATT_POS_MOCAP` has no target field: on hardware each drone needs its own link or per-drone
+  signing keys (SD-05).

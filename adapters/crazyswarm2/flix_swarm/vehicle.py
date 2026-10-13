@@ -23,8 +23,10 @@ class Config:
 
     def __init__(self, lease_s=0.3, setpoint_period_us=20_000, link_capacity=64,
                  link_latency_us=0, imu_noise=True, onboard=False, position_period_us=20_000,
-                 position_noise_m=0.0, seed=0):
+                 position_noise_m=0.0, seed=0, heading=True):
         self.onboard = onboard
+        # Send the measured heading with each position sample (S2 heading fusion).
+        self.heading = heading
         self.position_period_us = position_period_us
         self.position_noise_m = position_noise_m
         self.seed = seed
@@ -183,7 +185,7 @@ class Ground:
         self.target = None
         self.events.append((now_us, 'lost', why))
 
-    def outgoing(self, now_us, position, velocity):
+    def outgoing(self, now_us, position, velocity, attitude=None):
         """The next frame for this drone, if one is due: queued requests first, then setpoints."""
         if self.phase == 'armed' and now_us - self.last_heartbeat_us > HEARTBEAT_TIMEOUT_US:
             self._lose(now_us, 'heartbeat timeout')
@@ -194,7 +196,7 @@ class Ground:
             self.next_position_us = now_us + self.config.position_period_us
             sigma = self.config.position_noise_m
             measured = tuple(v + self.noise.gauss(0.0, sigma) for v in position) if sigma else position
-            return self.messages.mocap(measured)
+            return self.messages.mocap(measured, attitude if self.config.heading else None)
         if self.phase != 'armed' or now_us < self.next_setpoint_us:
             return None
         if self.config.onboard and self.target is not None:
@@ -256,7 +258,7 @@ class Vehicle(Ground):
         replies = self.owner.replies()
         if self.link.up:
             self.receive(now_us, replies)
-        frame = self.outgoing(now_us, position, velocity)
+        frame = self.outgoing(now_us, position, velocity, attitude)
         if frame is not None:
             self.link.send(frame, now_us)
         return motors

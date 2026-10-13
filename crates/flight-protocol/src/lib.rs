@@ -57,9 +57,13 @@ pub enum Event {
         duration_us: u32,
     },
     Setpoint(Source, Intent),
-    /// External position measurement, world NWU metres. Carries no target system: the
+    /// External position measurement, world NWU metres, with the measured heading (world NWU
+    /// yaw, radians) when the sender gives a valid attitude. Carries no target system: the
     /// transport must deliver each drone only its own stream (swarm spec SD-05).
-    Position(Vec3),
+    Position {
+        position: Vec3,
+        yaw: Option<f32>,
+    },
     ParameterRead {
         index: i16,
         name: [u8; 16],
@@ -267,13 +271,21 @@ pub fn event(packet: &Packet, local: u8) -> Result<Event, Error> {
             Ok(Event::Setpoint(Source::Automatic, Intent::Position(target)))
         }
         138 => {
-            // time_usec and the attitude quaternion are ignored: freshness is local arrival
-            // time and attitude comes from the IMU estimator. Covariance is not used.
+            // time_usec is ignored: freshness is local arrival time. Only the heading of the
+            // attitude is used (roll and pitch come from the IMU). Covariance is not used.
             let position = nwu(p, 24);
             if !position.finite() {
                 return Err(Error::Numeric);
             }
-            Ok(Event::Position(position))
+            // FRD-to-NED quaternion to FLU-to-NWU, as for SET_ATTITUDE_TARGET. A zero or
+            // non-unit quaternion means "no attitude": the position is still used.
+            let q = [f32_at(p, 8), f32_at(p, 12), -f32_at(p, 16), -f32_at(p, 20)];
+            let norm_squared = q.iter().map(|v| v * v).sum::<f32>();
+            let yaw = (norm_squared.is_finite() && (0.81..=1.21).contains(&norm_squared))
+                .then(|| Quaternion::new(q))
+                .flatten()
+                .map(|q| q.angles().2);
+            Ok(Event::Position { position, yaw })
         }
         82 => {
             destination(p, 36, Some(37), local)?;

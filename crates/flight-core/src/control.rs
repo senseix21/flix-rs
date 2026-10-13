@@ -1,5 +1,5 @@
 use crate::math::wrap_angle;
-use crate::position::Target;
+use crate::position::{PositionTuning, Target};
 use crate::{Quaternion, Vec3};
 pub const GRAVITY: f32 = 9.80665;
 
@@ -16,6 +16,8 @@ pub struct Tuning {
     pub gyro_alpha: f32,
     pub acc_weight: f32,
     pub level_weight: f32,
+    /// External position estimation and position control (swarm S2).
+    pub position: PositionTuning,
 }
 impl Default for Tuning {
     fn default() -> Self {
@@ -39,6 +41,7 @@ impl Tuning {
         gyro_alpha: 0.2,
         acc_weight: 0.003,
         level_weight: 0.0002,
+        position: PositionTuning::DEFAULT,
     };
 }
 impl Tuning {
@@ -66,6 +69,7 @@ impl Tuning {
                 .all(|x| x.is_finite() && (0.0..=1.0).contains(x))
             && self.tilt.is_finite()
             && (0.0..=core::f32::consts::FRAC_PI_2).contains(&self.tilt)
+            && self.position.valid()
     }
 }
 #[derive(Clone, Copy, Debug, Default)]
@@ -152,6 +156,17 @@ impl Estimator {
             Vec3::ZERO
         };
         self.attitude = self.attitude.compose(Quaternion::rotation(correction)?)?;
+        Some(())
+    }
+    /// Turn the attitude about world up by `weight` of the error to an external heading
+    /// (world NWU yaw, radians). Roll and pitch are unchanged.
+    pub fn correct_heading(&mut self, yaw: f32, weight: f32) -> Option<()> {
+        if !yaw.is_finite() || !(0.0..=1.0).contains(&weight) {
+            return None;
+        }
+        let error = wrap_angle(yaw - self.attitude.angles().2);
+        self.attitude =
+            Quaternion::rotation(Vec3::UP * (error * weight))?.compose(self.attitude)?;
         Some(())
     }
 }

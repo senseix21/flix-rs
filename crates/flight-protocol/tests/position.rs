@@ -29,9 +29,12 @@ fn target(p: [f32; 3], v: [f32; 3], yaw: f32, mask: u16, system: u8, frame: u8) 
     b
 }
 fn mocap(p: [f32; 3]) -> Vec<u8> {
+    mocap_q([1.0, 0.0, 0.0, 0.0], p)
+}
+fn mocap_q(q: [f32; 4], p: [f32; 3]) -> Vec<u8> {
     let mut b = Vec::new();
     b.extend_from_slice(&123u64.to_le_bytes());
-    for x in [1.0f32, 0.0, 0.0, 0.0].iter().chain(p.iter()) {
+    for x in q.iter().chain(p.iter()) {
         b.extend_from_slice(&x.to_le_bytes());
     }
     b
@@ -98,12 +101,13 @@ fn position_target_rejects_other_drones_frames_masks_and_bad_numbers() {
 
 #[test]
 fn mocap_converts_ned_to_nwu_and_rejects_non_finite() {
-    let Ok(Event::Position(p)) = decode(138, &mocap([1.0, 2.0, -0.5]), 7) else {
+    let Ok(Event::Position { position: p, yaw }) = decode(138, &mocap([1.0, 2.0, -0.5]), 7) else {
         panic!("not a position");
     };
     assert_eq!(p, Vec3(1.0, -2.0, 0.5));
+    assert_eq!(yaw, Some(0.0));
     // MAVLink 2 truncates trailing zeros: a sample at the origin is still a sample.
-    let Ok(Event::Position(p)) = decode(138, &mocap([0.0, 0.0, 0.0]), 7) else {
+    let Ok(Event::Position { position: p, .. }) = decode(138, &mocap([0.0, 0.0, 0.0]), 7) else {
         panic!("not a position");
     };
     assert_eq!(p, Vec3::ZERO);
@@ -111,4 +115,22 @@ fn mocap_converts_ned_to_nwu_and_rejects_non_finite() {
         decode(138, &mocap([0.0, f32::INFINITY, 0.0]), 7).unwrap_err(),
         Error::Numeric
     );
+}
+
+#[test]
+fn mocap_heading_converts_ned_to_nwu_and_zero_quaternion_means_none() {
+    // NED yaw +0.5 rad (clockwise seen from above) is NWU yaw -0.5 rad.
+    let half = 0.25f32;
+    let q = [half.cos(), 0.0, 0.0, half.sin()];
+    let Ok(Event::Position { yaw: Some(yaw), .. }) = decode(138, &mocap_q(q, [0.0, 0.0, -1.0]), 7)
+    else {
+        panic!("no heading");
+    };
+    assert!((yaw + 0.5).abs() < 1e-6, "{yaw}");
+    for q in [[0.0; 4], [f32::NAN, 0.0, 0.0, 0.0], [2.0, 0.0, 0.0, 0.0]] {
+        let Ok(Event::Position { yaw, .. }) = decode(138, &mocap_q(q, [0.0, 0.0, -1.0]), 7) else {
+            panic!("position must still be used");
+        };
+        assert_eq!(yaw, None, "{q:?}");
+    }
 }

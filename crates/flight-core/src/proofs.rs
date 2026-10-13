@@ -240,3 +240,49 @@ fn diagnostic_only_inside_its_window() {
         assert!(out == [0.0; 4]);
     }
 }
+
+/// Contract stub for `libm::sqrtf`, whose aarch64 and x86 builds use inline assembly Kani
+/// cannot follow. IEEE behaviour outside the finite range (NaN for NaN or negative input,
+/// +infinity for +infinity) and, for finite non-negative `x`, any non-negative finite result
+/// whose square is within 2^-20 relative of `x`. No input is assumed away, so overflowed
+/// intermediate values stay covered.
+fn sqrtf_contract(x: f32) -> f32 {
+    if x.is_nan() || x < 0.0 {
+        return f32::NAN;
+    }
+    if x.is_infinite() {
+        return f32::INFINITY;
+    }
+    let r: f32 = kani::any();
+    kani::assume(r.is_finite() && r >= 0.0);
+    kani::assume((r * r - x).abs() <= x * 9.6e-7 + f32::MIN_POSITIVE);
+    r
+}
+/// `tanf` is only evaluated at the constant `max_tilt` (25 degrees) in the harness below.
+fn tanf_contract(x: f32) -> f32 {
+    assert!((x - crate::position::PositionTuning::DEFAULT.max_tilt).abs() < 1e-7);
+    0.466_307_66
+}
+
+/// Swarm SWM-08: for any demand (every f32 bit pattern), the position limiter either refuses
+/// a non-finite demand or returns a finite force whose vertical component is at least 0.2 g
+/// and a thrust in `[0, max_thrust]`, without panicking. The tilt bound itself needs exact
+/// reasoning about division and square roots that is too slow here; the property test
+/// `limiter_bounds_tilt_and_thrust` checks it against the real `libm`.
+#[kani::proof]
+#[kani::stub(libm::sqrtf, sqrtf_contract)]
+#[kani::stub(libm::tanf, tanf_contract)]
+fn position_limit_bounds_thrust_and_refuses_non_finite() {
+    use crate::position::{PositionTuning, limit};
+    let t = PositionTuning::DEFAULT;
+    let demand = Vec3(kani::any(), kani::any(), kani::any());
+    match limit(demand, t) {
+        None => assert!(!demand.finite()),
+        Some((force, thrust)) => {
+            assert!(demand.finite());
+            assert!(force.finite() && thrust.is_finite());
+            assert!(force.2 >= 0.2 * crate::control::GRAVITY);
+            assert!((0.0..=t.max_thrust).contains(&thrust));
+        }
+    }
+}

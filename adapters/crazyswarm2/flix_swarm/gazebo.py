@@ -240,7 +240,8 @@ class Coordinator:
                 continue
             drone.truth = record
             now = record['sim_us']
-            frame = drone.ground.outgoing(now, tuple(record['position_world_m']), tuple(record['velocity_world_m_s']))
+            frame = drone.ground.outgoing(now, tuple(record['position_world_m']),
+                                          tuple(record['velocity_world_m_s']), tuple(record['pose_wxyz']))
             if frame is not None:
                 drone.send(frame)
 

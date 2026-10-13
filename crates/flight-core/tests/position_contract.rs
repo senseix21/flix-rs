@@ -30,7 +30,7 @@ fn ready() -> Flight {
     let mut f = Flight::default();
     f.tick(Tick(1000), Some(sensor(1000)));
     assert!(f.select(Source::Automatic));
-    assert!(f.position(Vec3::ZERO, Tick(1000)));
+    assert!(f.position(Vec3::ZERO, None, Tick(1000)));
     f
 }
 /// Armed from an idle attitude lease, then switched to a position hold at 0.5 m.
@@ -55,12 +55,12 @@ fn samples_are_validated_before_any_state_change() {
         (Vec3(0.1, 0.0, 0.0), 500),    // older than the owner's clock
         (Vec3(0.1, 0.0, 0.0), 50_000), // further ahead than the clock gap
     ] {
-        assert!(!f.position(value, Tick(at)), "{value:?} at {at}");
+        assert!(!f.position(value, None, Tick(at)), "{value:?} at {at}");
         assert_eq!(f.snapshot().position.position, before.position);
         assert_eq!(f.snapshot().position.measured, before.measured);
     }
     // Inside the measurement margin below the floor is accepted (sensor noise at rest).
-    assert!(f.position(Vec3(0.0, 0.0, -0.02), Tick(2000)));
+    assert!(f.position(Vec3(0.0, 0.0, -0.02), None, Tick(2000)));
 }
 
 #[test]
@@ -157,7 +157,7 @@ fn stale_position_stops_the_motors() {
         (State::Fault, Reason::PositionExpired)
     );
     // Late samples do not revive authority.
-    assert!(!f.position(Vec3::ZERO, Tick(now)));
+    assert!(!f.position(Vec3::ZERO, None, Tick(now)));
     assert!(!f.command(Source::Automatic, hold(0.5), Tick(now)));
 }
 
@@ -167,10 +167,31 @@ fn fresh_samples_keep_position_control_alive() {
     for k in 0..1000u64 {
         let now = 2000 + k * 1000;
         if k % 20 == 0 {
-            assert!(f.position(Vec3::ZERO, Tick(now)));
+            assert!(f.position(Vec3::ZERO, None, Tick(now)));
             f.command(Source::Automatic, hold(0.5), Tick(now));
         }
         f.tick(Tick(now), Some(sensor(now)));
     }
     assert_eq!(f.snapshot().state, State::Armed);
+}
+
+#[test]
+fn external_heading_corrects_yaw_first_in_full_then_gradually() {
+    let mut f = Flight::default();
+    f.tick(Tick(1000), Some(sensor(1000)));
+    assert!(f.position(Vec3::ZERO, Some(1.0), Tick(1000)));
+    let yaw = f.snapshot().estimate.attitude.angles().2;
+    assert!((yaw - 1.0).abs() < 1e-5, "{yaw}");
+    // Later headings move the estimate 5 % of the way per sample.
+    assert!(f.position(Vec3::ZERO, Some(0.0), Tick(2000)));
+    let yaw = f.snapshot().estimate.attitude.angles().2;
+    assert!((yaw - 0.95).abs() < 1e-4, "{yaw}");
+    // Roll and pitch are untouched.
+    let up = f.snapshot().estimate.attitude.body(Vec3::UP);
+    assert!((up.2 - 1.0).abs() < 1e-6);
+    // An invalid heading rejects the whole sample.
+    let before = f.snapshot().position.measured;
+    assert!(!f.position(Vec3::ZERO, Some(f32::NAN), Tick(3000)));
+    assert!(!f.position(Vec3::ZERO, Some(100.0), Tick(3000)));
+    assert_eq!(f.snapshot().position.measured, before);
 }

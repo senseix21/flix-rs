@@ -4,6 +4,7 @@
  "seed": 1,
  "config": {
   "onboard": true,
+  "heading": true,
   "position_period_us": 20000,
   "position_noise_m": 0.0,
   "seed": 1,
@@ -99,18 +100,18 @@
   {
    "name": "minimum pair distance",
    "passed": true,
-   "distance_m": 0.5991
+   "distance_m": 0.5992
   }
  ],
  "report": {
   "sim_seconds": 14.068,
   "min_separation": {
-   "distance_m": 0.5991,
+   "distance_m": 0.5992,
    "pair": [
     "cf1",
     "cf2"
    ],
-   "sim_us": 10680000
+   "sim_us": 10681000
   },
   "drones": {
    "cf1": {
