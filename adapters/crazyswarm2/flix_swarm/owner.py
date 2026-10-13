@@ -165,7 +165,7 @@ class Messages:
 def parse_replies(decoder, frames):
     """Decode owner replies into (kind, value) pairs.
 
-    kinds: 'ack' (command, result), 'notice' text, 'parameter' (name, value),
+    kinds: 'ack' (command, result), 'notice' text, 'console' reply text, 'parameter' (name, value),
     'heartbeat' (armed, critical).
     """
     events = []
@@ -175,6 +175,8 @@ def parse_replies(decoder, frames):
                 events.append(('ack', struct.unpack_from('<HB', payload)))
             elif message == 253:
                 events.append(('notice', payload[1:51].split(b'\0', 1)[0].decode('ascii', 'replace')))
+            elif message == 126:
+                events.append(('console', payload[9:9 + min(payload[8], 70)].decode('ascii', 'replace')))
             elif message == 22:
                 value, _, _, name = struct.unpack_from('<fHH16s', payload)
                 events.append(('parameter', (name.split(b'\0', 1)[0].decode(), value)))

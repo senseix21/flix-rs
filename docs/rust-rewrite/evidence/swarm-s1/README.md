@@ -113,3 +113,20 @@ Run on the fast harness by patching the harness at runtime (not committed):
 - `scripts/check.sh` stops at `scripts/legacy-parity.py` on the dev host because the legacy checkout
   `../flix` is missing locally (unrelated to this change). The `contracts` CI job, which has it, ran
   the full script including the swarm steps and passed on PR #8.
+
+## Later fix: arming when frames arrive in bursts (2026-10-13)
+
+The Gazebo CI job failed once (run 38419153537, push of `e7cc096`) while the PR run of the same
+commit passed. All three drones refused to arm with `no command`. Under load the plugin handed
+mode, zero-thrust lease and arm to the owner in one tick. The owner applies setpoints before
+queued commands, and selecting a source clears every lease, so the lease was lost. This is
+fail-safe: the drones stayed disarmed. A burst test also found a second race. `exit`,
+addressed to the new system ID, can land in the same tick as the `MAV_SYS_ID` change, before
+the change takes effect. It is then dropped and the drone stays in maintenance.
+
+The coordinator (`Ground`) now waits for the drone's reply at each step. It sends `exit` only
+after both parameter echoes and ends provisioning on its `> exit` / `ok` reply. It sends the
+lease and arm only after the mode ACK. The firmware is unchanged. The new test
+`test_arms_when_the_transport_delivers_frames_in_bursts` delivers frames in 20 ms bursts. It
+fails on the old coordinator (`mode denied`) and passes now. The S1/S2 suites and a local
+three-drone Gazebo run pass.
