@@ -67,6 +67,9 @@ jobs:
       - name: Paired C++/Rust plant comparison
         working-directory: flix-rust
         run: make sim-parity
+      - name: Three-drone swarm flight in Gazebo
+        working-directory: flix-rust
+        run: make swarm-gazebo-check
       - name: Preserve simulator evidence
         if: always()
         uses: actions/upload-artifact@v4

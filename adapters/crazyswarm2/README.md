@@ -25,6 +25,33 @@ Both use the same `Vehicle` (owner, IMU synthesis, bounded link, ground position
 same `Plant`. `scripts/check.sh` runs the fast harness and its unit tests on every push; the
 `swarm` CI job runs the Crazyswarm2 path.
 
+## Watch the swarm in Gazebo (browser)
+
+Real Gazebo physics, several Flix models, each with its own Rust plugin, flown by the same
+`Ground` logic over UDP. The browser viewer draws every drone, its planned point and a per-drone
+panel (system ID, ground phase, flight state, height, motor output). View only.
+
+```sh
+# Apple Silicon (local arm64 image and legacy checkout, see the Gazebo notes)
+make swarm-gazebo GAZEBO_IMAGE=flix-rust-gazebo:arm64 LEGACY=$PWD/.local/legacy-git
+# Elsewhere: make swarm-gazebo
+python3 tools/gazebo-viewer.py --swarm
+# then open http://127.0.0.1:8765
+```
+
+The flight repeats: arm each drone, take off, zigzag, ring, a full turn of the ring one place at a
+time, back to the line, land, stop. `SWARM_DRONES=2..8` changes the count. Stop it with
+`docker rm -f flix-rust-gazebo-swarm`. `make swarm-gazebo-check` flies once and fails if a plan is
+rejected, a drone does not arm, a drone is more than 50 mm from its plan at the end of a step, or a
+drone has not landed with zero output. CI runs it in the `gazebo` job.
+
+| Piece | Role |
+| --- | --- |
+| `scripts/gazebo-swarm-world.py` | World with flix1..flixN; plugin ports 14600+i (commands) and 14700+i (trace) |
+| `scripts/gazebo-swarm.sh` | Builds the plugin, starts `gzserver`, runs the coordinator |
+| `flix_swarm/gazebo.py` | Coordinator: one `Ground` per drone, plugin traces as position truth, viewer state file |
+| `tools/gazebo-viewer.py --swarm` | Reads every `flix*` pose from Gazebo and `.local/gazebo-swarm.json` |
+
 ## How a command reaches the motors
 
 ```

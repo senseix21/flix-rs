@@ -62,29 +62,24 @@ class Link:
             yield self.queue.popleft()[1]
 
 
-class Vehicle:
-    """Ground phases: provisioning, standby, arming, armed, refused, lost, stopped."""
+class Ground:
+    """What the ground knows about one drone, independent of how frames travel.
 
-    def __init__(self, name, system_id, seed, config=None):
+    Phases: provisioning, standby, arming, armed, refused, lost, stopped. Feed decoded owner
+    replies to `receive` and send whatever `outgoing` returns (at most one frame per call).
+    """
+
+    def __init__(self, name, system_id, config=None):
         self.config = config or Config()
         self.name = name
         self.system_id = system_id
-        self.owner = Owner()
         self.messages = Messages()
         self.decoder = Decoder()
-        self.imu = Imu(seed, self.config.imu_noise)
         self.controller = PositionController()
-        self.link = Link(self.config.link_capacity, self.config.link_latency_us)
         self.pending = collections.deque()
         self.phase = 'provisioning'
         self.events = []
         self.target = None
-        self.calibrated = True
-        self.sensor_fault = None
-        self.previous_velocity = None
-        self.state = self.reason = None
-        self.motors = (0.0, 0.0, 0.0, 0.0)
-        self.rejected = 0
         self.next_setpoint_us = 0
         self.arm_requested_us = None
         self.arm_latency_us = None
@@ -101,9 +96,6 @@ class Vehicle:
             self.messages.parameter(1, 'MAV_SYS_ID', float(system_id)),
             self.messages.console(system_id, 'exit'),
         ])
-
-    def close(self):
-        self.owner.close()
 
     def request_arm(self, now_us):
         """Explicit, per drone (SWM-02). Mode, then a zero-thrust lease, then arm, one per tick."""
@@ -127,37 +119,18 @@ class Vehicle:
         self.phase = 'stopped'
         self.target = None
 
-    def control(self, now_us, dt_us, position, velocity, attitude, rates):
-        """Run one owner tick and the ground side; return the gated motor outputs."""
-        for frame in self.link.due(now_us):
-            if not self.owner.receive(frame, now_us):
-                self.rejected += 1
-        dt = dt_us * 1e-6
-        if self.previous_velocity is None:
-            acceleration = (0.0, 0.0, 0.0)
-        else:
-            acceleration = g.scale(g.sub(velocity, self.previous_velocity), 1.0 / dt)
-        self.previous_velocity = velocity
-        gyro, specific, mask = self.imu.sample(attitude, rates, acceleration)
-        sample_us = now_us
-        if self.sensor_fault and now_us >= self.sensor_fault[1]:
-            if self.sensor_fault[0] == 'nan':
-                specific = (math.nan,) + specific[1:]
-            else:
-                sample_us = now_us - 10_001
-        _, state, reason, _, motors = self.owner.tick(now_us, gyro, specific, mask, self.calibrated, sample_us)
-        if (state, reason) != (self.state, self.reason):
-            self.events.append((now_us, 'state', STATES[state], REASONS[reason]))
-            self.state, self.reason = state, reason
-        self.motors = motors
-        if self.stop_requested_us is not None and self.stopped_us is None and not any(motors):
-            self.stopped_us = now_us
-        replies = self.owner.replies()
-        if self.link.up:
-            for kind, value in parse_replies(self.decoder, replies):
-                self._reply(now_us, kind, value)
-        self._ground(now_us, position, velocity)
-        return motors
+    def release(self):
+        """Allow a new explicit arm request after a completed stop (repeat flights only).
+
+        A lost or refused drone is not released: it needs operator attention first.
+        """
+        if self.phase == 'stopped':
+            self.phase = 'standby'
+            self.stop_requested_us = self.stopped_us = None
+
+    def receive(self, now_us, frames):
+        for kind, value in parse_replies(self.decoder, frames):
+            self._reply(now_us, kind, value)
 
     def _reply(self, now_us, kind, value):
         if kind == 'notice':
@@ -197,18 +170,70 @@ class Vehicle:
         self.target = None
         self.events.append((now_us, 'lost', why))
 
-    def _ground(self, now_us, position, velocity):
+    def outgoing(self, now_us, position, velocity):
+        """The next frame for this drone, if one is due: queued requests first, then setpoints."""
         if self.phase == 'armed' and now_us - self.last_heartbeat_us > HEARTBEAT_TIMEOUT_US:
             self._lose(now_us, 'heartbeat timeout')
         if self.pending:
-            self.link.send(self.pending.popleft(), now_us)
-            return
+            return self.pending.popleft()
         if self.phase != 'armed' or now_us < self.next_setpoint_us:
-            return
+            return None
         dt = self.config.setpoint_period_us * 1e-6
         self.next_setpoint_us = now_us + self.config.setpoint_period_us
         if self.target is None:
             attitude, thrust = LEVEL, 0.0
         else:
             attitude, thrust = self.controller.update(self.target(now_us), position, velocity, dt)
-        self.link.send(self.messages.attitude(self.system_id, attitude, thrust), now_us)
+        return self.messages.attitude(self.system_id, attitude, thrust)
+
+
+class Vehicle(Ground):
+    """A Ground plus its in-process owner, IMU synthesis and bounded link (fast harness, FlixSIL)."""
+
+    def __init__(self, name, system_id, seed, config=None):
+        super().__init__(name, system_id, config)
+        self.owner = Owner()
+        self.imu = Imu(seed, self.config.imu_noise)
+        self.link = Link(self.config.link_capacity, self.config.link_latency_us)
+        self.calibrated = True
+        self.sensor_fault = None
+        self.previous_velocity = None
+        self.state = self.reason = None
+        self.motors = (0.0, 0.0, 0.0, 0.0)
+        self.rejected = 0
+
+    def close(self):
+        self.owner.close()
+
+    def control(self, now_us, dt_us, position, velocity, attitude, rates):
+        """Run one owner tick and the ground side; return the gated motor outputs."""
+        for frame in self.link.due(now_us):
+            if not self.owner.receive(frame, now_us):
+                self.rejected += 1
+        dt = dt_us * 1e-6
+        if self.previous_velocity is None:
+            acceleration = (0.0, 0.0, 0.0)
+        else:
+            acceleration = g.scale(g.sub(velocity, self.previous_velocity), 1.0 / dt)
+        self.previous_velocity = velocity
+        gyro, specific, mask = self.imu.sample(attitude, rates, acceleration)
+        sample_us = now_us
+        if self.sensor_fault and now_us >= self.sensor_fault[1]:
+            if self.sensor_fault[0] == 'nan':
+                specific = (math.nan,) + specific[1:]
+            else:
+                sample_us = now_us - 10_001
+        _, state, reason, _, motors = self.owner.tick(now_us, gyro, specific, mask, self.calibrated, sample_us)
+        if (state, reason) != (self.state, self.reason):
+            self.events.append((now_us, 'state', STATES[state], REASONS[reason]))
+            self.state, self.reason = state, reason
+        self.motors = motors
+        if self.stop_requested_us is not None and self.stopped_us is None and not any(motors):
+            self.stopped_us = now_us
+        replies = self.owner.replies()
+        if self.link.up:
+            self.receive(now_us, replies)
+        frame = self.outgoing(now_us, position, velocity)
+        if frame is not None:
+            self.link.send(frame, now_us)
+        return motors

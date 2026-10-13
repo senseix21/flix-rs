@@ -64,6 +64,27 @@ the firmware planner produces targets.
 The Crazyswarm2 stop latency (1 ms) is shorter than the harness's (2 ms) because the ROS service
 call is handled between ticks, so the stop frame goes out with the next tick's link step.
 
+### Gazebo (`make swarm-gazebo-check`)
+
+Three Flix models in Gazebo 11.15.1 (local arm64 image `flix-rust-gazebo:arm64`, soft contact),
+each with its own Rust plugin, flown by `flix_swarm.gazebo` over UDP with plugin traces as
+position truth. One flight on 2026-10-13: **pass**. Distance from plan at the end of each step
+(each step leaves at least 1 s after its move ends):
+
+| Step ends | flix1 | flix2 | flix3 |
+| --- | --- | --- | --- |
+| Takeoff | 14 mm | 14 mm | 14 mm |
+| Zigzag | 8 mm | 8 mm | 8 mm |
+| Ring | 5 mm | 11 mm | 5 mm |
+| Ring turn 1, 2, 3 | 6 / 4 / 5 mm | 13 / 4 / 5 mm | 16 / 5 / 4 mm |
+| Back to the line | 4 mm | 4 mm | 4 mm |
+| Landing | 2 mm | 8 mm | 7 mm |
+
+All three then stopped on the ground with zero output. An earlier version of the flight plan
+went straight from a once-rotated ring back to the line; the separation check rejected it
+before any drone moved, so the plan now completes a full turn first. With 0.5 s of settling the
+ring turns ended 44 to 47 mm behind the moving plan; the turns now wait 1.5 s.
+
 ### Checks fail when safety paths are removed
 
 Run on the fast harness by patching the harness at runtime (not committed):

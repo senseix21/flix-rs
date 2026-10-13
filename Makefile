@@ -1,4 +1,4 @@
-.PHONY: check demo build sim-check sim-scenarios swarm-sim
+.PHONY: check demo build sim-check sim-scenarios swarm-sim swarm-gazebo swarm-gazebo-check
 check:
 	sh scripts/check.sh
 demo:
@@ -58,3 +58,17 @@ swarm-sim:
 	set -e; for s in $(SWARM_SCENARIOS); do \
 	  docker run --rm --init -v "$(CURDIR):/work" -w /work flix-crazyswarm2:local sh scripts/crazyswarm2-scenario.sh $$s /work/.local/qualification/swarm-s1/crazyswarm2-$$s; \
 	done
+
+# Gazebo swarm (scripts/gazebo-swarm.sh). On Apple Silicon use the local arm64 image and legacy
+# checkout: make swarm-gazebo GAZEBO_IMAGE=flix-rust-gazebo:arm64 LEGACY=$(CURDIR)/.local/legacy-git
+GAZEBO_IMAGE ?= flix-rust-gazebo:local
+LEGACY ?= $(CURDIR)/../flix
+SWARM_DRONES ?= 3
+# Repeating demo flight for the browser viewer: then run python3 tools/gazebo-viewer.py --swarm
+swarm-gazebo:
+	docker rm -f flix-rust-gazebo-swarm >/dev/null 2>&1 || true
+	docker run --init -d --name flix-rust-gazebo-swarm -v "$(CURDIR):/work" -v "$(LEGACY):/legacy:ro" -w /work $(GAZEBO_IMAGE) sh scripts/gazebo-swarm.sh $(SWARM_DRONES)
+	@echo "Gazebo swarm starting (docker logs -f flix-rust-gazebo-swarm). Viewer: python3 tools/gazebo-viewer.py --swarm"
+# One checked flight; exit status is the result.
+swarm-gazebo-check:
+	docker run --rm --init -v "$(CURDIR):/work" -v "$(LEGACY):/legacy:ro" -w /work $(GAZEBO_IMAGE) sh scripts/gazebo-swarm.sh $(SWARM_DRONES) once
