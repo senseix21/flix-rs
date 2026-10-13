@@ -90,7 +90,25 @@ pub enum Console {
     CalibrateGyro,
     Metrics(u32),
 }
+impl Console {
+    /// The command text, echoed back in console replies as `> name`.
+    pub fn name(self) -> &'static str {
+        match self {
+            Console::Status => "status",
+            Console::Disarm => "disarm",
+            Console::Maintenance => "maintenance",
+            Console::Exit => "exit",
+            Console::ClearFault => "clear-fault",
+            Console::Save => "save",
+            Console::CalibrateGyro => "calibrate-gyro",
+            Console::Metrics(_) => "metrics",
+        }
+    }
+}
 pub fn console(bytes: &[u8]) -> Result<Console, Error> {
+    // Text ends at the first NUL, as in the legacy firmware: upstream pyflix pads the data
+    // field with zeros and counts the padding.
+    let bytes = bytes.split(|b| *b == 0).next().unwrap_or(&[]);
     let text = core::str::from_utf8(bytes)
         .map_err(|_| Error::Bounds)?
         .trim();
@@ -240,10 +258,16 @@ pub fn event(packet: &Packet, local: u8) -> Result<Event, Error> {
                     1.0 => Ok(Event::Arm),
                     _ => Err(Error::Bounds),
                 },
-                176 if args[0] == 1.0 && args[2..].iter().all(|v| *v == 0.0) => match args[1] {
-                    1.0 | 2.0 | 3.0 => Ok(Event::Mode(args[1] as u8)),
-                    _ => Ok(Event::UnsupportedCommand(command)),
-                },
+                // param1 is the base mode: QGC sends 1 (custom mode enabled), upstream pyflix
+                // sends 0. The legacy firmware ignored it; the mode is param2 either way.
+                176 if (args[0] == 0.0 || args[0] == 1.0)
+                    && args[2..].iter().all(|v| *v == 0.0) =>
+                {
+                    match args[1] {
+                        1.0 | 2.0 | 3.0 => Ok(Event::Mode(args[1] as u8)),
+                        _ => Ok(Event::UnsupportedCommand(command)),
+                    }
+                }
                 _ => Ok(Event::UnsupportedCommand(command)),
             }
         }
@@ -337,7 +361,9 @@ pub fn event(packet: &Packet, local: u8) -> Result<Event, Error> {
         }
         126 => {
             let count = usize::from(p[8]);
-            if count > 70 || p[6] != 10 || p[7] & !6 != 0 {
+            // Device 10 (shell) from QGC and the repo client; device 0 from upstream pyflix,
+            // which the legacy firmware also accepted.
+            if count > 70 || (p[6] != 10 && p[6] != 0) || p[7] & !6 != 0 {
                 return Err(Error::Bounds);
             }
             if packet.length > 79 {

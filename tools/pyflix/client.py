@@ -148,8 +148,9 @@ class Flix:
         encoded=command.encode('ascii'); self.send(126,struct.pack('<IHBBB70s',0,0,10,0,len(encoded),encoded))
     def status(self):
         encoded=b'status'
-        payload=self.request(('console',),126,struct.pack('<IHBBB70s',0,0,10,0,len(encoded),encoded))
-        return payload[9:9+payload[8]].decode('ascii')
+        payload=self.request(('console','status'),126,struct.pack('<IHBBB70s',0,0,10,0,len(encoded),encoded))
+        lines=payload[9:9+payload[8]].decode('ascii').strip().split('\n')
+        return lines[-1]
     def metrics(self, timeout=2.0):
         """Frozen v1 snapshot. Missing, mixed or conflicting chunks never succeed."""
         nonce=secrets.randbits(32)
@@ -215,7 +216,10 @@ class Flix:
                                         try:waiter.put_nowait(result)
                                         except queue.Full:pass
                             continue
-                        key=('console',)
+                        # Echoed command replies ("> status" newline result) answer that command
+                        # only; other shell text (enrollment, notices) keeps the generic key.
+                        if data[:2]==b'> ':key=('console',data[2:].split(b'\n',1)[0].decode('ascii','replace'))
+                        else:key=('console',)
                     with self._pending_lock:
                         waiter=self._pending.get(key)
                         if waiter:

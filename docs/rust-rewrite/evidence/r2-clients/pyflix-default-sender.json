@@ -1,0 +1,147 @@
+{
+ "client": "upstream pyflix (flix tools/pyflix)",
+ "legacy_revision": "1f5b268271536e45a9377d1c5317d3eb6f3c3bba",
+ "pymavlink": "2.4.47",
+ "python": "3.9.6",
+ "bench_policy": "BenchUsb system 255 component 190 (unsigned, host-only)",
+ "pyflix_sender": [
+  255,
+  0
+ ],
+ "steps": [
+  {
+   "step": "connect (wait for HEARTBEAT)",
+   "ok": true,
+   "value": true,
+   "seconds": 1.24
+  },
+  {
+   "step": "heartbeat mode/armed decode",
+   "ok": true,
+   "value": {
+    "mode": "STAB",
+    "armed": false
+   },
+   "seconds": 0.0
+  },
+  {
+   "step": "get_param MAV_SYS_ID",
+   "ok": false,
+   "error": "RuntimeError: Failed to get parameter MAV_SYS_ID after 3 attempts",
+   "seconds": 0.314
+  },
+  {
+   "step": "set_param CTL_ATT_MAX (stopped)",
+   "ok": false,
+   "error": "RuntimeError: Failed to set parameter CTL_ATT_MAX to 0.5 after 3 attempts",
+   "seconds": 0.311
+  },
+  {
+   "step": "cli status",
+   "ok": false,
+   "error": "RuntimeError: Failed to send command status after 3 attempts",
+   "seconds": 0.315
+  },
+  {
+   "step": "set_mode STAB",
+   "ok": false,
+   "error": "RuntimeError: Failed to send command 176 after 3 attempts",
+   "seconds": 0.311
+  },
+  {
+   "step": "set_controls throttle 0",
+   "ok": true,
+   "value": null,
+   "seconds": 0.0
+  },
+  {
+   "step": "set_armed True",
+   "ok": false,
+   "error": "RuntimeError: Failed to send command 400 after 3 attempts",
+   "seconds": 0.315
+  },
+  {
+   "step": "armed reported",
+   "ok": true,
+   "value": false,
+   "seconds": 0.601
+  },
+  {
+   "step": "set_controls throttle 0.4",
+   "ok": true,
+   "value": null,
+   "seconds": 0.0
+  },
+  {
+   "step": "set_armed False",
+   "ok": false,
+   "error": "RuntimeError: Failed to send command 400 after 3 attempts",
+   "seconds": 0.311
+  },
+  {
+   "step": "disarmed reported",
+   "ok": true,
+   "value": false,
+   "seconds": 0.604
+  },
+  {
+   "step": "cli maintenance",
+   "ok": false,
+   "error": "RuntimeError: Failed to send command maintenance after 3 attempts",
+   "seconds": 0.307
+  },
+  {
+   "step": "set_param CTL_ATT_MAX (maintenance)",
+   "ok": false,
+   "error": "RuntimeError: Failed to set parameter CTL_ATT_MAX to 0.5 after 3 attempts",
+   "seconds": 0.315
+  },
+  {
+   "step": "get_param CTL_ATT_MAX",
+   "ok": false,
+   "error": "RuntimeError: Failed to get parameter CTL_ATT_MAX after 3 attempts",
+   "seconds": 0.311
+  },
+  {
+   "step": "cli exit",
+   "ok": false,
+   "error": "RuntimeError: Failed to send command exit after 3 attempts",
+   "seconds": 0.31
+  },
+  {
+   "step": "set_mode RAW (diagnostic, intentionally unsupported)",
+   "ok": false,
+   "error": "RuntimeError: Failed to send command 176 after 3 attempts",
+   "seconds": 0.309
+  },
+  {
+   "step": "set_mode AUTO",
+   "ok": false,
+   "error": "RuntimeError: Failed to send command 176 after 3 attempts",
+   "seconds": 0.313
+  },
+  {
+   "step": "set_attitude thrust 0",
+   "ok": true,
+   "value": null,
+   "seconds": 0.001
+  },
+  {
+   "step": "set_motors (diagnostic)",
+   "ok": true,
+   "value": null,
+   "seconds": 0.0
+  },
+  {
+   "step": "telemetry seen",
+   "ok": true,
+   "value": {
+    "attitude": true,
+    "gyro": true,
+    "motors": true
+   },
+   "seconds": 0.0
+  }
+ ],
+ "bench_counters": "admitted={} rejected=74 incoming={(255, 0, 0, 0): 32, (255, 0, 20, 0): 6, (255, 0, 23, 0): 6, (255, 0, 69, 0): 2, (255, 0, 76, 0): 15, (255, 0, 82, 0): 2, (255, 0, 126, 0): 9, (255, 0, 139, 0): 2} outgoing={0: 49, 26: 373, 31: 499, 35: 249, 105: 373, 140: 249, 147: 49} state=Standby"
+}

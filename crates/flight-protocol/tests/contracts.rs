@@ -189,3 +189,56 @@ fn peers_are_bounded_and_require_unicast_nonzero_keys() {
         Err(Error::Unauthorized)
     );
 }
+#[test]
+fn upstream_pyflix_mode_and_console_encodings_are_accepted() {
+    // DO_SET_MODE with base mode 0 (upstream pyflix) and 1 (QGC); the mode is param2.
+    for base in [0.0f32, 1.0] {
+        let mut p = Vec::new();
+        for v in [base, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0] {
+            p.extend_from_slice(&v.to_le_bytes());
+        }
+        p.extend_from_slice(&176u16.to_le_bytes());
+        p.extend_from_slice(&[1, 1, 0]);
+        let mut policy = bench();
+        let packet = wire::decode(&frame(76, &p), &mut policy).unwrap();
+        assert!(
+            matches!(event(&packet, 1), Ok(Event::Mode(3))),
+            "base {base}"
+        );
+    }
+    let mut p = Vec::new();
+    for v in [2.0f32, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0] {
+        p.extend_from_slice(&v.to_le_bytes());
+    }
+    p.extend_from_slice(&176u16.to_le_bytes());
+    p.extend_from_slice(&[1, 1, 0]);
+    let mut policy = bench();
+    let packet = wire::decode(&frame(76, &p), &mut policy).unwrap();
+    assert!(matches!(
+        event(&packet, 1),
+        Ok(Event::UnsupportedCommand(176))
+    ));
+    // SERIAL_CONTROL: device 0 (upstream pyflix) or 10 (shell); NUL padding counted in `count`.
+    for device in [0u8, 10] {
+        let mut data = [0u8; 70];
+        data[..7].copy_from_slice(b"status\n");
+        let mut p = vec![0u8; 6];
+        p.extend_from_slice(&[device, 0, 70]);
+        p.extend_from_slice(&data);
+        let mut policy = bench();
+        let packet = wire::decode(&frame(126, &p), &mut policy).unwrap();
+        assert!(
+            matches!(
+                event(&packet, 1),
+                Ok(Event::Console(flight_protocol::Console::Status))
+            ),
+            "device {device}"
+        );
+    }
+    let mut p = vec![0u8; 6];
+    p.extend_from_slice(&[1, 0, 6]);
+    p.extend_from_slice(b"status");
+    let mut policy = bench();
+    let packet = wire::decode(&frame(126, &p), &mut policy).unwrap();
+    assert_eq!(event(&packet, 1).unwrap_err(), Error::Bounds);
+}

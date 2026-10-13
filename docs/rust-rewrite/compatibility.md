@@ -9,10 +9,11 @@
 | Source loss | Immediate stop, explicit rearm required | Legacy unqualified descent removed from bench profile |
 | Raw/direct motors | Denied from flight protocol | Typed diagnostics only in exclusive maintenance, ≤0.15, ≤100 ms |
 | Clock | Integer microseconds and explicit discontinuity fault | 32-bit extension requires polling within half-wrap |
-| Parameters | All 96 names inventoried; strict finite/integer/cross-field validation | Schema marks unsupported/immutable fields; no silent acceptance |
+| Parameters | All 96 legacy names inventoried, plus 21 `POS_*` (swarm S2; settings record v2, v1 migrates); strict finite/integer/cross-field validation | Writes only in stopped maintenance; a refused write sends STATUSTEXT `param denied: <why>` (legacy was silent) |
 | Storage | Version/CRC/two slots/readback; maintenance-only writes | Actual NVS/power interruption unmeasured |
 | Logs | LE versioned records, offsets/counts/completeness checked | New schema; use new downloader/converter |
 | Python | Waiter-before-send, serialized writes, bounded callback worker, close/context manager | Same-key concurrent requests denied explicitly |
+| Upstream pyflix (`1f5b268`, pymavlink 2.4.47) | Telemetry, parameters, console (`> command` echo as legacy; SERIAL_CONTROL device 0 or 10; NUL-terminated text), DO_SET_MODE with base mode 0 or 1, arm/disarm, MANUAL_CONTROL, SET_ATTITUDE_TARGET | **Commands need sender component 190**: pyflix's default (pymavlink component 0) is refused by the bench policy; telemetry still arrives. RAW mode unsupported; SET_ACTUATOR_CONTROL_TARGET ignored (diagnostics are maintenance console only); no signing support, so wired bench policy only. Evidence: `evidence/r2-clients/` |
 | Wi-Fi | Bounded UDP, endpoint learned after validation, signed command policy | Denied before trusted key/time-floor provisioning; QGC hardware interoperability open |
 | RC | SBUS flags, channel/calibration bounds, explicit stopped takeover | First eight calibrated channels; receiver wiring/coexistence open |
 | ESP-NOW | Four provisioned encrypted peers, bounded callback queue, overload stop | Optional SDK adapter unqualified; ≤250-byte compatibility profile |

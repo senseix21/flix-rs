@@ -126,3 +126,51 @@ fn invalid_rotation_and_clock_rollback_revoke_without_retaining_authority() {
     assert!(!session.enabled());
     assert!(!session.receive(&bytes[..n], &mut owner, Tick(4000)));
 }
+#[test]
+fn console_commands_reply_with_echo_and_parameter_denials_are_announced() {
+    use flight_core::{Sensor, Tick, Vec3};
+    use flight_esp32::Owner;
+    use flight_protocol::{Console, Event};
+    let sample = |t| Sensor {
+        at: Tick(t),
+        gyro: Vec3::ZERO,
+        acceleration: Vec3(0., 0., 9.80665),
+        calibrated: true,
+    };
+    let text = |owner: &mut Owner| -> Vec<String> {
+        std::iter::from_fn(|| owner.reply())
+            .filter(|r| r.bytes[7] == 126 || r.bytes[7] == 253)
+            .map(|r| {
+                let payload = &r.bytes[10..r.len - 2];
+                if r.bytes[7] == 126 {
+                    String::from_utf8_lossy(&payload[9..9 + usize::from(payload[8])]).into_owned()
+                } else {
+                    String::from_utf8_lossy(&payload[1..])
+                        .trim_end_matches('\0')
+                        .to_owned()
+                }
+            })
+            .collect()
+    };
+    let mut owner = Owner::default();
+    owner.tick(Tick(0), Some(sample(0)));
+    owner.submit(Event::Console(Console::Status), Tick(1000));
+    owner.tick(Tick(1000), Some(sample(1000)));
+    assert!(text(&mut owner).contains(&"> status\nstopped\n".to_owned()));
+    let mut name = [0u8; 16];
+    name[..11].copy_from_slice(b"CTL_ATT_MAX");
+    owner.submit(Event::ParameterSet { name, value: 0.5 }, Tick(2000));
+    owner.tick(Tick(2000), Some(sample(2000)));
+    let mut seen = Vec::new();
+    for t in 3..40 {
+        owner.tick(Tick(t * 1000), Some(sample(t * 1000)));
+        seen.extend(text(&mut owner));
+    }
+    assert!(
+        seen.iter().any(|t| t == "param denied: maintenance only"),
+        "{seen:?}"
+    );
+    owner.submit(Event::Console(Console::Save), Tick(41000));
+    owner.tick(Tick(41000), Some(sample(41000)));
+    assert!(text(&mut owner).contains(&"> save\ndenied: maintenance only\n".to_owned()));
+}
