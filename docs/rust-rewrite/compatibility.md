@@ -14,7 +14,7 @@
 | Logs | LE versioned records, offsets/counts/completeness checked | New schema; use new downloader/converter |
 | Python | Waiter-before-send, serialized writes, bounded callback worker, close/context manager | Same-key concurrent requests denied explicitly |
 | Upstream pyflix (`1f5b268`, pymavlink 2.4.47) | Telemetry, parameters, console (`> command` echo as legacy; SERIAL_CONTROL device 0 or 10; NUL-terminated text), DO_SET_MODE with base mode 0 or 1, arm/disarm, MANUAL_CONTROL, SET_ATTITUDE_TARGET | Works unmodified: the wired policy accepts sender 255/0 (pymavlink default) as well as 255/190; the signed radio policy stays 255/190 only. RAW mode unsupported; SET_ACTUATOR_CONTROL_TARGET ignored (diagnostics are maintenance console only); no signing support, so wired bench policy only. Evidence: `evidence/r2-clients/` |
-| Wi-Fi | Bounded UDP, endpoint learned after validation, signed command policy | Denied before trusted key/time-floor provisioning; QGC hardware interoperability open |
+| Wi-Fi | Bounded UDP, endpoint learned after validation, signed command policy | Denied before trusted key/time-floor provisioning; QGC hardware interoperability open. QGC v5.0.8 signs with a local-time epoch: run it with `TZ=UTC` outside UTC (`evidence/r2-clients/`) |
 | RC | SBUS flags, channel/calibration bounds, explicit stopped takeover | First eight calibrated channels; receiver wiring/coexistence open |
 | ESP-NOW | Four provisioned encrypted peers, bounded callback queue, overload stop | Optional SDK adapter unqualified; ≤250-byte compatibility profile |
 | IMU telemetry | SCALED_IMU kept; HIGHRES_IMU (105) added at the same MAV_RATE_IMU | Upstream pyflix still reads SCALED_IMU; QGC inspector display unverified |

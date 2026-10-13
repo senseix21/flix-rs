@@ -77,13 +77,16 @@ evidence; notarized Developer ID, `codesign --verify --deep --strict` passes.
 | `tools/qgc-acceptance.py` (automated, signed per-boot session) | **pass**: vehicle discovered, signed parameter request, all 117 parameters (including the 21 `POS_*`) transferred; QGC reports initial load complete |
 | `tools/qgc-session.py` (operator checklist: console `stab`, virtual joystick, arm, throttle, 3 s link cut, reconnect, re-arm, disarm) | **not completed**: QGC connected and loaded parameters, then the session ran 15 minutes with no operator input and was stopped. QGC sent only its own background requests (COMMAND_LONG 512 and 521, both answered UNSUPPORTED) |
 
-**Finding: QGC signing depends on the host time zone.** With the machine's local zone (UTC+6) QGC
-received 1,155 to 1,898 correctly signed frames per run and sent nothing back, in three runs. With
-`TZ=UTC` (as the automated tool always set) it connected at once. Inferred cause: QGC derives its
-MAVLink signing timestamp from local time, so outside UTC it treats a vehicle signing with the
-standard UTC-based timestamp as out of its time window. Not yet checked against QGC's source. If
-true, operators outside UTC would need to start QGC with `TZ=UTC` until it is fixed upstream;
-it does not affect the unsigned wired path or pyflix.
+**Finding: QGC signing depends on the host time zone (confirmed).** With the machine's local
+zone (UTC+6) QGC received 1,155 to 1,898 correctly signed frames per run and sent nothing back, in
+three runs. With `TZ=UTC` (as the automated tool always set) it connected at once. Cause, from
+QGC v5.0.8 `src/MAVLink/MAVLinkSigning.cc` lines 49-50: the signing epoch is
+`QDateTime(QDate(2015, 1, 1).startOfDay())`, which is local midnight, measured against
+`currentDateTimeUtc()`. East of UTC its signing clock runs ahead by the zone offset, so the
+vehicle's correctly timed frames fall outside the MAVLink library's 60 s window and are dropped.
+Consequence: an operator outside UTC must start QGC with `TZ=UTC` to use the signed link, until
+QGC is fixed upstream. The vehicle side is correct and is not changed. The unsigned wired path
+and pyflix are unaffected.
 
 Also added for the session: console `stab`, `acro`, `auto` (explicit source selection, as the
 legacy console offered; QGC's generic-vehicle UI has no mode switcher), and the bench may now run
@@ -93,6 +96,5 @@ up to 15 minutes.
 
 - QGroundControl UI arming, virtual joystick, disarm and reconnect: the operator session is ready
   (`tools/qgc-session.py`) but has not been completed.
-- The QGC time-zone cause above is inferred, not confirmed in QGC's source.
 - Signed radio use by pyflix (upstream pyflix has no signing support).
 - Real serial/USB, radio and hardware.
