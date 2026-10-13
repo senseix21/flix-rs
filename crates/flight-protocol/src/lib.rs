@@ -89,6 +89,9 @@ pub enum Console {
     Save,
     CalibrateGyro,
     Metrics(u32),
+    /// `stab`, `acro`, `auto`: explicit source selection, as the legacy console offered.
+    /// Lets a GCS without a mode switcher (QGC's generic vehicle) select from its console.
+    Mode(u8),
 }
 impl Console {
     /// The command text, echoed back in console replies as `> name`.
@@ -102,6 +105,9 @@ impl Console {
             Console::Save => "save",
             Console::CalibrateGyro => "calibrate-gyro",
             Console::Metrics(_) => "metrics",
+            Console::Mode(1) => "acro",
+            Console::Mode(3) => "auto",
+            Console::Mode(_) => "stab",
         }
     }
 }
@@ -128,6 +134,9 @@ pub fn console(bytes: &[u8]) -> Result<Console, Error> {
         "clear-fault" => Ok(Console::ClearFault),
         "save" => Ok(Console::Save),
         "calibrate-gyro" => Ok(Console::CalibrateGyro),
+        "acro" => Ok(Console::Mode(1)),
+        "stab" => Ok(Console::Mode(2)),
+        "auto" => Ok(Console::Mode(3)),
         _ => Err(Error::Unsupported),
     }
 }

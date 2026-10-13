@@ -143,7 +143,7 @@ class Flix:
         if not 0<=index<PARAMETER_COUNT: raise ValueError('parameter index')
         return self.request(('parameter',index),20,struct.pack('<hBB16s',index,1,1,b''))
     def console(self, command):
-        allowed={'status','disarm','maintenance','exit','clear-fault','save','calibrate-gyro'}
+        allowed={'status','disarm','maintenance','exit','clear-fault','save','calibrate-gyro','stab','acro','auto'}
         if command not in allowed: raise ValueError('console allowlist')
         encoded=command.encode('ascii'); self.send(126,struct.pack('<IHBBB70s',0,0,10,0,len(encoded),encoded))
     def status(self):

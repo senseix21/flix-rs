@@ -247,6 +247,20 @@ impl Owner {
         data[9..9 + message.len()].copy_from_slice(message);
         self.emit(126, &data);
     }
+    /// 1 ACRO, 2 STAB (pilot source), 3 AUTO (automatic source). Refused while Armed,
+    /// in Maintenance or in Fault: a source change always needs explicit rearming.
+    fn select_mode(&mut self, mode: u8) -> bool {
+        let source = if mode == 3 {
+            flight_core::Source::Automatic
+        } else {
+            flight_core::Source::Pilot
+        };
+        let accepted = self.flight.select(source);
+        if accepted {
+            self.pilot_acro = mode == 1;
+        }
+        accepted
+    }
     /// SERIAL_CONTROL shell reply `> command` newline `result`, as the legacy firmware echoed
     /// commands; upstream pyflix matches replies by that prefix.
     fn console_reply(&mut self, command: &str, result: &str) {
@@ -420,15 +434,7 @@ impl Owner {
                 self.ack(176, accepted);
             }
             Event::Mode(mode) => {
-                let source = if mode == 3 {
-                    flight_core::Source::Automatic
-                } else {
-                    flight_core::Source::Pilot
-                };
-                let accepted = self.flight.select(source);
-                if accepted {
-                    self.pilot_acro = mode == 1;
-                }
+                let accepted = self.select_mode(mode);
                 self.ack(176, accepted);
             }
             Event::ProtocolRequested(command) => {
@@ -582,6 +588,13 @@ impl Owner {
                     Console::Disarm => {
                         self.flight.disarm();
                         "ok"
+                    }
+                    Console::Mode(mode) => {
+                        if self.select_mode(mode) {
+                            "ok"
+                        } else {
+                            "denied: disarm first"
+                        }
                     }
                     Console::Metrics(_) => return,
                 };

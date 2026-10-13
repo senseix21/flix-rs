@@ -66,9 +66,33 @@ accepted, 255/1, 254/0 and 0/0 refused on the wired policy, and 255/0 refused on
 After: **unmodified pyflix passes 19 of 21 steps** (`pyflix-default-sender.json`), the same two
 deliberate refusals as above. `pyflix-component-190.json` is the run with the sender forced to 190.
 
+## QGroundControl v5.0.8 (2026-10-13)
+
+Executable: `.local/qgc/QGroundControl.app` from the release DMG (GitHub digest
+`sha256:1f5fc88f…74822`, verified); executable SHA-256 `1700a827…3fce0`, the same as the earlier
+evidence; notarized Developer ID, `codesign --verify --deep --strict` passes.
+
+| Check | Result |
+| --- | --- |
+| `tools/qgc-acceptance.py` (automated, signed per-boot session) | **pass**: vehicle discovered, signed parameter request, all 117 parameters (including the 21 `POS_*`) transferred; QGC reports initial load complete |
+| `tools/qgc-session.py` (operator checklist: console `stab`, virtual joystick, arm, throttle, 3 s link cut, reconnect, re-arm, disarm) | **not completed**: QGC connected and loaded parameters, then the session ran 15 minutes with no operator input and was stopped. QGC sent only its own background requests (COMMAND_LONG 512 and 521, both answered UNSUPPORTED) |
+
+**Finding: QGC signing depends on the host time zone.** With the machine's local zone (UTC+6) QGC
+received 1,155 to 1,898 correctly signed frames per run and sent nothing back, in three runs. With
+`TZ=UTC` (as the automated tool always set) it connected at once. Inferred cause: QGC derives its
+MAVLink signing timestamp from local time, so outside UTC it treats a vehicle signing with the
+standard UTC-based timestamp as out of its time window. Not yet checked against QGC's source. If
+true, operators outside UTC would need to start QGC with `TZ=UTC` until it is fixed upstream;
+it does not affect the unsigned wired path or pyflix.
+
+Also added for the session: console `stab`, `acro`, `auto` (explicit source selection, as the
+legacy console offered; QGC's generic-vehicle UI has no mode switcher), and the bench may now run
+up to 15 minutes.
+
 ## Not established
 
-- QGroundControl beyond the earlier signed discovery and parameter transfer: manual UI arming,
-  mode change, virtual joystick, disarm and reconnect still need a QGC session with an operator.
+- QGroundControl UI arming, virtual joystick, disarm and reconnect: the operator session is ready
+  (`tools/qgc-session.py`) but has not been completed.
+- The QGC time-zone cause above is inferred, not confirmed in QGC's source.
 - Signed radio use by pyflix (upstream pyflix has no signing support).
 - Real serial/USB, radio and hardware.

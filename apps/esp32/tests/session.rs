@@ -174,3 +174,45 @@ fn console_commands_reply_with_echo_and_parameter_denials_are_announced() {
     owner.tick(Tick(41000), Some(sample(41000)));
     assert!(text(&mut owner).contains(&"> save\ndenied: maintenance only\n".to_owned()));
 }
+#[test]
+fn console_mode_commands_select_the_source_explicitly_and_never_while_armed() {
+    use flight_core::control::{Intent, Pilot};
+    use flight_core::{Sensor, Source, State, Tick, Vec3};
+    use flight_esp32::Owner;
+    use flight_protocol::{Console, Event};
+    let sample = |t| Sensor {
+        at: Tick(t),
+        gyro: Vec3::ZERO,
+        acceleration: Vec3(0., 0., 9.80665),
+        calibrated: true,
+    };
+    let stick = |thrust| {
+        Intent::Stabilized(Pilot {
+            roll: 0.,
+            pitch: 0.,
+            yaw: 0.,
+            thrust,
+        })
+    };
+    let mut owner = Owner::default();
+    owner.tick(Tick(0), Some(sample(0)));
+    // No source yet: manual control alone cannot arm.
+    owner.submit(Event::Setpoint(Source::Pilot, stick(0.)), Tick(1000));
+    owner.tick(Tick(1000), Some(sample(1000)));
+    owner.submit(Event::Arm, Tick(2000));
+    owner.tick(Tick(2000), Some(sample(2000)));
+    assert_ne!(owner.flight.snapshot().state, State::Armed);
+    owner.submit(Event::Console(Console::Mode(2)), Tick(3000));
+    owner.tick(Tick(3000), Some(sample(3000)));
+    assert_eq!(owner.flight.snapshot().source, Some(Source::Pilot));
+    owner.submit(Event::Setpoint(Source::Pilot, stick(0.)), Tick(4000));
+    owner.tick(Tick(4000), Some(sample(4000)));
+    owner.submit(Event::Arm, Tick(5000));
+    owner.tick(Tick(5000), Some(sample(5000)));
+    assert_eq!(owner.flight.snapshot().state, State::Armed);
+    // Armed: a console mode change is refused and nothing changes.
+    owner.submit(Event::Console(Console::Mode(3)), Tick(6000));
+    owner.tick(Tick(6000), Some(sample(6000)));
+    let s = owner.flight.snapshot();
+    assert_eq!((s.state, s.source), (State::Armed, Some(Source::Pilot)));
+}
