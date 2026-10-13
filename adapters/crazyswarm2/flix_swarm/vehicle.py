@@ -103,27 +103,30 @@ class Ground:
         self.refusal = None
         self.last_heartbeat_us = 0
         # The owner starts as system 1; set the lease first, then move to this drone's ID.
+        # `exit` goes to the new ID only after both values are echoed, and provisioning ends on
+        # its reply: the new ID takes effect a tick later, so an `exit` delivered with the
+        # PARAM_SET in one owner tick would be dropped and leave the drone in maintenance.
         lease = self.config.lease_s
         self._expected = {'SF_RC_LOSS_TIME': lease, 'MAV_SYS_ID': float(system_id)}
         self.pending.extend([
             self.messages.console(1, 'maintenance'),
             self.messages.parameter(1, 'SF_RC_LOSS_TIME', lease),
             self.messages.parameter(1, 'MAV_SYS_ID', float(system_id)),
-            self.messages.console(system_id, 'exit'),
         ])
 
     def request_arm(self, now_us):
-        """Explicit, per drone (SWM-02). Mode, then a zero-thrust lease, then arm, one per tick."""
+        """Explicit, per drone (SWM-02). Mode; once it is acknowledged, a zero-thrust lease and arm.
+
+        Selecting a source clears every lease, and the owner applies setpoints before queued
+        commands. Sending all three at once loses the lease whenever the transport delivers them
+        in one owner tick (seen in Gazebo under CI load), so the arm would be refused.
+        """
         if self.phase != 'standby':
             return False
         self.phase = 'arming'
         self.arm_requested_us = now_us
         self.controller.reset()
-        self.pending.extend([
-            self.messages.auto_mode(self.system_id),
-            self.messages.attitude(self.system_id, LEVEL, 0.0),
-            self.messages.arm(self.system_id),
-        ])
+        self.pending.append(self.messages.auto_mode(self.system_id))
         return True
 
     def request_stop(self, now_us):
@@ -157,14 +160,22 @@ class Ground:
             if name in self._expected and abs(self._expected[name] - number) < 1e-6:
                 del self._expected[name]
                 if not self._expected:
-                    self.phase = 'standby'
-                    self.events.append((now_us, 'provisioned', self.system_id))
+                    self.pending.append(self.messages.console(self.system_id, 'exit'))
+        elif kind == 'console' and self.phase == 'provisioning' and not self._expected:
+            if value == '> exit\nok\n':
+                self.phase = 'standby'
+                self.events.append((now_us, 'provisioned', self.system_id))
         elif kind == 'ack' and self.phase == 'arming':
             command, result = value
             if result != 0:
                 self.phase = 'refused'
                 self.refusal = 'denied' if command == 400 else 'mode denied'
                 self.events.append((now_us, 'arm-refused', command))
+            elif command == 176:
+                self.pending.extend([
+                    self.messages.attitude(self.system_id, LEVEL, 0.0),
+                    self.messages.arm(self.system_id),
+                ])
             elif command == 400:
                 self.phase = 'armed'
                 self.arm_latency_us = now_us - self.arm_requested_us
