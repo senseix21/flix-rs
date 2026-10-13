@@ -1,9 +1,11 @@
 #!/bin/sh
 # Run one Crazyswarm2 S1 scenario inside adapters/crazyswarm2/Dockerfile.
-#   sh scripts/crazyswarm2-scenario.sh formation|stop|partial-arm OUTPUT_DIR
+#   sh scripts/crazyswarm2-scenario.sh formation|stop|partial-arm OUTPUT_DIR [ground|drone]
+# The third argument chooses where the position loop runs (default ground, swarm S1).
 set -eu
 scenario=$1
 out=$2
+export FLIX_POSITION_LOOP=${3:-ground}
 cd /work
 export CARGO_TARGET_DIR=/work/target/crazyswarm2-linux
 cargo build --release --locked -p flight-gazebo

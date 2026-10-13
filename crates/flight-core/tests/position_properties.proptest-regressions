@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 84fec6169fc5b3e7b06ac2e4e95f85cde62341bba7b77afab8ccbc69dfa6ccd6 # shrinks to ops = [Sample(Vec3(0.0, 0.0, 0.0), -1049), Tick(500)]
+cc 3d45d83e59888b83829a941c8025c0e911bb89643baf138adfb5d298417713b1 # shrinks to ops = [Sample(Vec3(0.0, 0.0, -2.8011122), -1)]

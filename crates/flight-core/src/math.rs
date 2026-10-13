@@ -129,6 +129,35 @@ impl Quaternion {
         let t = v.cross(world) * 2.0;
         world + t * w + v.cross(t)
     }
+    /// Body vector expressed in world (the inverse of `body`).
+    pub fn world(self, body: Vec3) -> Vec3 {
+        let [w, x, y, z] = self.0;
+        let v = Vec3(x, y, z);
+        let t = v.cross(body) * 2.0;
+        body + t * w + v.cross(t)
+    }
+    /// Rotation whose columns are the body axes expressed in world; axes must be orthonormal.
+    pub fn from_axes(x: Vec3, y: Vec3, z: Vec3) -> Option<Self> {
+        let (m00, m10, m20) = (x.0, x.1, x.2);
+        let (m01, m11, m21) = (y.0, y.1, y.2);
+        let (m02, m12, m22) = (z.0, z.1, z.2);
+        let trace = m00 + m11 + m22;
+        let q = if trace > 0.0 {
+            let s = libm::sqrtf(trace + 1.0) * 2.0;
+            [0.25 * s, (m21 - m12) / s, (m02 - m20) / s, (m10 - m01) / s]
+        } else if m00 > m11 && m00 > m22 {
+            let s = libm::sqrtf(1.0 + m00 - m11 - m22) * 2.0;
+            [(m21 - m12) / s, 0.25 * s, (m01 + m10) / s, (m02 + m20) / s]
+        } else if m11 > m22 {
+            let s = libm::sqrtf(1.0 + m11 - m00 - m22) * 2.0;
+            [(m02 - m20) / s, (m01 + m10) / s, 0.25 * s, (m12 + m21) / s]
+        } else {
+            let s = libm::sqrtf(1.0 + m22 - m00 - m11) * 2.0;
+            [(m10 - m01) / s, (m02 + m20) / s, (m12 + m21) / s, 0.25 * s]
+        };
+        let q = if q[0] < 0.0 { q.map(|v| -v) } else { q };
+        Self::new(q)
+    }
     pub fn angles(self) -> Vec3 {
         let [w, x, y, z] = self.0;
         Vec3(

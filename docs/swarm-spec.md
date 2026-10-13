@@ -1,8 +1,10 @@
 # Flix Swarm Flight Specification
 
-Date: 2026-10-12, updated 2026-10-13. Status: **S1 in progress**. SD-01, SD-03 and SD-04 were accepted
-on 2026-10-13 when the user asked to proceed with implementation; the other decisions remain open.
-Stage S1 (simulation only) is implemented; S2 to S4 are not started.
+Date: 2026-10-12, updated 2026-10-13. Status: **S1 and S2 done in simulation**. SD-01, SD-03 and SD-04 were accepted
+on 2026-10-13 when the user asked to proceed with implementation. SD-02, SD-05, SD-06, SD-09,
+SD-10 and SD-11 were accepted the same day when the user approved starting S2 with the proposed
+answers. SD-07 and SD-08 remain open. Stage S1 (simulation only) is implemented; S2's core,
+protocol, parameter and simulation work is implemented in simulation; S3 and S4 are not started.
 Delivery work: [swarm plan](swarm-plan.md). Base requirements: [Rust rewrite specification](rust-rewrite-spec.md).
 
 ## In plain terms
@@ -123,14 +125,16 @@ Accuracy figures are vendor-class expectations, not measurements. S3 measures th
 | ID | Decision | Proposed position | Must close before |
 | --- | --- | --- | --- |
 | SD-01 | Adopt swarm flight as a project requirement | **Accepted 2026-10-13** | S1 starts |
-| SD-02 | Where the position loop runs | Ground in S1 (sim only); on the drone from S2 | S2 starts |
+| SD-02 | Where the position loop runs | **Accepted 2026-10-13**: ground in S1 (sim only); in `flight-core` on the drone from S2 | S2 starts |
 | SD-03 | Coordinator | **Accepted 2026-10-13**: Crazyswarm2, pinned and kept outside the Cargo workspace; ROS 2 never enters the firmware or `flight-core` | S1 gate |
 | SD-04 | Where the Crazyswarm2 integration lives | **Accepted 2026-10-13**: `adapters/crazyswarm2/` in this repository: Python SIL module, Flix plant parameters, Dockerfile, pinned upstream commit and a small patch; MIT notice kept | S1 starts |
-| SD-05 | Position input message | Candidates `ATT_POS_MOCAP` (138) or `VISION_POSITION_ESTIMATE` (102) for ground-measured position; on-board driver if UWB tags measure locally | S2 protocol work |
-| SD-06 | Position setpoint message | Candidate `SET_POSITION_TARGET_LOCAL_NED` (84) with a documented supported mask | S2 protocol work |
+| SD-05 | Position input message | **Accepted 2026-10-13**: `ATT_POS_MOCAP` (138), local NED, converted to world NWU at the protocol boundary. The quaternion's heading corrects the attitude estimate's yaw (a zero quaternion means position only); roll, pitch, `time_usec` and the covariance are ignored; freshness is local arrival time. The message has no target field, so each drone must receive only its own stream: its own link, or frames signed with that drone's own key. An on-board UWB driver is reconsidered at S3 | S2 protocol work |
+| SD-06 | Position setpoint message | **Accepted 2026-10-13**: `SET_POSITION_TARGET_LOCAL_NED` (84), `MAV_FRAME_LOCAL_NED` only, masks `0x09C0` (position, velocity feedforward, yaw) and `0x09F8` (position, yaw). Acceleration, force and yaw rate are not supported; other masks are rejected | S2 protocol work |
 | SD-07 | Positioning system | UWB proposed; open | S3 starts |
 | SD-08 | Maximum swarm size | 8 per simulator process (current registry); hardware count set by link measurements (SWM-13) | S1 gate, S4 |
-| SD-09 | Flight volume and separation thresholds | Open; set per test space | S2 gate |
+| SD-09 | Flight volume and separation thresholds | **Accepted 2026-10-13 (sim default)**: volume x and y -3 to 3 m, z 0 to 2 m (world NWU), set by `POS_VOL_*`; measurements accepted up to 0.5 m outside it; separation 0.3 m planned, 0.25 m observed. A real test space sets its own | S2 gate |
+| SD-10 | Entering and leaving position control while armed | **Accepted 2026-10-13**: arming still needs an idle AUTO attitude lease (thrust below 0.05). From an idle automatic lease (thrust below 0.1) the next command may be a position target without disarming; this is the takeoff. Any other change of intent kind while armed still disarms, including leaving position control. A position intent reports full thrust, so it can never satisfy the arming check | S2 core work |
+| SD-11 | Response to lost position | **Accepted 2026-10-13 (bench and sim)**: no accepted sample within 200 ms while flying a position intent is `Fault`/`PositionExpired` (code 13) with stopped output, recoverable by `clear-fault` like `SensorExpired`. A flight profile may later replace this with a level-and-ramp-down response (base spec section 7) | S2 core work |
 
 ## 8. Verification
 

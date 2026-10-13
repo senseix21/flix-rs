@@ -59,6 +59,8 @@ def main():
         checks.append(dict(name=name, passed=bool(passed), **detail))
 
     check('three drones traced', sorted(drones) == ['cf1', 'cf2', 'cf3'], drones=sorted(drones))
+    loops = {records[-1].get('position_loop', 'ground') for records in drones.values()}
+    check('one position-loop mode', len(loops) == 1, position_loop=sorted(loops))
     ids = {name: records[0]['system_id'] for name, records in drones.items()}
     check('unique system IDs', len(set(ids.values())) == len(ids), system_ids=ids)
     flying = ['cf1', 'cf3'] if args.scenario == 'partial-arm' else sorted(drones)
@@ -100,7 +102,8 @@ def main():
                                              for r in records))
 
     passed = all(c['passed'] for c in checks)
-    result = {'scenario': args.scenario, 'passed': passed, 'thresholds': THRESHOLDS, 'marks': marks, 'checks': checks}
+    result = {'scenario': args.scenario, 'position_loop': sorted(loops)[0], 'passed': passed,
+              'thresholds': THRESHOLDS, 'marks': marks, 'checks': checks}
     (args.trace / 'results.json').write_text(json.dumps(result, indent=1) + '\n')
     for c in checks:
         if not c['passed']:

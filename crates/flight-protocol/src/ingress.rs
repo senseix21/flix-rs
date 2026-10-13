@@ -1,5 +1,5 @@
 use crate::{Error, Event};
-use flight_core::{Flight, Tick};
+use flight_core::{Flight, Tick, Vec3};
 /// Owned by one task. Callbacks hand off bytes; they never hold &mut Ingress concurrently.
 #[derive(Default)]
 pub struct Ingress {
@@ -7,6 +7,8 @@ pub struct Ingress {
     head: usize,
     len: usize,
     latest: [Option<(Event, Tick)>; 3],
+    /// Newest external position sample and heading; older arrivals are rejected like setpoints.
+    position: Option<(Vec3, Option<f32>, Tick)>,
     stop: bool,
     pub rejected: u64,
 }
@@ -16,6 +18,7 @@ impl Ingress {
         head: 0,
         len: 0,
         latest: [None; 3],
+        position: None,
         stop: false,
         rejected: 0,
     };
@@ -26,6 +29,13 @@ impl Ingress {
                 Ok(())
             }
             Event::Heartbeat => Ok(()),
+            Event::Position { position, yaw } => {
+                if self.position.is_some_and(|(_, _, old)| at < old) {
+                    return Err(Error::Replay);
+                }
+                self.position = Some((position, yaw, at));
+                Ok(())
+            }
             Event::Setpoint(source, _) => {
                 let slot = &mut self.latest[source as usize];
                 if slot.is_some_and(|(_, old)| at < old) {
@@ -54,7 +64,11 @@ impl Ingress {
         self.head = 0;
         self.len = 0;
         self.latest = [None; 3];
+        self.position = None;
         true
+    }
+    pub fn take_position(&mut self) -> Option<(Vec3, Option<f32>, Tick)> {
+        self.position.take()
     }
     pub fn take_setpoints(&mut self) -> [Option<(Event, Tick)>; 3] {
         core::mem::take(&mut self.latest)
@@ -73,6 +87,9 @@ impl Ingress {
         if self.take_stop() {
             flight.disarm();
             return;
+        }
+        if let Some((value, yaw, at)) = self.take_position() {
+            flight.position(value, yaw, at);
         }
         for (event, at) in self.take_setpoints().into_iter().flatten() {
             if let Event::Setpoint(source, intent) = event {

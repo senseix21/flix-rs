@@ -8,6 +8,7 @@ consumed only by the `flix` backend.
 """
 import json
 import math
+import os
 import pathlib
 
 from flix_swarm.plant import HALF_SIZE
@@ -26,7 +27,10 @@ class FlixSIL(CrazyflieSIL):
 
     def __init__(self, name, initialPosition, time_func, system_id, seed, logger, trace_dir=None):
         super().__init__(name, initialPosition, 'none', time_func)
-        self.vehicle = Vehicle(name, system_id, seed, Config())
+        # FLIX_POSITION_LOOP=drone: the position loop runs in flight-core (swarm S2), fed by
+        # ATT_POS_MOCAP from simulator truth. Otherwise the ground runs it (S1).
+        onboard = os.environ.get('FLIX_POSITION_LOOP', 'ground') == 'drone'
+        self.vehicle = Vehicle(name, system_id, seed, Config(onboard=onboard))
         self.logger = logger
         x, y = float(initialPosition[0]), float(initialPosition[1])
         self.flix_state = ((x, y, HALF_SIZE[2]), (0.0, 0.0, 0.0), (1.0, 0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
@@ -123,6 +127,7 @@ class FlixSIL(CrazyflieSIL):
             else [round(v, 4) for v in self._target(now)[0]],
             'motors': [round(v, 4) for v in self.vehicle.motors],
             'events': [list(e) for e in events],
+            'position_loop': 'drone' if self.vehicle.config.onboard else 'ground',
             'stop_latency_us': None if self.vehicle.stopped_us is None
             else self.vehicle.stopped_us - self.vehicle.stop_requested_us,
         }

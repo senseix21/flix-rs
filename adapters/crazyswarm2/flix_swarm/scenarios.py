@@ -1,6 +1,7 @@
 """S1 swarm scenarios (swarm plan S1-09). Each writes results.json and trace.jsonl.
 
     PYTHONPATH=adapters/crazyswarm2 python3 -m flix_swarm.scenarios --scenario all --output DIR
+    ... --onboard     # S2: the position loop runs in flight-core, fed by ATT_POS_MOCAP
 
 Exit status is nonzero when any check fails. Thresholds are declared in THRESHOLDS and copied
 into every result so evidence records what was tested.
@@ -12,7 +13,7 @@ import pathlib
 import sys
 
 from . import geometry as g
-from .owner import ARMED, FAILSAFE, FAULT, Capacity, Owner
+from .owner import ARMED, FAILSAFE, FAULT, REASONS, Capacity, Owner
 from .swarm import GROUND, PlanRejected, Swarm
 from .vehicle import Config
 
@@ -24,6 +25,9 @@ THRESHOLDS = {
     'stop_latency_us': 2000,
     'lease_margin_us': 25_000,
     'bystander_error_m': 0.1,
+    # S2: flight-core position freshness limit (PositionTuning::DEFAULT.sample_us).
+    'position_us': 200_000,
+    'noisy_hover_error_m': 0.08,
 }
 LINE = [(0.0, 0.0, 0.0), (0.6, 0.0, 0.0), (1.2, 0.0, 0.0)]
 
@@ -54,14 +58,14 @@ def watch(swarm, seconds, drones, worst):
             worst['tilt'] = max(worst.get('tilt', 0.0), math.degrees(g.tilt(d.plant.attitude)))
 
 
-def hover(swarm, check, height=0.5):
+def hover(swarm, check, height=0.5, error_limit=THRESHOLDS['hover_error_m']):
     swarm.provision()
     armed = swarm.arm()
     check('all drones armed', all(v is None for v in armed.values()), result=armed)
     swarm.takeoff(height, 2.0)
     swarm.run(4.0)
     for d in swarm.drones:
-        check(f'{d.name} hover error', error(d, swarm.now_us) < THRESHOLDS['hover_error_m'],
+        check(f'{d.name} hover error', error(d, swarm.now_us) < error_limit,
               error_m=round(error(d, swarm.now_us), 4))
 
 
@@ -140,11 +144,15 @@ def link_loss(swarm, check):
     victim.vehicle.link.cut()
     cut_us = swarm.now_us
     bystanders(swarm, check, 'cf2', 2.0)
-    failed = stopped_at(victim, ('failsafe',))
-    limit = int(swarm.config.lease_s * 1e6) + THRESHOLDS['lease_margin_us']
-    check('cf2 failsafe within lease', failed is not None and failed - cut_us <= limit,
-          after_cut_us=None if failed is None else failed - cut_us, limit_us=limit)
-    check('cf2 output zero', not any(victim.vehicle.motors) and victim.vehicle.state == FAILSAFE)
+    # S1 stops on the command lease (Failsafe). S2 also loses position samples, whose 200 ms
+    # limit expires first (Fault, position-expired). Either way: the first limit to expire.
+    failed = stopped_at(victim, ('failsafe', 'fault'))
+    lease = int(swarm.config.lease_s * 1e6)
+    limit = (min(lease, THRESHOLDS['position_us']) if swarm.config.onboard else lease) + THRESHOLDS['lease_margin_us']
+    check('cf2 stopped within its limit', failed is not None and failed - cut_us <= limit,
+          after_cut_us=None if failed is None else failed - cut_us, limit_us=limit,
+          reason=REASONS[victim.vehicle.reason])
+    check('cf2 output zero', not any(victim.vehicle.motors) and victim.vehicle.state in (FAILSAFE, FAULT))
     check('cf2 reported lost', victim.vehicle.phase == 'lost',
           events=[e for e in victim.vehicle.events if e[1] == 'lost'])
     # Late traffic after the link returns must not revive authority.
@@ -152,7 +160,8 @@ def link_loss(swarm, check):
     for _ in range(25):
         victim.vehicle.link.send(victim.vehicle.messages.attitude(victim.vehicle.system_id, (1, 0, 0, 0), 0.6), swarm.now_us)
         swarm.run(0.02)
-    check('late setpoints do not revive cf2', victim.vehicle.state == FAILSAFE and not any(victim.vehicle.motors))
+    check('late setpoints do not revive cf2',
+          victim.vehicle.state in (FAILSAFE, FAULT) and not any(victim.vehicle.motors))
 
 
 def sensor_fault(swarm, check):
@@ -219,6 +228,83 @@ def load(swarm, check):
     landed(swarm, check)
 
 
+def position_dropout(swarm, check):
+    """S2: the link stays up and targets keep coming, but cf2's position samples stop (SWM-07)."""
+    hover(swarm, check)
+    victim = swarm.by_name('cf2')
+    victim.vehicle.positioning = False
+    # The last sample may have been sent up to one period before the switch.
+    cut_us = swarm.now_us - swarm.config.position_period_us
+    bystanders(swarm, check, 'cf2', 2.0)
+    faulted = stopped_at(victim, ('fault',))
+    limit = THRESHOLDS['position_us'] + swarm.config.position_period_us + THRESHOLDS['lease_margin_us']
+    check('cf2 stopped on stale position', faulted is not None and faulted - cut_us <= limit
+          and REASONS[victim.vehicle.reason] == 'position-expired',
+          after_us=None if faulted is None else faulted - cut_us, limit_us=limit,
+          reason=REASONS[victim.vehicle.reason])
+    check('cf2 output zero', not any(victim.vehicle.motors) and victim.vehicle.state == FAULT)
+    check('cf2 reported lost', victim.vehicle.phase == 'lost')
+    victim.vehicle.positioning = True
+    swarm.run(0.5)
+    check('returning samples do not revive cf2', victim.vehicle.state == FAULT and not any(victim.vehicle.motors))
+
+
+def outside_volume(swarm, check):
+    """S2: the drone itself rejects a target above the 2 m ceiling (SWM-08), even if the
+    ground sends it; with no valid target the lease runs out and only that drone stops."""
+    hover(swarm, check)
+    victim = swarm.by_name('cf1')
+    held = victim.plant.position[2]
+    # Bypass the coordinator: the frames reach the drone, decode, and flight-core refuses them.
+    victim.planner.go_to((0.0, 0.0, 2.5), 0.02, swarm.now_us)
+    sent_us = swarm.now_us
+    start = len(swarm.trace)
+    bystanders(swarm, check, 'cf1', 1.0)
+    peak = max(r['drones']['cf1']['position_m'][2] for r in swarm.trace[start:])
+    check('cf1 did not follow the out-of-volume target', peak < held + 0.05,
+          held_m=round(held, 4), peak_m=round(peak, 4))
+    failed = stopped_at(victim, ('failsafe',))
+    limit = int(swarm.config.lease_s * 1e6) + THRESHOLDS['lease_margin_us'] + 20_000
+    check('cf1 stopped when its lease ran out', failed is not None and failed - sent_us <= limit,
+          after_us=None if failed is None else failed - sent_us, limit_us=limit)
+
+
+def noisy(swarm, check):
+    """S2: formation with 2 cm position noise and 20 ms link latency."""
+    hover(swarm, check, error_limit=THRESHOLDS['noisy_hover_error_m'])
+    swarm.go_to({'cf1': (0.0, -0.3, 0.6), 'cf2': (0.6, 0.45, 0.6), 'cf3': (1.2, -0.3, 0.6)}, 2.5)
+    worst = {}
+    watch(swarm, 3.5, swarm.drones, worst)
+    for d in swarm.drones:
+        check(f'{d.name} formation error', error(d, swarm.now_us) < THRESHOLDS['noisy_hover_error_m'],
+              error_m=round(error(d, swarm.now_us), 4))
+    check('tilt bounded', worst['tilt'] < THRESHOLDS['max_tilt_deg'], max_tilt_deg=round(worst['tilt'], 2))
+    swarm.land(2.5)
+    landed(swarm, check)
+
+
+def heading(swarm, check):
+    """S2: drones start facing 0.6, 2.0 and -2.5 rad. The IMU estimate starts at 0, so without
+    the measured heading their position loops would push in rotated directions."""
+    hover(swarm, check)
+    for d in swarm.drones:
+        # Targets face yaw 0: a drone that knows its real heading turns to it.
+        check(f'{d.name} turned to the target heading', abs(g.yaw(d.plant.attitude)) < 0.1,
+              start_yaw=HEADING_YAWS[int(d.name[2:]) - 1], yaw=round(g.yaw(d.plant.attitude), 3))
+    swarm.go_to({'cf1': (0.0, -0.3, 0.6), 'cf2': (0.6, 0.45, 0.6), 'cf3': (1.2, -0.3, 0.6)}, 2.5)
+    worst = {}
+    watch(swarm, 3.5, swarm.drones, worst)
+    for d in swarm.drones:
+        check(f'{d.name} formation error', error(d, swarm.now_us) < THRESHOLDS['hover_error_m'],
+              error_m=round(error(d, swarm.now_us), 4))
+    check('tilt bounded', worst['tilt'] < THRESHOLDS['max_tilt_deg'], max_tilt_deg=round(worst['tilt'], 2))
+    swarm.land(2.5)
+    landed(swarm, check)
+
+
+HEADING_YAWS = (0.6, 2.0, -2.5)
+
+
 def circle(count, radius=1.0):
     return [(radius * math.cos(2 * math.pi * i / count), radius * math.sin(2 * math.pi * i / count), 0.0)
             for i in range(count)]
@@ -233,13 +319,22 @@ SCENARIOS = {
     'arm-refusal': (LINE, arm_refusal),
     'load': (circle(8), load),
 }
+# S2 only: they exercise the on-board position loop and its inputs.
+ONBOARD = {
+    'position-dropout': (LINE, position_dropout),
+    'outside-volume': (LINE, outside_volume),
+    'noisy': (LINE, noisy),
+    'heading': (LINE, heading),
+}
+NOISY = dict(position_noise_m=0.02, link_latency_us=20_000)
 
 
 def run(name, output, config=None, seed=1):
-    positions, body = SCENARIOS[name]
+    positions, body = {**SCENARIOS, **ONBOARD}[name]
     check = Checks()
     config = config or Config()
-    with Swarm(positions, seed=seed, config=config, separation=THRESHOLDS['separation_plan_m']) as swarm:
+    yaws = HEADING_YAWS if name.startswith('heading') else None
+    with Swarm(positions, seed=seed, config=config, separation=THRESHOLDS['separation_plan_m'], yaws=yaws) as swarm:
         try:
             body(swarm, check)
         except Exception as failure:  # record, then fail the scenario
@@ -265,15 +360,20 @@ def run(name, output, config=None, seed=1):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--scenario', default='all', choices=['all'] + sorted(SCENARIOS))
+    parser.add_argument('--scenario', default='all', choices=['all'] + sorted({**SCENARIOS, **ONBOARD}))
     parser.add_argument('--output', type=pathlib.Path)
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--latency-us', type=int, default=0)
+    parser.add_argument('--onboard', action='store_true', help='S2: position loop in flight-core')
     args = parser.parse_args()
-    names = sorted(SCENARIOS) if args.scenario == 'all' else [args.scenario]
+    available = {**SCENARIOS, **ONBOARD} if args.onboard else SCENARIOS
+    names = sorted(available) if args.scenario == 'all' else [args.scenario]
     failed = []
     for name in names:
-        result = run(name, args.output, Config(link_latency_us=args.latency_us), args.seed)
+        options = dict(link_latency_us=args.latency_us, onboard=args.onboard, seed=args.seed)
+        if name == 'noisy':
+            options.update(NOISY)
+        result = run(name, args.output, Config(**options), args.seed)
         for item in result['checks']:
             if not item['passed']:
                 print(f'  FAIL {item}')

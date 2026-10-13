@@ -2,7 +2,7 @@
 
 Date: 2026-10-10. Tool: Kani 0.68.0 (CBMC 6.11.0), macOS arm64. Harnesses:
 `crates/flight-core/src/proofs.rs`, compiled only under `cfg(kani)`. Run with
-`cd crates/flight-core && cargo kani`. CI job `kani` runs the same command.
+`cd crates/flight-core && cargo kani -Z stubbing` (stubbing since 2026-10-13). CI job `kani` runs the same command.
 Requirements: SAF-01, SAF-02, SAF-05, SAF-08. Hardware profile: none.
 
 ## What a proof adds
@@ -18,8 +18,9 @@ every `u64` time, every lifecycle state.
 | `commit_is_bounded_and_stopped_states_are_zero` | For any frame, state, lease, sample, diagnostic and time, `commit` returns finite values in [0, 1], and exactly zero outside Armed/Maintenance | 0.6 s |
 | `commit_rejects_foreign_or_stale_authority` | A frame from another issuer, an older generation or an issuer-0 owner always commits to zero | 0.5 s |
 | `only_arm_enters_armed_and_disarm_always_leaves` | From any state, `disarm` leaves Armed and Maintenance; `fault`, `clear_fault`, `select`, `maintenance`, `reset` and `reconfigure` never enter Armed | 1.1 s |
+| `position_limit_bounds_thrust_and_refuses_non_finite` (swarm S2, 2026-10-13) | For any demand, the position limiter refuses non-finite input or returns a finite force with vertical component at least 0.2 g and thrust in [0, `max_thrust`]. `libm::sqrtf` and `tanf` are replaced by contract stubs (IEEE NaN/infinity behaviour; finite results within 2^-20 relative); run with `cargo kani -Z stubbing`. The tilt bound timed out after 20 minutes and is checked by the property test `limiter_bounds_tilt_and_thrust` instead | 2.2 s |
 
-All five pass.
+The five original harnesses pass; with the later additions, all 8 harnesses passed on 2026-10-13.
 
 ## Scope
 

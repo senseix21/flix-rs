@@ -1,0 +1,235 @@
+{
+ "scenario": "arm-refusal",
+ "passed": true,
+ "seed": 1,
+ "config": {
+  "onboard": true,
+  "heading": true,
+  "position_period_us": 20000,
+  "position_noise_m": 0.0,
+  "seed": 1,
+  "lease_s": 0.3,
+  "setpoint_period_us": 20000,
+  "link_capacity": 64,
+  "link_latency_us": 0,
+  "imu_noise": true
+ },
+ "thresholds": {
+  "hover_error_m": 0.05,
+  "max_tilt_deg": 30.0,
+  "separation_plan_m": 0.3,
+  "separation_observed_m": 0.25,
+  "stop_latency_us": 2000,
+  "lease_margin_us": 25000,
+  "bystander_error_m": 0.1,
+  "position_us": 200000,
+  "noisy_hover_error_m": 0.08
+ },
+ "checks": [
+  {
+   "name": "cf2 refused with reason",
+   "passed": true,
+   "refusal": "calibration"
+  },
+  {
+   "name": "others armed",
+   "passed": true,
+   "result": {
+    "cf1": null,
+    "cf2": "calibration",
+    "cf3": null
+   }
+  },
+  {
+   "name": "cf2 stayed on the ground",
+   "passed": true,
+   "max_motor": 0.0,
+   "max_z_m": 0.0135
+  },
+  {
+   "name": "cf1 hover error",
+   "passed": true,
+   "error_m": 0.0183
+  },
+  {
+   "name": "cf3 hover error",
+   "passed": true,
+   "error_m": 0.0182
+  }
+ ],
+ "report": {
+  "sim_seconds": 6.618,
+  "min_separation": {
+   "distance_m": 1.1995,
+   "pair": [
+    "cf1",
+    "cf3"
+   ],
+   "sim_us": 1462000
+  },
+  "drones": {
+   "cf1": {
+    "system_id": 11,
+    "phase": "stopped",
+    "refusal": null,
+    "arm_latency_us": 4000,
+    "stop_latency_us": 2000,
+    "frames_sent": 665,
+    "frames_dropped": 0,
+    "frames_lost": 0,
+    "frames_rejected": 0,
+    "events": [
+     [
+      1000,
+      "state",
+      "standby",
+      "disarmed"
+     ],
+     [
+      2000,
+      "state",
+      "maintenance",
+      "none"
+     ],
+     [
+      4000,
+      "provisioned",
+      11
+     ],
+     [
+      5000,
+      "state",
+      "standby",
+      "disarmed"
+     ],
+     [
+      58000,
+      "state",
+      "armed",
+      "none"
+     ],
+     [
+      58000,
+      "armed",
+      4000
+     ],
+     [
+      5691000,
+      "notice",
+      "IMU saturated: az"
+     ],
+     [
+      6570000,
+      "state",
+      "standby",
+      "disarmed"
+     ]
+    ]
+   },
+   "cf2": {
+    "system_id": 12,
+    "phase": "refused",
+    "refusal": "calibration",
+    "arm_latency_us": null,
+    "stop_latency_us": null,
+    "frames_sent": 338,
+    "frames_dropped": 0,
+    "frames_lost": 0,
+    "frames_rejected": 0,
+    "events": [
+     [
+      1000,
+      "state",
+      "standby",
+      "disarmed"
+     ],
+     [
+      2000,
+      "state",
+      "maintenance",
+      "none"
+     ],
+     [
+      4000,
+      "provisioned",
+      12
+     ],
+     [
+      5000,
+      "state",
+      "standby",
+      "disarmed"
+     ],
+     [
+      58000,
+      "arm-refused",
+      400
+     ],
+     [
+      58000,
+      "notice",
+      "arm denied: calibration"
+     ]
+    ]
+   },
+   "cf3": {
+    "system_id": 13,
+    "phase": "stopped",
+    "refusal": null,
+    "arm_latency_us": 4000,
+    "stop_latency_us": 2000,
+    "frames_sent": 665,
+    "frames_dropped": 0,
+    "frames_lost": 0,
+    "frames_rejected": 0,
+    "events": [
+     [
+      1000,
+      "state",
+      "standby",
+      "disarmed"
+     ],
+     [
+      2000,
+      "state",
+      "maintenance",
+      "none"
+     ],
+     [
+      4000,
+      "provisioned",
+      13
+     ],
+     [
+      5000,
+      "state",
+      "standby",
+      "disarmed"
+     ],
+     [
+      58000,
+      "state",
+      "armed",
+      "none"
+     ],
+     [
+      58000,
+      "armed",
+      4000
+     ],
+     [
+      5691000,
+      "notice",
+      "IMU saturated: az"
+     ],
+     [
+      6570000,
+      "state",
+      "standby",
+      "disarmed"
+     ]
+    ]
+   }
+  }
+ }
+}

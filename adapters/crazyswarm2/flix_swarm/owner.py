@@ -20,7 +20,11 @@ STATES = ('boot', 'standby', 'maintenance', 'armed', 'failsafe', 'fault')
 REASONS = (
     'none', 'disarmed', 'not-ready', 'command-expired', 'sensor-expired', 'invalid-numeric',
     'clock', 'generation', 'tilt', 'maintenance-expired', 'configuration', 'power', 'sensor-init',
+    'position-expired',
 )
+# SET_POSITION_TARGET_LOCAL_NED masks Flix accepts (flight_protocol::POSITION_MASK*).
+POSITION_MASK_WITH_VELOCITY = 0x09C0
+MAV_FRAME_LOCAL_NED = 1
 AUTO_MODE = 3
 
 
@@ -134,6 +138,22 @@ class Messages:
 
     def parameter(self, target, name, value):
         return self._frame(23, struct.pack('<fBB16sB', value, target, 1, name.encode().ljust(16, b'\0'), 9))
+
+    def position_target(self, target, position_nwu, velocity_nwu, yaw_nwu):
+        """SET_POSITION_TARGET_LOCAL_NED, converted from Flix world NWU to NED."""
+        x, y, z = position_nwu
+        vx, vy, vz = velocity_nwu
+        return self._frame(84, struct.pack('<I11fHBBB', 0, x, -y, -z, vx, -vy, -vz, 0.0, 0.0, 0.0,
+                                           -yaw_nwu, 0.0, POSITION_MASK_WITH_VELOCITY, target, 1,
+                                           MAV_FRAME_LOCAL_NED))
+
+    def mocap(self, position_nwu, attitude_flu=None):
+        """ATT_POS_MOCAP with the body FLU-to-world NWU attitude converted to FRD-to-NED.
+        Without an attitude the quaternion is zero ("unknown"), so Flix uses only the position.
+        No target field: it must travel on this drone's own link."""
+        x, y, z = position_nwu
+        w, qx, qy, qz = attitude_flu if attitude_flu is not None else (0.0, 0.0, 0.0, 0.0)
+        return self._frame(138, struct.pack('<Q7f', 0, w, qx, -qy, -qz, x, -y, -z))
 
     def attitude(self, target, attitude_flu, thrust):
         """SET_ATTITUDE_TARGET. Body rates are sent as zero feedforward (mask 0)."""

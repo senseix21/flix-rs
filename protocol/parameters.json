@@ -864,6 +864,195 @@
       "max": 3.141592653589793,
       "shortDesc": "implemented",
       "rebootRequired": true
+    },
+    {
+      "name": "POS_VOL_X_MIN",
+      "type": "Float",
+      "default": -3.0,
+      "min": -100.0,
+      "max": 100.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_VOL_X_MAX",
+      "type": "Float",
+      "default": 3.0,
+      "min": -100.0,
+      "max": 100.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_VOL_Y_MIN",
+      "type": "Float",
+      "default": -3.0,
+      "min": -100.0,
+      "max": 100.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_VOL_Y_MAX",
+      "type": "Float",
+      "default": 3.0,
+      "min": -100.0,
+      "max": 100.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_VOL_Z_MIN",
+      "type": "Float",
+      "default": 0.0,
+      "min": -100.0,
+      "max": 100.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_VOL_Z_MAX",
+      "type": "Float",
+      "default": 2.0,
+      "min": -100.0,
+      "max": 100.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_SAMPLE_TIME",
+      "type": "Float",
+      "default": 0.2,
+      "min": 0.001,
+      "max": 1.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_EST_ALPHA",
+      "type": "Float",
+      "default": 0.3,
+      "min": 0.0,
+      "max": 1.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_EST_BETA",
+      "type": "Float",
+      "default": 0.1,
+      "min": 0.0,
+      "max": 1.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_HDG_WEIGHT",
+      "type": "Float",
+      "default": 0.05,
+      "min": 0.0,
+      "max": 1.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_P_XY",
+      "type": "Float",
+      "default": 6.0,
+      "min": 0.0,
+      "max": 50.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_P_Z",
+      "type": "Float",
+      "default": 8.0,
+      "min": 0.0,
+      "max": 50.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_D_XY",
+      "type": "Float",
+      "default": 4.0,
+      "min": 0.0,
+      "max": 50.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_D_Z",
+      "type": "Float",
+      "default": 5.0,
+      "min": 0.0,
+      "max": 50.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_I_XY",
+      "type": "Float",
+      "default": 1.0,
+      "min": 0.0,
+      "max": 50.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_I_Z",
+      "type": "Float",
+      "default": 6.0,
+      "min": 0.0,
+      "max": 50.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_I_LIMIT",
+      "type": "Float",
+      "default": 2.0,
+      "min": 0.0,
+      "max": 9.80665,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_TILT_MAX",
+      "type": "Float",
+      "default": 0.4363323,
+      "min": 0.0,
+      "max": 1.5707964,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_HOVER_THR",
+      "type": "Float",
+      "default": 0.5,
+      "min": 0.0,
+      "max": 1.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_THR_MAX",
+      "type": "Float",
+      "default": 0.9,
+      "min": 0.0,
+      "max": 1.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
+    },
+    {
+      "name": "POS_SPEED_MAX",
+      "type": "Float",
+      "default": 2.0,
+      "min": 0.0,
+      "max": 10.0,
+      "shortDesc": "implemented",
+      "rebootRequired": true
     }
   ]
 }

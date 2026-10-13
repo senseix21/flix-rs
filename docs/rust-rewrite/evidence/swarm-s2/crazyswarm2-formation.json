@@ -1,0 +1,149 @@
+{
+ "scenario": "formation",
+ "position_loop": "drone",
+ "passed": true,
+ "thresholds": {
+  "hover_error_m": 0.05,
+  "separation_observed_m": 0.25,
+  "stop_latency_us": 2000
+ },
+ "marks": {
+  "hover": 6142000,
+  "crossing-rejected": 6142000,
+  "triangle": 9642000,
+  "line": 13145000,
+  "landed": 16645000
+ },
+ "checks": [
+  {
+   "name": "three drones traced",
+   "passed": true,
+   "drones": [
+    "cf1",
+    "cf2",
+    "cf3"
+   ]
+  },
+  {
+   "name": "one position-loop mode",
+   "passed": true,
+   "position_loop": [
+    "drone"
+   ]
+  },
+  {
+   "name": "unique system IDs",
+   "passed": true,
+   "system_ids": {
+    "cf1": 11,
+    "cf2": 12,
+    "cf3": 13
+   }
+  },
+  {
+   "name": "cf1 armed",
+   "passed": true,
+   "events": [
+    [
+     1647000,
+     "armed",
+     3000
+    ]
+   ]
+  },
+  {
+   "name": "cf2 armed",
+   "passed": true,
+   "events": [
+    [
+     1647000,
+     "armed",
+     3000
+    ]
+   ]
+  },
+  {
+   "name": "cf3 armed",
+   "passed": true,
+   "events": [
+    [
+     1647000,
+     "armed",
+     3000
+    ]
+   ]
+  },
+  {
+   "name": "cf1 hover error",
+   "passed": true,
+   "error_m": 0.0206
+  },
+  {
+   "name": "cf2 hover error",
+   "passed": true,
+   "error_m": 0.0205
+  },
+  {
+   "name": "cf3 hover error",
+   "passed": true,
+   "error_m": 0.0205
+  },
+  {
+   "name": "cf1 triangle error",
+   "passed": true,
+   "error_m": 0.0092
+  },
+  {
+   "name": "cf2 triangle error",
+   "passed": true,
+   "error_m": 0.0198
+  },
+  {
+   "name": "cf3 triangle error",
+   "passed": true,
+   "error_m": 0.0093
+  },
+  {
+   "name": "cf1 line error",
+   "passed": true,
+   "error_m": 0.0101
+  },
+  {
+   "name": "cf2 line error",
+   "passed": true,
+   "error_m": 0.0147
+  },
+  {
+   "name": "cf3 line error",
+   "passed": true,
+   "error_m": 0.0101
+  },
+  {
+   "name": "crossing plan rejected",
+   "passed": true
+  },
+  {
+   "name": "minimum pair distance",
+   "passed": true,
+   "distance_m": 0.5988
+  },
+  {
+   "name": "cf1 landed and stopped",
+   "passed": true,
+   "z_m": 0.0135,
+   "state": 4
+  },
+  {
+   "name": "cf2 landed and stopped",
+   "passed": true,
+   "z_m": 0.0135,
+   "state": 4
+  },
+  {
+   "name": "cf3 landed and stopped",
+   "passed": true,
+   "z_m": 0.0135,
+   "state": 4
+  }
+ ]
+}
