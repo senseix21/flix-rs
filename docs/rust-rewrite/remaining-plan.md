@@ -167,10 +167,13 @@ Maps to P4-04/P4-05; contributes to P7 and SAF-03/04/05.
   IDs, signing/link behavior, destinations, supported modes and ACK denials;
   examine whether the current fixed sender policy fits each client before
   changing it. Packet fixtures alone do not establish real-client compatibility.
-- [ ] R2-05: Exercise bad/missing keys, tampering, duplicate/reordered packets,
+- [x] R2-05: Exercise bad/missing keys, tampering, duplicate/reordered packets,
   full replay-stream capacity, restart, delayed pre-boot traffic, unauthorized
   endpoint changes, key rotation and transport loss. Check admission cannot
   renew authority and stop cannot be displaced by accepted traffic overload.
+  Host evidence 2026-10-13: [evidence/r2-signing](evidence/r2-signing/README.md)
+  (10 owner-level tests, UDP endpoint test of the real `radio.c`, mutation
+  checks). ESP-NOW peer filtering and real radio load remain for R5.
 
 **Gate:** each supported client completes the accepted provisioning/arm/control/
 stop/reconnect flow, reboot replay is denied, failures remain stopped, and raw
