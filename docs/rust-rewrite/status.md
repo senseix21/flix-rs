@@ -1,6 +1,6 @@
 # Current status
 
-Updated 2026-10-11 at `main` `ccf1761`. This page is the current summary. The reports it links,
+Updated 2026-10-13 at `main` `fdcb651`. This page is the current summary. The reports it links,
 and older pages such as [implementation status](implementation-status.md) and
 [software acceptance](software-acceptance.md), are kept as dated history, and their counts are
 not current.
@@ -12,11 +12,12 @@ compile-only evidence do not establish motor stop timing, target timing, radio b
 
 | Job | What it runs | State |
 | --- | --- | --- |
-| contracts | `scripts/check.sh`: generation, fmt, Clippy (host and both firmware crates), 76 Rust and 37 Python tests, 400-case legacy scalar oracle (max error 4.77e-7), ABI smoke v1/v2, simulator contracts, replay benchmark | pass |
+| contracts | `scripts/check.sh`: generation, fmt, Clippy (host and both firmware crates), 95 Rust and 55 Python tests (38 tools, 17 swarm), 400-case legacy scalar oracle (max error 4.77e-7), ABI smoke v1/v2, simulator contracts, swarm harness (7 S1 and 11 S2 scenarios), replay benchmark | pass |
 | supply-chain | `scripts/deny.sh`: advisories, licences, bans, sources for all four workspaces | pass |
-| kani | 7 model-checked proofs in `crates/flight-core/src/proofs.rs` | pass |
+| kani | 8 model-checked proofs in `crates/flight-core/src/proofs.rs` (`cargo kani -Z stubbing`) | pass |
 | fuzz | 6 cargo-fuzz targets, 120 s each | pass |
-| gazebo | Plugin smoke, 20 finite scenario runs, paired C++/Rust comparison (`make sim-parity`) | pass |
+| gazebo | Plugin smoke, 20 finite scenario runs, paired C++/Rust comparison (`make sim-parity`), three-drone Gazebo swarm flight (`make swarm-gazebo-check`) | pass |
+| swarm | Crazyswarm2 (ROS 2 Jazzy) coordinating simulated Flix drones: formation, stop, partial arming; formation with the position loop on the drone (`make swarm-sim`) | pass |
 
 Also verified locally: both ESP32-S3 Xtensa archives build. The full ESP-IDF image link was last
 run on 2026-10-05; `idf.py` is not installed on the current development host.
@@ -35,6 +36,7 @@ run on 2026-10-05; `idf.py` is not installed on the current development host.
 | Plant comparison | Root cause found (rigid-contact chatter). Soft contact is the default plant; 20/20 x86 pairs pass, worst 17.5 mm / 0.05° | [plant parity](evidence/plant-parity/README.md) |
 | CI | First remote runs exposed 3 pre-existing defects, all fixed; a property test later found the diagnostic-window bug (PR #6) | [CI first runs](evidence/ci-first-runs.md) |
 | Licence | Original work Apache-2.0; upstream images excluded (upstream has no licence) | `LICENSE`, `NOTICE` |
+| Swarm flight (simulation) | S1 and S2 done in simulation: Crazyswarm2 and Gazebo swarms; position loop in `flight-core` (MAVLink 84/138, heading fusion, `PositionExpired`); 21 `POS_*` parameters, settings record v2 with v1 migration | [swarm spec](../swarm-spec.md), [S1](evidence/swarm-s1/README.md), [S2](evidence/swarm-s2/README.md) |
 
 ## Remaining gates (from the [remaining plan](remaining-plan.md))
 
@@ -47,6 +49,7 @@ run on 2026-10-05; `idf.py` is not installed on the current development host.
 | R5 hardware bench | **Blocked: needs board and instruments** (stop traces, 30-minute timing, NVS power loss) |
 | R6 operator flight and release | After R1–R5 |
 | R7 extra transports | Proxy software done; RF coexistence and provisioning persistence open |
+| Swarm S3/S4 | Positioning hardware (SD-07, UWB proposed) and real swarm flight: **blocked on hardware**. Settings v2 NVS migration not yet exercised on a board |
 | ADR 003 D4/D5 | Board-level safe boot (at R3); on-board settings recovery (deferred) |
 
 ## Known limits and open decisions
