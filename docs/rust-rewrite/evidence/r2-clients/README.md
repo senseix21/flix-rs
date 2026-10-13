@@ -8,8 +8,7 @@ denials, no concealed rejection). Hardware profile: none (host bench, loopback U
 
 The original Flix Python client (pyflix) can now control the Rust firmware on the wired
 development link: connect, read and change settings, use the console, change mode, arm, fly by
-stick commands and disarm. One thing it still needs: it must identify itself as component 190
-(one line, below). QGroundControl is not covered here yet.
+stick commands and disarm. It works unmodified. QGroundControl is not covered here yet.
 
 ## Pinned client
 
@@ -56,20 +55,16 @@ The repo's own client (`tools/pyflix/client.py`) matches echoed replies to their
 | `set_motors` | sent; SET_ACTUATOR_CONTROL_TARGET is not decoded (counted as rejected); pyflix does not wait for a reply |
 | telemetry (attitude, gyro, motors) | received |
 
-## Open: sender identity
+## Sender identity (decided 2026-10-13)
 
-With pyflix's default sender (255, component 0 from pymavlink) the bench refuses every command
-(`pyflix-default-sender.json`: `admitted={}`, 55 frames rejected; only telemetry-dependent steps
-pass). The wired policy accepts exactly 255/190 and rejects component 0 on purpose. Two options:
+Before: with pyflix's default sender (255, component 0 from pymavlink) the bench refused every
+command. The user chose to accept component 0 on the unsigned wired policy only: on that path
+the sender ID is not authentication (base spec section 11). The signed radio policy still
+accepts exactly 255/190. `wire::decode` implements it; a contract test covers 255/190 and 255/0
+accepted, 255/1, 254/0 and 0/0 refused on the wired policy, and 255/0 refused on the signed one.
 
-1. Keep the policy; document `drone.mavlink.srcComponent = 190` after connecting (or use
-   the repo client). No firmware change.
-2. Also accept 255/0 on the unsigned wired policy only. On that path the sender ID is not
-   authentication (base spec section 11), so this widens hygiene, not authority; the signed radio
-   policy stays fixed.
-
-Not decided here. ADR 002 says broader sender policy needs explicit interop evidence; this is
-that evidence.
+After: **unmodified pyflix passes 19 of 21 steps** (`pyflix-default-sender.json`), the same two
+deliberate refusals as above. `pyflix-component-190.json` is the run with the sender forced to 190.
 
 ## Not established
 

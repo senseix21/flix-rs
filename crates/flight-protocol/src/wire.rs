@@ -210,7 +210,15 @@ pub fn decode(bytes: &[u8], policy: &mut Policy) -> Result<Packet, Error> {
             system, component, ..
         } => (*system, *component),
     };
-    if system == 0 || component == 0 || bytes[5] != system || bytes[6] != component {
+    // The wired bench path also accepts component 0, pymavlink's default sender, so upstream
+    // pyflix works unmodified (R2-04, decided 2026-10-13). On this unsigned trusted link the
+    // sender ID is hygiene, not authentication; the signed radio policy stays exact.
+    let wired_default = matches!(policy, Policy::BenchUsb { .. }) && bytes[6] == 0;
+    if system == 0
+        || component == 0
+        || bytes[5] != system
+        || (bytes[6] != component && !wired_default)
+    {
         return Err(Error::Unauthorized);
     }
     match policy {

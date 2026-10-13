@@ -13,7 +13,7 @@
    "step": "connect (wait for HEARTBEAT)",
    "ok": true,
    "value": true,
-   "seconds": 1.24
+   "seconds": 1.304
   },
   {
    "step": "heartbeat mode/armed decode",
@@ -26,27 +26,27 @@
   },
   {
    "step": "get_param MAV_SYS_ID",
-   "ok": false,
-   "error": "RuntimeError: Failed to get parameter MAV_SYS_ID after 3 attempts",
-   "seconds": 0.314
+   "ok": true,
+   "value": 1.0,
+   "seconds": 0.002
   },
   {
    "step": "set_param CTL_ATT_MAX (stopped)",
    "ok": false,
    "error": "RuntimeError: Failed to set parameter CTL_ATT_MAX to 0.5 after 3 attempts",
-   "seconds": 0.311
+   "seconds": 0.312
   },
   {
    "step": "cli status",
-   "ok": false,
-   "error": "RuntimeError: Failed to send command status after 3 attempts",
-   "seconds": 0.315
+   "ok": true,
+   "value": "stopped",
+   "seconds": 0.002
   },
   {
    "step": "set_mode STAB",
-   "ok": false,
-   "error": "RuntimeError: Failed to send command 176 after 3 attempts",
-   "seconds": 0.311
+   "ok": true,
+   "value": null,
+   "seconds": 0.001
   },
   {
    "step": "set_controls throttle 0",
@@ -56,15 +56,15 @@
   },
   {
    "step": "set_armed True",
-   "ok": false,
-   "error": "RuntimeError: Failed to send command 400 after 3 attempts",
-   "seconds": 0.315
+   "ok": true,
+   "value": null,
+   "seconds": 0.001
   },
   {
    "step": "armed reported",
    "ok": true,
-   "value": false,
-   "seconds": 0.601
+   "value": true,
+   "seconds": 0.603
   },
   {
    "step": "set_controls throttle 0.4",
@@ -74,57 +74,57 @@
   },
   {
    "step": "set_armed False",
-   "ok": false,
-   "error": "RuntimeError: Failed to send command 400 after 3 attempts",
-   "seconds": 0.311
+   "ok": true,
+   "value": null,
+   "seconds": 0.002
   },
   {
    "step": "disarmed reported",
    "ok": true,
-   "value": false,
-   "seconds": 0.604
+   "value": true,
+   "seconds": 0.605
   },
   {
    "step": "cli maintenance",
-   "ok": false,
-   "error": "RuntimeError: Failed to send command maintenance after 3 attempts",
-   "seconds": 0.307
+   "ok": true,
+   "value": "ok",
+   "seconds": 0.001
   },
   {
    "step": "set_param CTL_ATT_MAX (maintenance)",
-   "ok": false,
-   "error": "RuntimeError: Failed to set parameter CTL_ATT_MAX to 0.5 after 3 attempts",
-   "seconds": 0.315
+   "ok": true,
+   "value": null,
+   "seconds": 0.001
   },
   {
    "step": "get_param CTL_ATT_MAX",
-   "ok": false,
-   "error": "RuntimeError: Failed to get parameter CTL_ATT_MAX after 3 attempts",
-   "seconds": 0.311
+   "ok": true,
+   "value": 0.5,
+   "seconds": 0.001
   },
   {
    "step": "cli exit",
-   "ok": false,
-   "error": "RuntimeError: Failed to send command exit after 3 attempts",
-   "seconds": 0.31
+   "ok": true,
+   "value": "ok",
+   "seconds": 0.002
   },
   {
    "step": "set_mode RAW (diagnostic, intentionally unsupported)",
    "ok": false,
-   "error": "RuntimeError: Failed to send command 176 after 3 attempts",
-   "seconds": 0.309
+   "error": "RuntimeError: Command MAV_CMD_DO_SET_MODE failed with result MAV_RESULT_UNSUPPORTED",
+   "seconds": 0.001
   },
   {
    "step": "set_mode AUTO",
-   "ok": false,
-   "error": "RuntimeError: Failed to send command 176 after 3 attempts",
-   "seconds": 0.313
+   "ok": true,
+   "value": null,
+   "seconds": 0.001
   },
   {
    "step": "set_attitude thrust 0",
    "ok": true,
    "value": null,
-   "seconds": 0.001
+   "seconds": 0.0
   },
   {
    "step": "set_motors (diagnostic)",
@@ -143,5 +143,5 @@
    "seconds": 0.0
   }
  ],
- "bench_counters": "admitted={} rejected=74 incoming={(255, 0, 0, 0): 32, (255, 0, 20, 0): 6, (255, 0, 23, 0): 6, (255, 0, 69, 0): 2, (255, 0, 76, 0): 15, (255, 0, 82, 0): 2, (255, 0, 126, 0): 9, (255, 0, 139, 0): 2} outgoing={0: 49, 26: 373, 31: 499, 35: 249, 105: 373, 140: 249, 147: 49} state=Standby"
+ "bench_counters": "admitted={0: 35, 20: 2, 23: 4, 69: 2, 76: 5, 82: 2, 126: 3} rejected=2 incoming={(255, 0, 0, 0): 35, (255, 0, 20, 0): 2, (255, 0, 23, 0): 4, (255, 0, 69, 0): 2, (255, 0, 76, 0): 5, (255, 0, 82, 0): 2, (255, 0, 126, 0): 3, (255, 0, 139, 0): 2} outgoing={0: 49, 22: 3, 26: 373, 31: 499, 35: 249, 77: 5, 105: 373, 126: 3, 140: 249, 147: 49, 253: 1} state=Standby"
 }

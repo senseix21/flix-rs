@@ -71,6 +71,7 @@ erase every compiler/interpreter copy of a secret; no forensic erasure is claime
 Host tests exercise stopped enrollment, diagnostic denial, rotation/revoke,
 timestamp anchor, wrong key, tampering, duplicates and actual signed Python/Rust
 UDP requests. These do not verify the physical cable, RF workload or QGroundControl.
-Fixed sender 255/190 is preserved; broader client sender policy needs explicit
-interop evidence. Replace this workflow if the supported operator/client cannot
+Fixed sender 255/190 is preserved for the signed radio policy. Since 2026-10-13 (R2-04, with
+upstream pyflix evidence in `evidence/r2-clients/`) the unsigned wired policy also accepts
+255/0, pymavlink's default sender. Replace this workflow if the supported operator/client cannot
 perform fresh wired enrollment or unattended persistent operation is required.

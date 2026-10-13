@@ -242,3 +242,42 @@ fn upstream_pyflix_mode_and_console_encodings_are_accepted() {
     let packet = wire::decode(&frame(126, &p), &mut policy).unwrap();
     assert_eq!(event(&packet, 1).unwrap_err(), Error::Bounds);
 }
+#[test]
+fn wired_policy_also_accepts_component_zero_but_radio_stays_exact() {
+    // wire::encode refuses a zero sender (the drone never sends as 0), so build an incoming
+    // frame by patching the sender bytes and recomputing the checksum (HEARTBEAT CRC extra 50).
+    let heartbeat = |system: u8, component: u8| {
+        let mut bytes = frame(0, &[0, 0, 0, 0, 6, 8, 0, 4, 3]);
+        bytes[5] = system;
+        bytes[6] = component;
+        let end = bytes.len() - 2;
+        let c = wire::crc(&bytes[1..end], 50);
+        bytes[end..].copy_from_slice(&c.to_le_bytes());
+        bytes
+    };
+    for (system, component, ok) in [
+        (255, 190, true),
+        (255, 0, true),
+        (255, 1, false),
+        (254, 0, false),
+        (0, 0, false),
+    ] {
+        let mut policy = bench();
+        assert_eq!(
+            wire::decode(&heartbeat(system, component), &mut policy).is_ok(),
+            ok,
+            "{system}/{component}"
+        );
+    }
+    let key = [7u8; 32];
+    let mut policy = Policy::Signed {
+        system: 255,
+        component: 190,
+        signing: Signing::new(key, 1).unwrap(),
+    };
+    let unsigned_zero = heartbeat(255, 0);
+    assert_eq!(
+        wire::decode(&signed(unsigned_zero, key, 10), &mut policy).unwrap_err(),
+        Error::Unauthorized
+    );
+}
