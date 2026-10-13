@@ -16,7 +16,7 @@ import threading
 from collections import Counter
 import subprocess
 import time
-from pyflix.client import pack
+from pyflix.client import PARAMETER_COUNT, pack
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -86,7 +86,7 @@ def main():
             if 'Adding new vehicle link' not in qgc_log:failures.append('vehicle discovery unverified')
             if 'Initial load complete' not in qgc_log or 'Gave up on initial load' in qgc_log:
                 failures.append('QGC internal parameter readiness unverified')
-            if parameter_indices!=set(range(96)):failures.append('complete parameter transfer unverified')
+            if parameter_indices!=set(range(PARAMETER_COUNT)):failures.append('complete parameter transfer unverified')
             if not args.trusted_local and not any(len(k)>4 and k[2]==21 and k[3] and k[4] for k in observed):
                 failures.append('signed QGC parameter request unverified')
             if bench.returncode!=0 or process.poll() is not None:failures.append('client or owner exited early')

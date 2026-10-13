@@ -24,5 +24,13 @@ At build or test time some tools fetch, include or patch the pinned upstream
 checkout (legacy parity fixtures, Gazebo comparison plugin and model). That
 material is not redistributed here and remains under upstream terms.
 
+  adapters/crazyswarm2/ros/crazyflie_server.patch
+      A patch against Crazyswarm2 (https://github.com/IMRCLab/crazyswarm2, pinned
+      f1e09954f56cd08e7d9aff5e13dc9a68795914a3). Its context lines are Crazyswarm2
+      code, Copyright the Crazyswarm2 authors, MIT licence. flix_sil.py and
+      flix_backend.py are original work written against Crazyswarm2's interfaces.
+      The Crazyswarm2 Docker image fetches Crazyswarm2 and the Crazyflie firmware
+      (GPL-3.0, Bitcraze) at build time; neither is redistributed here.
+
 Third-party Rust dependencies keep their own licences; `deny.toml` lists the
 licences accepted for them.

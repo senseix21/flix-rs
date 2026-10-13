@@ -63,6 +63,11 @@
       39,
       51
     ],
+    "84": [
+      143,
+      53,
+      53
+    ],
     "119": [
       116,
       12,
@@ -127,6 +132,11 @@
       83,
       51,
       54
+    ],
+    "138": [
+      109,
+      36,
+      120
     ]
   },
   "additions": {
@@ -143,6 +153,14 @@
       "source": "MAVLink Arduino library 2.0.33 (legacy-pinned, scripts/fetch-legacy-mavlink.py): mavlink/common/mavlink_msg_statustext.h",
       "crosscheck": "https://raw.githubusercontent.com/mavlink/c_library_v2/master/common/mavlink_msg_statustext.h sha256 1767e8b56034980015d9f065953d0babba188902112862bec5325f61839006e6, retrieved 2026-10-10: same CRC and lengths",
       "purpose": "outbound operator warnings (IMU register saturation); never a radio Event"
+    },
+    "84": {
+      "source": "MAVLink Arduino library 2.0.33 (legacy-pinned, scripts/fetch-legacy-mavlink.py): mavlink/common/mavlink_msg_set_position_target_local_ned.h sha256 7e9366bf5ab205f753e69743d7400d707d491da5b7aaeb69cf8af390a37aff4a",
+      "purpose": "swarm S2 position setpoint (AUTO, LOCAL_NED only, masks 0x09C0/0x09F8)"
+    },
+    "138": {
+      "source": "MAVLink Arduino library 2.0.33 (legacy-pinned, scripts/fetch-legacy-mavlink.py): mavlink/common/mavlink_msg_att_pos_mocap.h sha256 3b11ddc72e292c91c0addc7abb7121dacedee062e0d102e73d89fde1860f0885",
+      "purpose": "swarm S2 external position measurement; no target field, so each drone must receive only its own stream"
     }
   }
 }

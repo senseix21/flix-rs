@@ -15,7 +15,7 @@ unsafe extern "C" {
     safe fn flix_hal_write(register: u8, value: u8) -> i32;
     safe fn flix_hal_stop();
     safe fn flix_hal_now() -> u64;
-    fn flix_hal_storage_read(slot: u32, out: *mut u8, len: u32) -> i32;
+    fn flix_hal_storage_read(slot: u32, out: *mut u8, capacity: u32, size: *mut u32) -> i32;
     fn flix_hal_storage_write(slot: u32, data: *const u8, len: u32) -> i32;
 }
 struct I2c;
@@ -31,23 +31,27 @@ impl Bus for I2c {
         if result == 0 { Ok(()) } else { Err(result) }
     }
 }
+// idf/main/main.c accepts exactly these record sizes (FLIX_RECORD_SIZE, FLIX_RECORD_SIZE_V1).
+const _: () = assert!(flight_config::RECORD_SIZE == 488 && flight_config::V1_RECORD_SIZE == 404);
 struct Nvs;
 impl flight_config::Storage for Nvs {
     fn read(
         &mut self,
         slot: usize,
         out: &mut [u8; flight_config::RECORD_SIZE],
-    ) -> Result<(), flight_config::Error> {
-        // SAFETY: out is a live exclusive RECORD_SIZE buffer; C writes at most len bytes.
-        let result =
-            unsafe { flix_hal_storage_read(slot as u32, out.as_mut_ptr(), out.len() as u32) };
+    ) -> Result<usize, flight_config::Error> {
+        let mut size = 0u32;
+        // SAFETY: out is a live exclusive RECORD_SIZE buffer and size a live local; C writes
+        // at most `capacity` bytes to out, then the stored length to size, and keeps neither.
+        let result = unsafe {
+            flix_hal_storage_read(slot as u32, out.as_mut_ptr(), out.len() as u32, &mut size)
+        };
         if result == 1 {
             return Err(flight_config::Error::Missing);
         }
-        if result == 0 {
-            Ok(())
-        } else {
-            Err(flight_config::Error::Storage)
+        match usize::try_from(size) {
+            Ok(size) if result == 0 && size <= out.len() => Ok(size),
+            _ => Err(flight_config::Error::Storage),
         }
     }
     fn write(
@@ -116,7 +120,11 @@ pub unsafe extern "C" fn flix_board_init(pins: *const i32) -> i32 {
     let read_a = Nvs.read(0, &mut a);
     let read_b = Nvs.read(1, &mut b);
     // Fresh erased storage may use safe unwired defaults. Corrupt existing storage latches fault.
-    let recovered = flight_config::recover(&a, &b);
+    // A slot holds a current record or a shorter version 1 record, which decode migrates.
+    let recovered = flight_config::recover(
+        &a[..*read_a.as_ref().unwrap_or(&0)],
+        &b[..*read_b.as_ref().unwrap_or(&0)],
+    );
     let mut settings = recovered
         .as_ref()
         .map_or_else(|_| flight_config::Settings::default(), |(s, _, _)| *s);

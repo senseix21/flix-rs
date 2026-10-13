@@ -17,9 +17,12 @@ from gazebo_browser_control import BrowserControl
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 WEB = ROOT/'tools/viewer'
 
+# `flix` in the bench world; flix1..flix8 in the swarm world (scripts/gazebo-swarm-world.py).
+MODEL = re.compile(r'flix[1-8]?')
+
 def parse_pose(block):
     name = re.search(r'name:\s*"([^"]+)"', block)
-    if len(block) > 16384 or not name or name.group(1) != 'flix':
+    if len(block) > 16384 or not name or not MODEL.fullmatch(name.group(1)):
         return None
     values = []
     for section, axes in [('position', 'xyz'), ('orientation', 'xyzw')]:
@@ -39,17 +42,19 @@ def parse_pose(block):
             values.append(value)
     if not .9 <= sum(v*v for v in values[3:]) <= 1.1:
         return None
-    return {'position': values[:3], 'quaternion_xyzw': values[3:]}
+    return {'name': name.group(1), 'position': values[:3], 'quaternion_xyzw': values[3:]}
 
 class Snapshot:
-    def __init__(self):
+    def __init__(self, swarm=False):
         self.lock = threading.Lock()
-        self.pose = None
+        self.poses = {}
+        self.swarm = swarm
         self.error = 'Waiting for Gazebo pose stream'
 
     def read(self):
         with self.lock:
-            state = {'pose': self.pose, 'error': self.error}
+            poses = dict(self.poses)
+            state = {'pose': poses.get('flix'), 'poses': poses, 'error': self.error}
         try:
             path = ROOT/'.local/gazebo-telemetry.json'
             if path.stat().st_size > 16384:
@@ -57,6 +62,15 @@ class Snapshot:
             state['telemetry'] = json.loads(path.read_text())
         except (OSError, ValueError):
             state['telemetry'] = None
+        state['swarm'] = None
+        if self.swarm:
+            try:
+                path = ROOT/'.local/gazebo-swarm.json'
+                if path.stat().st_size > 65536:
+                    raise ValueError('swarm state size')
+                state['swarm'] = json.loads(path.read_text())
+            except (OSError, ValueError):
+                pass
         state['server_unix'] = time.time()
         return state
 
@@ -81,7 +95,7 @@ class Snapshot:
                         if pose:
                             pose['received_unix'] = time.time()
                             with self.lock:
-                                self.pose, self.error = pose, None
+                                self.poses[pose['name']], self.error = pose, None
                         block = []
                 process.stdout.close()
                 if process.poll() is None:
@@ -100,8 +114,13 @@ def main():
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--container', default='flix-rust-gazebo')
     parser.add_argument('--view-only', action='store_true')
+    parser.add_argument('--swarm', action='store_true', help='show every drone of scripts/gazebo-swarm.sh (view only)')
     args = parser.parse_args()
-    snapshot, stop = Snapshot(), threading.Event()
+    if args.swarm:
+        args.view_only = True
+        if args.container == 'flix-rust-gazebo':
+            args.container = 'flix-rust-gazebo-swarm'
+    snapshot, stop = Snapshot(args.swarm), threading.Event()
     controls, token = (None if args.view_only else BrowserControl(args.container)), secrets.token_urlsafe(24)
 
     class Handler(BaseHTTPRequestHandler):

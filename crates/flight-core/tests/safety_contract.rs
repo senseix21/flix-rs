@@ -1,4 +1,5 @@
 use flight_core::control::{GRAVITY, Intent, Pilot, mix};
+use flight_core::position::Target;
 use flight_core::{Flight, Quaternion, Reason, Sensor, Source, State, Tick, Vec3};
 fn sensor(us: u64) -> Sensor {
     Sensor {
@@ -74,10 +75,16 @@ fn every_supported_intent_obeys_frame_expiry_and_disarm() {
             rates: Vec3(0.1, 0.0, 0.0),
             thrust: 0.4,
         },
+        Intent::Position(Target {
+            position: Vec3(0.0, 0.0, 0.5),
+            velocity: Vec3::ZERO,
+            yaw: 0.0,
+        }),
     ];
     for intent in intents {
         let mut f = Flight::default();
         f.tick(Tick(0), Some(sensor(0)));
+        assert!(f.position(Vec3::ZERO, None, Tick(0)));
         let source = if intent.kind() >= 2 {
             Source::Automatic
         } else {
@@ -97,6 +104,12 @@ fn every_supported_intent_obeys_frame_expiry_and_disarm() {
                 thrust: 0.0,
             },
             Intent::Rates { rates, .. } => Intent::Rates { rates, thrust: 0.0 },
+            // Position control is entered from an idle automatic attitude lease (SD-10).
+            Intent::Position(_) => Intent::Attitude {
+                orientation: Quaternion::IDENTITY,
+                feedforward: Vec3::ZERO,
+                thrust: 0.0,
+            },
         };
         assert!(f.command(source, low, Tick(0)));
         assert!(f.arm(Tick(0)));

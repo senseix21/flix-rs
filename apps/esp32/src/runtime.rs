@@ -581,6 +581,10 @@ impl Owner {
             self.metrics_transfer = None;
             self.ack(400, true);
         }
+        // Measurement before setpoints, so a position command sees the newest sample.
+        if let Some((value, yaw, at)) = self.ingress.take_position() {
+            self.flight.position(value, yaw, at);
+        }
         for (event, at) in self.ingress.take_setpoints().into_iter().flatten() {
             if let Event::Setpoint(source, intent) = event {
                 self.flight.command(source, intent, at);

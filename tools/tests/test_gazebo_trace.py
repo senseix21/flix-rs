@@ -46,12 +46,12 @@ class TraceTests(unittest.TestCase):
         self.assertEqual(record['raw_acceleration_body_m_s2'],[135,-139,132])
         with self.assertRaises(ValueError):decode(frame[:-1])
 class ReasonRangeTests(unittest.TestCase):
-    def test_sensor_init_accepted_and_next_code_rejected(self):
-        # ADR 003 D2 adds SensorInit = 12; 13 remains invalid.
+    def test_newest_reason_accepted_and_next_code_rejected(self):
+        # ADR 003 D2 adds SensorInit = 12; swarm S2 adds PositionExpired = 13; 14 is invalid.
         values=[0.0]*(VALUES.size//4)
-        for reason,ok in ((12,True),(13,False)):
+        for reason,ok in ((12,True),(13,True),(14,False)):
             frame=HEADER_V2.pack(b'FLXT',2,20000,4,5,reason,0xffffffff,0,8,9999)+VALUES.pack(*values)
-            if ok:self.assertEqual(decode(frame)['reason'],12)
+            if ok:self.assertEqual(decode(frame)['reason'],reason)
             else:
                 with self.assertRaises(ValueError):decode(frame)
 

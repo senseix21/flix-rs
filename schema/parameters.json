@@ -769,6 +769,174 @@
       "maximum": 3.141592653589793,
       "integer": false,
       "status": "implemented"
+    },
+    {
+      "name": "POS_VOL_X_MIN",
+      "default": -3.0,
+      "minimum": -100.0,
+      "maximum": 100.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_VOL_X_MAX",
+      "default": 3.0,
+      "minimum": -100.0,
+      "maximum": 100.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_VOL_Y_MIN",
+      "default": -3.0,
+      "minimum": -100.0,
+      "maximum": 100.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_VOL_Y_MAX",
+      "default": 3.0,
+      "minimum": -100.0,
+      "maximum": 100.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_VOL_Z_MIN",
+      "default": 0.0,
+      "minimum": -100.0,
+      "maximum": 100.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_VOL_Z_MAX",
+      "default": 2.0,
+      "minimum": -100.0,
+      "maximum": 100.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_SAMPLE_TIME",
+      "default": 0.2,
+      "minimum": 0.001,
+      "maximum": 1.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_EST_ALPHA",
+      "default": 0.3,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_EST_BETA",
+      "default": 0.1,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_HDG_WEIGHT",
+      "default": 0.05,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_P_XY",
+      "default": 6.0,
+      "minimum": 0.0,
+      "maximum": 50.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_P_Z",
+      "default": 8.0,
+      "minimum": 0.0,
+      "maximum": 50.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_D_XY",
+      "default": 4.0,
+      "minimum": 0.0,
+      "maximum": 50.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_D_Z",
+      "default": 5.0,
+      "minimum": 0.0,
+      "maximum": 50.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_I_XY",
+      "default": 1.0,
+      "minimum": 0.0,
+      "maximum": 50.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_I_Z",
+      "default": 6.0,
+      "minimum": 0.0,
+      "maximum": 50.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_I_LIMIT",
+      "default": 2.0,
+      "minimum": 0.0,
+      "maximum": 9.80665,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_TILT_MAX",
+      "default": 0.4363323,
+      "minimum": 0.0,
+      "maximum": 1.5707964,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_HOVER_THR",
+      "default": 0.5,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_THR_MAX",
+      "default": 0.9,
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "integer": false,
+      "status": "implemented"
+    },
+    {
+      "name": "POS_SPEED_MAX",
+      "default": 2.0,
+      "minimum": 0.0,
+      "maximum": 10.0,
+      "integer": false,
+      "status": "implemented"
     }
   ]
 }

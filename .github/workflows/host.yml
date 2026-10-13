@@ -44,7 +44,7 @@ jobs:
           cargo kani setup
       - name: Model-check flight-core proofs
         working-directory: crates/flight-core
-        run: cargo kani
+        run: cargo kani -Z stubbing
 
   gazebo:
     runs-on: ubuntu-24.04
@@ -67,12 +67,34 @@ jobs:
       - name: Paired C++/Rust plant comparison
         working-directory: flix-rust
         run: make sim-parity
+      - name: Three-drone swarm flight in Gazebo
+        working-directory: flix-rust
+        run: make swarm-gazebo-check
       - name: Preserve simulator evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: simulator-probes
           path: flix-rust/.local/qualification/
+
+  swarm:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: flix-rust
+      - name: Crazyswarm2 coordinating simulated Flix drones
+        working-directory: flix-rust
+        run: make swarm-sim
+      - name: Preserve swarm evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: swarm
+          path: |
+            flix-rust/.local/qualification/swarm-s1/
+            flix-rust/.local/qualification/swarm-s2/
 
   fuzz:
     runs-on: ubuntu-24.04

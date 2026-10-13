@@ -20,6 +20,7 @@
     clippy::float_cmp
 )]
 use flight_core::control::Tuning;
+use flight_core::position::{PositionTuning, Volume};
 use flight_core::{Limits, Vec3};
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Error {
@@ -46,7 +47,10 @@ pub struct Parameter {
     pub status: Status,
 }
 include!("schema.rs");
-pub const COUNT: usize = 96;
+/// Version 1 records hold the first 96 parameters; version 2 appended the swarm S2 position
+/// parameters. Order is append-only, so a v1 record is a prefix of v2.
+pub const V1_COUNT: usize = 96;
+pub const VERSION: u16 = 2;
 #[derive(Clone, Copy, Debug)]
 pub struct Settings {
     values: [f32; COUNT],
@@ -239,6 +243,40 @@ impl Settings {
             gyro_alpha: g("EST_RATES_LPF_A"),
             acc_weight: g("EST_ACC_WEIGHT"),
             level_weight: g("EST_LVL_WEIGHT"),
+            position: self.position(),
+        }
+    }
+    #[expect(
+        clippy::expect_used,
+        reason = "names come from the generated schema; a missing key is a build defect"
+    )]
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "validated POS_SAMPLE_TIME is 0.001..=1.0 s, so microseconds fit u64"
+    )]
+    fn position(&self) -> PositionTuning {
+        let g = |name: &str| {
+            self.get(name)
+                .expect("generated schema contains position keys")
+        };
+        PositionTuning {
+            volume: Volume {
+                min: Vec3(g("POS_VOL_X_MIN"), g("POS_VOL_Y_MIN"), g("POS_VOL_Z_MIN")),
+                max: Vec3(g("POS_VOL_X_MAX"), g("POS_VOL_Y_MAX"), g("POS_VOL_Z_MAX")),
+            },
+            sample_us: (g("POS_SAMPLE_TIME") * 1e6) as u64,
+            alpha: g("POS_EST_ALPHA"),
+            beta: g("POS_EST_BETA"),
+            heading_weight: g("POS_HDG_WEIGHT"),
+            kp: Vec3(g("POS_P_XY"), g("POS_P_XY"), g("POS_P_Z")),
+            kd: Vec3(g("POS_D_XY"), g("POS_D_XY"), g("POS_D_Z")),
+            ki: Vec3(g("POS_I_XY"), g("POS_I_XY"), g("POS_I_Z")),
+            integral_limit: g("POS_I_LIMIT"),
+            max_tilt: g("POS_TILT_MAX"),
+            hover_thrust: g("POS_HOVER_THR"),
+            max_thrust: g("POS_THR_MAX"),
+            max_speed: g("POS_SPEED_MAX"),
         }
     }
     #[expect(
@@ -272,6 +310,7 @@ const RC_MAX_NAMES: [&str; 8] = [
     "RC_MAX_0", "RC_MAX_1", "RC_MAX_2", "RC_MAX_3", "RC_MAX_4", "RC_MAX_5", "RC_MAX_6", "RC_MAX_7",
 ];
 pub const RECORD_SIZE: usize = 16 + COUNT * 4 + 4;
+pub const V1_RECORD_SIZE: usize = 16 + V1_COUNT * 4 + 4;
 pub fn checksum(bytes: &[u8]) -> u32 {
     let mut c = !0u32;
     for b in bytes {
@@ -286,7 +325,7 @@ pub fn encode(settings: &Settings, sequence: u64) -> Result<[u8; RECORD_SIZE], E
     settings.validate()?;
     let mut b = [0; RECORD_SIZE];
     b[..4].copy_from_slice(b"FLXC");
-    b[4..6].copy_from_slice(&1u16.to_le_bytes());
+    b[4..6].copy_from_slice(&VERSION.to_le_bytes());
     b[6..8].copy_from_slice(
         &u16::try_from(COUNT)
             .map_err(|_| Error::Storage)?
@@ -300,20 +339,25 @@ pub fn encode(settings: &Settings, sequence: u64) -> Result<[u8; RECORD_SIZE], E
     b[RECORD_SIZE - 4..].copy_from_slice(&c.to_le_bytes());
     Ok(b)
 }
+/// Decode a stored record. A version 1 record (96 values) migrates by keeping its values and
+/// taking defaults for every later parameter; the result is validated like any record.
 pub fn decode(bytes: &[u8]) -> Result<(Settings, u64), Error> {
-    if bytes.len() != RECORD_SIZE
-        || &bytes[..4] != b"FLXC"
-        || bytes[4..8] != [1, 0, 96, 0]
-        || checksum(&bytes[..RECORD_SIZE - 4])
-            != u32::from_le_bytes(
-                bytes[RECORD_SIZE - 4..]
-                    .try_into()
-                    .map_err(|_| Error::Storage)?,
-            )
+    let stored = match (bytes.len(), bytes.get(4..8)) {
+        (RECORD_SIZE, Some(header)) if header == current_header()? => COUNT,
+        (V1_RECORD_SIZE, Some([1, 0, 96, 0])) => V1_COUNT,
+        _ => return Err(Error::Storage),
+    };
+    let size = bytes.len();
+    if &bytes[..4] != b"FLXC"
+        || checksum(&bytes[..size - 4])
+            != u32::from_le_bytes(bytes[size - 4..].try_into().map_err(|_| Error::Storage)?)
     {
         return Err(Error::Storage);
     }
     let values = core::array::from_fn(|i| {
+        if i >= stored {
+            return PARAMETERS[i].default;
+        }
         let at = 16 + i * 4;
         f32::from_le_bytes([bytes[at], bytes[at + 1], bytes[at + 2], bytes[at + 3]])
     });
@@ -323,6 +367,13 @@ pub fn decode(bytes: &[u8]) -> Result<(Settings, u64), Error> {
         s,
         u64::from_le_bytes(bytes[8..16].try_into().map_err(|_| Error::Storage)?),
     ))
+}
+fn current_header() -> Result<[u8; 4], Error> {
+    let [v0, v1] = VERSION.to_le_bytes();
+    let [c0, c1] = u16::try_from(COUNT)
+        .map_err(|_| Error::Storage)?
+        .to_le_bytes();
+    Ok([v0, v1, c0, c1])
 }
 pub fn recover(a: &[u8], b: &[u8]) -> Result<(Settings, u64, usize), Error> {
     match (decode(a), decode(b)) {
@@ -338,8 +389,10 @@ pub fn recover(a: &[u8], b: &[u8]) -> Result<(Settings, u64, usize), Error> {
         _ => Err(Error::Storage),
     }
 }
+/// Two record slots. `read` fills a prefix of `bytes` and returns its length, which may be a
+/// shorter record from an earlier version; `write` always stores a current record.
 pub trait Storage {
-    fn read(&mut self, slot: usize, bytes: &mut [u8; RECORD_SIZE]) -> Result<(), Error>;
+    fn read(&mut self, slot: usize, bytes: &mut [u8; RECORD_SIZE]) -> Result<usize, Error>;
     fn write(&mut self, slot: usize, bytes: &[u8; RECORD_SIZE]) -> Result<(), Error>;
 }
 pub fn save(
@@ -359,7 +412,9 @@ pub fn save(
     {
         return Err(Error::Storage);
     }
-    let (sequence, active) = match recover(&a, &b) {
+    let a = &a[..read_a.unwrap_or(0).min(RECORD_SIZE)];
+    let b = &b[..read_b.unwrap_or(0).min(RECORD_SIZE)];
+    let (sequence, active) = match recover(a, b) {
         Ok((_, s, i)) => (s, i),
         Err(_) if read_a == Err(Error::Missing) && read_b == Err(Error::Missing) => (0, 1),
         Err(_) => return Err(Error::Storage),
@@ -368,8 +423,7 @@ pub fn save(
     let record = encode(settings, next)?;
     storage.write(1 - active, &record)?;
     let mut verify = [0; RECORD_SIZE];
-    storage.read(1 - active, &mut verify)?;
-    if verify != record {
+    if storage.read(1 - active, &mut verify)? != RECORD_SIZE || verify != record {
         return Err(Error::Storage);
     }
     Ok(next)

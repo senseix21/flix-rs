@@ -1,0 +1,93 @@
+diff --git a/crazyflie_sim/crazyflie_sim/crazyflie_server.py b/crazyflie_sim/crazyflie_sim/crazyflie_server.py
+index cb460e7..06ac016 100755
+--- a/crazyflie_sim/crazyflie_sim/crazyflie_server.py
++++ b/crazyflie_sim/crazyflie_sim/crazyflie_server.py
+@@ -9,9 +9,10 @@ A crazyflie server for simulation.
+ 
+ from functools import partial
+ import importlib
++import os
+ 
+ from crazyflie_interfaces.msg import FullState, Hover
+-from crazyflie_interfaces.srv import GoTo, Land, Takeoff
++from crazyflie_interfaces.srv import Arm, GoTo, Land, Takeoff
+ from crazyflie_interfaces.srv import NotifySetpointsStop, StartTrajectory, UploadTrajectory
+ from geometry_msgs.msg import Twist
+ import rclpy
+@@ -121,7 +122,19 @@ class CrazyflieServer(Node):
+         controller_name = backend_name = self._ros_parameters['sim']['controller']
+ 
+         # create robot SIL objects
+-        for name, initial_state in zip(names, initial_states):
++        for index, (name, initial_state) in enumerate(zip(names, initial_states)):
++            if controller_name == 'flix':
++                # Flix: real owner per drone, unique MAVLink system ID (swarm spec SWM-01).
++                from .flix_sil import FlixSIL
++                self.cfs[name] = FlixSIL(
++                    name,
++                    initial_state.pos,
++                    self.backend.time,
++                    system_id=robot_data[name].get('system_id', 11 + index),
++                    seed=1 + index,
++                    logger=self.get_logger(),
++                    trace_dir=os.environ.get('FLIX_SWARM_TRACE'))
++                continue
+             self.cfs[name] = CrazyflieSIL(
+                 name,
+                 initial_state.pos,
+@@ -145,6 +158,11 @@ class CrazyflieServer(Node):
+                 name + '/emergency',
+                 partial(self._emergency_callback, name=name)
+             )
++            self.create_service(
++                Arm,
++                name + '/arm',
++                partial(self._arm_callback, name=name)
++            )
+             self.create_service(
+                 Takeoff,
+                 name + '/takeoff',
+@@ -195,6 +213,7 @@ class CrazyflieServer(Node):
+             )
+ 
+         # Create services for the entire swarm and each individual crazyflie
++        self.create_service(Arm, 'all/arm', self._arm_callback)
+         self.create_service(Takeoff, 'all/takeoff', self._takeoff_callback)
+         self.create_service(Land, 'all/land', self._land_callback)
+         self.create_service(GoTo, 'all/go_to', self._go_to_callback)
+@@ -217,6 +236,9 @@ class CrazyflieServer(Node):
+             self.backend.shutdown()
+             for visualization in self.visualizations:
+                 visualization.shutdown()
++            for cf in self.cfs.values():
++                if hasattr(cf, 'shutdown'):
++                    cf.shutdown()
+ 
+             self.is_shutdown = True
+ 
+@@ -250,7 +272,24 @@ class CrazyflieServer(Node):
+         return tree
+ 
+     def _emergency_callback(self, request, response, name='all'):
+-        self.get_logger().info(f'[{name}] emergency not yet implemented')
++        cfs = self.cfs if name == 'all' else {name: self.cfs[name]}
++        if not all(hasattr(cf, 'emergency') for cf in cfs.values()):
++            self.get_logger().info(f'[{name}] emergency not yet implemented')
++            return response
++        self.get_logger().info(f'[{name}] emergency stop')
++        for cf in cfs.values():
++            cf.emergency()
++
++        return response
++
++    def _arm_callback(self, request, response, name='all'):
++        cfs = self.cfs if name == 'all' else {name: self.cfs[name]}
++        self.get_logger().info(f'[{name}] arm({request.arm})')
++        for cf in cfs.values():
++            if hasattr(cf, 'arm'):
++                cf.arm(request.arm)
++            else:
++                self.get_logger().info(f'[{name}] arm not supported by this controller')
+ 
+         return response
+ 

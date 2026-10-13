@@ -40,6 +40,7 @@ Fault behaviour is decided function by function, with no single policy.
 | `MaintenanceExpired` (9) | stop | diagnostic permit expired | Maintenance | — | stop (not a fault) |
 | `Configuration` (10) | fault | firmware: corrupt settings record at boot; driver rebuild failure | Fault | **`reset` only** (inconsistent) | latched |
 | `Power` (11) | fault | owner: battery requires stop while armed | Fault | `clear_fault`, `reset` | recoverable; arm stays gated on battery health |
+| `PositionExpired` (13) | fault | tick: flying a position intent without a fresh external position (swarm S2, SD-11) | Fault | `clear_fault`, `reset` | recoverable |
 
 "Recoverable" means `clear_fault` returns to Boot. Arming still requires a fresh healthy sample,
 calibration, a fresh low-thrust lease and explicit `arm`, so clearing a fault never re-arms.

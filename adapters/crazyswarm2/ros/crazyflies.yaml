@@ -1,0 +1,31 @@
+# Three simulated Flix drones for the S1 Crazyswarm2 scenarios (swarm plan S1-09).
+# `system_id` is each owner's MAVLink system ID (SWM-01); crazyflie_py reads the last two
+# hex digits of `uri` as a numeric ID, so they match the system ID.
+fileversion: 3
+
+robots:
+  cf1:
+    enabled: true
+    uri: flix://0B
+    system_id: 11
+    initial_position: [0.0, 0.0, 0.0]
+    type: flix
+  cf2:
+    enabled: true
+    uri: flix://0C
+    system_id: 12
+    initial_position: [0.6, 0.0, 0.0]
+    type: flix
+  cf3:
+    enabled: true
+    uri: flix://0D
+    system_id: 13
+    initial_position: [1.2, 0.0, 0.0]
+    type: flix
+
+robot_types:
+  flix:
+    connection: crazyflie
+
+all:
+  reference_frame: world

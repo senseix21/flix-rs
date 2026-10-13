@@ -12,6 +12,7 @@ import time
 
 _ROOT = pathlib.Path(__file__).resolve().parents[2]
 _DIALECT = {int(k): tuple(v) for k, v in json.loads((_ROOT / 'protocol/common-subset.json').read_text())['messages'].items()}
+PARAMETER_COUNT = len(json.loads((_ROOT / 'protocol/parameters.json').read_text())['parameters'])
 
 class Closed(RuntimeError): pass
 class Busy(RuntimeError): pass
@@ -139,7 +140,7 @@ class Flix:
         w,x,y,z=quaternion;r,p,q=rates
         self.send(82,struct.pack('<I8fBBB',0,w,x,-y,-z,r,-p,-q,thrust,1,1,128 if rates_only else 0))
     def get_parameter(self, index):
-        if not 0<=index<96: raise ValueError('parameter index')
+        if not 0<=index<PARAMETER_COUNT: raise ValueError('parameter index')
         return self.request(('parameter',index),20,struct.pack('<hBB16s',index,1,1,b''))
     def console(self, command):
         allowed={'status','disarm','maintenance','exit','clear-fault','save','calibrate-gyro'}

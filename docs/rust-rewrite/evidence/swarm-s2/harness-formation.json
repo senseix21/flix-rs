@@ -1,0 +1,308 @@
+{
+ "scenario": "formation",
+ "passed": true,
+ "seed": 1,
+ "config": {
+  "onboard": true,
+  "heading": true,
+  "position_period_us": 20000,
+  "position_noise_m": 0.0,
+  "seed": 1,
+  "lease_s": 0.3,
+  "setpoint_period_us": 20000,
+  "link_capacity": 64,
+  "link_latency_us": 0,
+  "imu_noise": true
+ },
+ "thresholds": {
+  "hover_error_m": 0.05,
+  "max_tilt_deg": 30.0,
+  "separation_plan_m": 0.3,
+  "separation_observed_m": 0.25,
+  "stop_latency_us": 2000,
+  "lease_margin_us": 25000,
+  "bystander_error_m": 0.1,
+  "position_us": 200000,
+  "noisy_hover_error_m": 0.08
+ },
+ "checks": [
+  {
+   "name": "all drones armed",
+   "passed": true,
+   "result": {
+    "cf1": null,
+    "cf2": null,
+    "cf3": null
+   }
+  },
+  {
+   "name": "cf1 hover error",
+   "passed": true,
+   "error_m": 0.0183
+  },
+  {
+   "name": "cf2 hover error",
+   "passed": true,
+   "error_m": 0.0181
+  },
+  {
+   "name": "cf3 hover error",
+   "passed": true,
+   "error_m": 0.0182
+  },
+  {
+   "name": "crossing plan rejected",
+   "passed": true,
+   "reason": "cf1 and cf2 would pass within 0.000 m"
+  },
+  {
+   "name": "rejected plan moved nobody",
+   "passed": true
+  },
+  {
+   "name": "cf1 formation error",
+   "passed": true,
+   "error_m": 0.0074
+  },
+  {
+   "name": "cf2 formation error",
+   "passed": true,
+   "error_m": 0.0106
+  },
+  {
+   "name": "cf3 formation error",
+   "passed": true,
+   "error_m": 0.0071
+  },
+  {
+   "name": "tilt bounded",
+   "passed": true,
+   "max_tilt_deg": 4.27
+  },
+  {
+   "name": "cf1 landed and stopped",
+   "passed": true,
+   "z_m": 0.0135,
+   "state": 1
+  },
+  {
+   "name": "cf2 landed and stopped",
+   "passed": true,
+   "z_m": 0.0135,
+   "state": 1
+  },
+  {
+   "name": "cf3 landed and stopped",
+   "passed": true,
+   "z_m": 0.0135,
+   "state": 1
+  },
+  {
+   "name": "minimum pair distance",
+   "passed": true,
+   "distance_m": 0.5992
+  }
+ ],
+ "report": {
+  "sim_seconds": 14.068,
+  "min_separation": {
+   "distance_m": 0.5992,
+   "pair": [
+    "cf1",
+    "cf2"
+   ],
+   "sim_us": 10681000
+  },
+  "drones": {
+   "cf1": {
+    "system_id": 11,
+    "phase": "stopped",
+    "refusal": null,
+    "arm_latency_us": 4000,
+    "stop_latency_us": 2000,
+    "frames_sent": 1413,
+    "frames_dropped": 0,
+    "frames_lost": 0,
+    "frames_rejected": 0,
+    "events": [
+     [
+      1000,
+      "state",
+      "standby",
+      "disarmed"
+     ],
+     [
+      2000,
+      "state",
+      "maintenance",
+      "none"
+     ],
+     [
+      4000,
+      "provisioned",
+      11
+     ],
+     [
+      5000,
+      "state",
+      "standby",
+      "disarmed"
+     ],
+     [
+      8000,
+      "state",
+      "armed",
+      "none"
+     ],
+     [
+      8000,
+      "armed",
+      4000
+     ],
+     [
+      13002000,
+      "notice",
+      "IMU saturated: az"
+     ],
+     [
+      14002000,
+      "notice",
+      "IMU saturated: az"
+     ],
+     [
+      14020000,
+      "state",
+      "standby",
+      "disarmed"
+     ]
+    ]
+   },
+   "cf2": {
+    "system_id": 12,
+    "phase": "stopped",
+    "refusal": null,
+    "arm_latency_us": 4000,
+    "stop_latency_us": 2000,
+    "frames_sent": 1413,
+    "frames_dropped": 0,
+    "frames_lost": 0,
+    "frames_rejected": 0,
+    "events": [
+     [
+      1000,
+      "state",
+      "standby",
+      "disarmed"
+     ],
+     [
+      2000,
+      "state",
+      "maintenance",
+      "none"
+     ],
+     [
+      4000,
+      "provisioned",
+      12
+     ],
+     [
+      5000,
+      "state",
+      "standby",
+      "disarmed"
+     ],
+     [
+      8000,
+      "state",
+      "armed",
+      "none"
+     ],
+     [
+      8000,
+      "armed",
+      4000
+     ],
+     [
+      13002000,
+      "notice",
+      "IMU saturated: az"
+     ],
+     [
+      14002000,
+      "notice",
+      "IMU saturated: az"
+     ],
+     [
+      14020000,
+      "state",
+      "standby",
+      "disarmed"
+     ]
+    ]
+   },
+   "cf3": {
+    "system_id": 13,
+    "phase": "stopped",
+    "refusal": null,
+    "arm_latency_us": 4000,
+    "stop_latency_us": 2000,
+    "frames_sent": 1413,
+    "frames_dropped": 0,
+    "frames_lost": 0,
+    "frames_rejected": 0,
+    "events": [
+     [
+      1000,
+      "state",
+      "standby",
+      "disarmed"
+     ],
+     [
+      2000,
+      "state",
+      "maintenance",
+      "none"
+     ],
+     [
+      4000,
+      "provisioned",
+      13
+     ],
+     [
+      5000,
+      "state",
+      "standby",
+      "disarmed"
+     ],
+     [
+      8000,
+      "state",
+      "armed",
+      "none"
+     ],
+     [
+      8000,
+      "armed",
+      4000
+     ],
+     [
+      13002000,
+      "notice",
+      "IMU saturated: az"
+     ],
+     [
+      14002000,
+      "notice",
+      "IMU saturated: az"
+     ],
+     [
+      14020000,
+      "state",
+      "standby",
+      "disarmed"
+     ]
+    ]
+   }
+  }
+ }
+}

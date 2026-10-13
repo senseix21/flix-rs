@@ -136,19 +136,30 @@ int32_t flix_hal_write(uint8_t reg, uint8_t value) {
   uint8_t data[2] = {reg, value};
   return i2c_master_transmit(sensor, data, 2, 1);
 }
-int32_t flix_hal_storage_read(uint32_t slot, uint8_t *out, uint32_t len) {
-  if (!storage_open || slot > 1 || len != 404)
+// Settings records: version 2 (117 values, 488 bytes) is written; a version 1 record
+// (96 values, 404 bytes) written by older firmware is still read and migrated by Rust.
+#define FLIX_RECORD_SIZE 488
+#define FLIX_RECORD_SIZE_V1 404
+int32_t flix_hal_storage_read(uint32_t slot, uint8_t *out, uint32_t capacity,
+                              uint32_t *size_out) {
+  if (!storage_open || slot > 1 || capacity != FLIX_RECORD_SIZE || !size_out)
     return -1;
-  size_t size = len;
+  // nvs_get_blob fails with ESP_ERR_NVS_INVALID_LENGTH, writing nothing to out, when the
+  // stored blob is larger than capacity; otherwise size is the stored length.
+  size_t size = capacity;
   esp_err_t result =
       nvs_get_blob(storage, slot == 0 ? "config0" : "config1", out, &size);
   if (result == ESP_ERR_NVS_NOT_FOUND)
     return 1;
-  return result == ESP_OK && size == len ? 0 : -1;
+  if (result != ESP_OK ||
+      (size != FLIX_RECORD_SIZE && size != FLIX_RECORD_SIZE_V1))
+    return -1;
+  *size_out = (uint32_t)size;
+  return 0;
 }
 int32_t flix_hal_storage_write(uint32_t slot, const uint8_t *data,
                                uint32_t len) {
-  if (!storage_open || slot > 1 || len != 404)
+  if (!storage_open || slot > 1 || len != FLIX_RECORD_SIZE)
     return -1;
   flix_hal_stop();
   esp_err_t result =
