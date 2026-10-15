@@ -371,8 +371,10 @@ pub fn event(packet: &Packet, local: u8) -> Result<Event, Error> {
         126 => {
             let count = usize::from(p[8]);
             // Device 10 (shell) from QGC and the repo client; device 0 from upstream pyflix,
-            // which the legacy firmware also accepted.
-            if count > 70 || (p[6] != 10 && p[6] != 0) || p[7] & !6 != 0 {
+            // which the legacy firmware also accepted. Flags: EXCLUSIVE (2), RESPOND (4) and
+            // MULTI (16, set by QGC's console) only ask how to reply; REPLY (1) and baudrate
+            // change (8) are refused.
+            if count > 70 || (p[6] != 10 && p[6] != 0) || p[7] & !(2 | 4 | 16) != 0 {
                 return Err(Error::Bounds);
             }
             if packet.length > 79 {

@@ -235,6 +235,29 @@ fn upstream_pyflix_mode_and_console_encodings_are_accepted() {
             "device {device}"
         );
     }
+    // QGC v5.0.8 MAVLinkConsoleController sends EXCLUSIVE | RESPOND | MULTI (2 | 4 | 16).
+    let mut p = vec![0u8; 6];
+    p.extend_from_slice(&[10, 2 | 4 | 16, 5]);
+    p.extend_from_slice(b"stab\n");
+    let mut policy = bench();
+    let packet = wire::decode(&frame(126, &p), &mut policy).unwrap();
+    assert!(matches!(
+        event(&packet, 1),
+        Ok(Event::Console(flight_protocol::Console::Mode(2)))
+    ));
+    // REPLY (1) and baudrate change (8) stay refused: those are drone-to-client or port control.
+    for flags in [1u8, 8] {
+        let mut p = vec![0u8; 6];
+        p.extend_from_slice(&[10, flags, 6]);
+        p.extend_from_slice(b"status");
+        let mut policy = bench();
+        let packet = wire::decode(&frame(126, &p), &mut policy).unwrap();
+        assert_eq!(
+            event(&packet, 1).unwrap_err(),
+            Error::Bounds,
+            "flags {flags}"
+        );
+    }
     let mut p = vec![0u8; 6];
     p.extend_from_slice(&[1, 0, 6]);
     p.extend_from_slice(b"status");

@@ -88,6 +88,17 @@ Consequence: an operator outside UTC must start QGC with `TZ=UTC` to use the sig
 QGC is fixed upstream. The vehicle side is correct and is not changed. The unsigned wired path
 and pyflix are unaffected.
 
+**Finding: the QGC console was silently refused (fixed 2026-10-15).** In session 5 (Claude
+driving QGC by computer use) `stab` typed into Analyze Tools > MAVLink Console reached the bench
+as SERIAL_CONTROL to device 10 but got no reply. QGC v5.0.8
+`src/AnalyzeView/MAVLinkConsoleController.cc` line 157 sends flags
+`EXCLUSIVE | RESPOND | MULTI` (2 | 4 | 16); the decoder accepted only 2 and 4 and refused the
+frame as out of bounds. MULTI only asks the device to keep replying while it has output, so it is
+now accepted; REPLY (1) and baudrate change (8) stay refused. Contract test:
+`upstream_pyflix_mode_and_console_encodings_are_accepted` decodes QGC's exact flags to `Mode(2)`.
+pyflix and the repo client send flags 0 and were unaffected, which is why earlier console tests
+passed. The UI session itself was stopped before arming and must be rerun with the fix.
+
 Also added for the session: console `stab`, `acro`, `auto` (explicit source selection, as the
 legacy console offered; QGC's generic-vehicle UI has no mode switcher), and the bench may now run
 up to 15 minutes.
