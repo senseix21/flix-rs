@@ -141,7 +141,9 @@ impl ArmBlock {
             ArmBlock::State(State::Boot) => "booting",
             ArmBlock::State(State::Maintenance) => "maintenance",
             ArmBlock::State(State::Armed) => "already armed",
-            ArmBlock::State(State::Failsafe) => "failsafe",
+            // Failsafe reports as disarmed, so a ground station offers only Arm; name the
+            // explicit acknowledgement that leaves it (ADR 003, R2-04 finding).
+            ArmBlock::State(State::Failsafe) => "failsafe (send disarm)",
             ArmBlock::State(State::Fault) => "fault",
             ArmBlock::State(State::Standby) => "standby",
             ArmBlock::Sensor => "sensor",

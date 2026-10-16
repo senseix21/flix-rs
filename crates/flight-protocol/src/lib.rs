@@ -89,8 +89,32 @@ pub enum Console {
     Save,
     CalibrateGyro,
     Metrics(u32),
+    /// `stab`, `acro`, `auto`: explicit source selection, as the legacy console offered.
+    /// Lets a GCS without a mode switcher (QGC's generic vehicle) select from its console.
+    Mode(u8),
+}
+impl Console {
+    /// The command text, echoed back in console replies as `> name`.
+    pub fn name(self) -> &'static str {
+        match self {
+            Console::Status => "status",
+            Console::Disarm => "disarm",
+            Console::Maintenance => "maintenance",
+            Console::Exit => "exit",
+            Console::ClearFault => "clear-fault",
+            Console::Save => "save",
+            Console::CalibrateGyro => "calibrate-gyro",
+            Console::Metrics(_) => "metrics",
+            Console::Mode(1) => "acro",
+            Console::Mode(3) => "auto",
+            Console::Mode(_) => "stab",
+        }
+    }
 }
 pub fn console(bytes: &[u8]) -> Result<Console, Error> {
+    // Text ends at the first NUL, as in the legacy firmware: upstream pyflix pads the data
+    // field with zeros and counts the padding.
+    let bytes = bytes.split(|b| *b == 0).next().unwrap_or(&[]);
     let text = core::str::from_utf8(bytes)
         .map_err(|_| Error::Bounds)?
         .trim();
@@ -110,6 +134,9 @@ pub fn console(bytes: &[u8]) -> Result<Console, Error> {
         "clear-fault" => Ok(Console::ClearFault),
         "save" => Ok(Console::Save),
         "calibrate-gyro" => Ok(Console::CalibrateGyro),
+        "acro" => Ok(Console::Mode(1)),
+        "stab" => Ok(Console::Mode(2)),
+        "auto" => Ok(Console::Mode(3)),
         _ => Err(Error::Unsupported),
     }
 }
@@ -240,10 +267,16 @@ pub fn event(packet: &Packet, local: u8) -> Result<Event, Error> {
                     1.0 => Ok(Event::Arm),
                     _ => Err(Error::Bounds),
                 },
-                176 if args[0] == 1.0 && args[2..].iter().all(|v| *v == 0.0) => match args[1] {
-                    1.0 | 2.0 | 3.0 => Ok(Event::Mode(args[1] as u8)),
-                    _ => Ok(Event::UnsupportedCommand(command)),
-                },
+                // param1 is the base mode: QGC sends 1 (custom mode enabled), upstream pyflix
+                // sends 0. The legacy firmware ignored it; the mode is param2 either way.
+                176 if (args[0] == 0.0 || args[0] == 1.0)
+                    && args[2..].iter().all(|v| *v == 0.0) =>
+                {
+                    match args[1] {
+                        1.0 | 2.0 | 3.0 => Ok(Event::Mode(args[1] as u8)),
+                        _ => Ok(Event::UnsupportedCommand(command)),
+                    }
+                }
                 _ => Ok(Event::UnsupportedCommand(command)),
             }
         }
@@ -337,7 +370,11 @@ pub fn event(packet: &Packet, local: u8) -> Result<Event, Error> {
         }
         126 => {
             let count = usize::from(p[8]);
-            if count > 70 || p[6] != 10 || p[7] & !6 != 0 {
+            // Device 10 (shell) from QGC and the repo client; device 0 from upstream pyflix,
+            // which the legacy firmware also accepted. Flags: EXCLUSIVE (2), RESPOND (4) and
+            // MULTI (16, set by QGC's console) only ask how to reply; REPLY (1) and baudrate
+            // change (8) are refused.
+            if count > 70 || (p[6] != 10 && p[6] != 0) || p[7] & !(2 | 4 | 16) != 0 {
                 return Err(Error::Bounds);
             }
             if packet.length > 79 {

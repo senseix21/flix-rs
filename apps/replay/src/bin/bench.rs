@@ -57,8 +57,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ticks: u64 = std::env::var("FLIX_BENCH_TICKS")
         .unwrap_or_else(|_| "5000".into())
         .parse()?;
-    if ticks > 120_000 {
-        return Err("bench duration exceeds two minutes".into());
+    // Up to 15 minutes: long enough for an operator-driven client session (R2-04).
+    if ticks > 900_000 {
+        return Err("bench duration exceeds fifteen minutes".into());
     }
     let mut admitted = std::collections::BTreeMap::<u32, u64>::new();
     let mut rejected = 0_u64;

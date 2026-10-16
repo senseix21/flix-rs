@@ -247,6 +247,38 @@ impl Owner {
         data[9..9 + message.len()].copy_from_slice(message);
         self.emit(126, &data);
     }
+    /// 1 ACRO, 2 STAB (pilot source), 3 AUTO (automatic source). Refused while Armed,
+    /// in Maintenance or in Fault: a source change always needs explicit rearming.
+    fn select_mode(&mut self, mode: u8) -> bool {
+        let source = if mode == 3 {
+            flight_core::Source::Automatic
+        } else {
+            flight_core::Source::Pilot
+        };
+        let accepted = self.flight.select(source);
+        if accepted {
+            self.pilot_acro = mode == 1;
+        }
+        accepted
+    }
+    /// SERIAL_CONTROL shell reply `> command` newline `result`, as the legacy firmware echoed
+    /// commands; upstream pyflix matches replies by that prefix.
+    fn console_reply(&mut self, command: &str, result: &str) {
+        let mut text = [0u8; 70];
+        let mut len = 0;
+        for part in [
+            b"> ".as_slice(),
+            command.as_bytes(),
+            b"\n",
+            result.as_bytes(),
+            b"\n",
+        ] {
+            let n = part.len().min(70 - len);
+            text[len..len + n].copy_from_slice(&part[..n]);
+            len += n;
+        }
+        self.status_text(&text[..len]);
+    }
     fn system(&self) -> u8 {
         self.settings.get("MAV_SYS_ID").unwrap_or(1.0) as u8
     }
@@ -402,15 +434,7 @@ impl Owner {
                 self.ack(176, accepted);
             }
             Event::Mode(mode) => {
-                let source = if mode == 3 {
-                    flight_core::Source::Automatic
-                } else {
-                    flight_core::Source::Pilot
-                };
-                let accepted = self.flight.select(source);
-                if accepted {
-                    self.pilot_acro = mode == 1;
-                }
+                let accepted = self.select_mode(mode);
                 self.ack(176, accepted);
             }
             Event::ProtocolRequested(command) => {
@@ -458,84 +482,124 @@ impl Owner {
                 }
             }
             Event::ParameterSet { name, value } => {
+                // A refused write is announced: a client that waits for PARAM_VALUE would
+                // otherwise only see a timeout (base spec section 11).
                 if !self.flight.stopped_maintenance() {
+                    self.notice(MAV_SEVERITY_WARNING, "param denied: ", "maintenance only");
                     return;
                 }
-                if let Some(name) = name_text(&name) {
-                    let mut next = self.settings;
-                    if next.set(name, value).is_ok()
-                        && self.flight.reconfigure(next.tuning(), next.limits())
-                    {
-                        self.settings = next;
-                        self.driver_restart_requested |= name.starts_with("IMU_");
-                        if let Some(index) = Settings::index(name) {
-                            self.parameter(index);
-                        }
+                let Some(name) = name_text(&name) else {
+                    self.notice(MAV_SEVERITY_WARNING, "param denied: ", "name");
+                    return;
+                };
+                let mut next = self.settings;
+                let result = next.set(name, value);
+                if result.is_ok() && self.flight.reconfigure(next.tuning(), next.limits()) {
+                    self.settings = next;
+                    self.driver_restart_requested |= name.starts_with("IMU_");
+                    if let Some(index) = Settings::index(name) {
+                        self.parameter(index);
                     }
+                } else {
+                    let why = match result {
+                        Err(flight_config::Error::Unknown) => "unknown name",
+                        Err(flight_config::Error::Unsupported) => "not supported",
+                        Err(flight_config::Error::Bounds) => "out of range",
+                        Err(flight_config::Error::CrossField) => "conflicts",
+                        _ => "busy",
+                    };
+                    self.notice(MAV_SEVERITY_WARNING, "param denied: ", why);
                 }
             }
-            Event::Console(command) => match command {
-                Console::Status => {
-                    let snapshot = self.flight.snapshot();
-                    let mut data = [0u8; 79];
-                    let message = match snapshot.state {
-                        State::Armed => b"armed".as_slice(),
-                        State::Fault => b"fault".as_slice(),
-                        State::Maintenance => b"maintenance".as_slice(),
-                        _ => b"stopped".as_slice(),
-                    };
-                    data[6] = 10;
-                    data[8] = message.len() as u8;
-                    data[9..9 + message.len()].copy_from_slice(message);
-                    self.emit(126, &data);
+            Event::Console(Console::Metrics(nonce)) => {
+                if self.flight.stopped_maintenance() {
+                    self.metrics_transfer =
+                        Some(crate::metrics::Transfer::new(self.timing.snapshot(), nonce));
+                } else {
+                    let mut denied = [0u8; 10];
+                    denied[..4].copy_from_slice(b"FLXM");
+                    denied[4..8].copy_from_slice(&nonce.to_le_bytes());
+                    self.status_text(&denied);
                 }
-                Console::Metrics(nonce) => {
-                    if self.flight.stopped_maintenance() {
-                        self.metrics_transfer =
-                            Some(crate::metrics::Transfer::new(self.timing.snapshot(), nonce));
-                    } else {
-                        let mut denied = [0u8; 10];
-                        denied[..4].copy_from_slice(b"FLXM");
-                        denied[4..8].copy_from_slice(&nonce.to_le_bytes());
-                        self.status_text(&denied);
+            }
+            Event::Console(command) => {
+                let result = match command {
+                    Console::Status => match self.flight.snapshot().state {
+                        State::Armed => "armed",
+                        State::Fault => "fault",
+                        State::Maintenance => "maintenance",
+                        _ => "stopped",
+                    },
+                    Console::Maintenance => {
+                        if self.flight.maintenance() {
+                            "ok"
+                        } else {
+                            "denied: not in standby"
+                        }
                     }
-                }
-                Console::Maintenance => {
-                    self.flight.maintenance();
-                }
-                Console::Exit => {
-                    if !self.driver_restart_requested
-                        && !self.calibration_requested
-                        && !self.save_requested
-                    {
+                    Console::Exit => {
+                        if self.driver_restart_requested
+                            || self.calibration_requested
+                            || self.save_requested
+                        {
+                            "busy"
+                        } else {
+                            self.flight.disarm();
+                            "ok"
+                        }
+                    }
+                    Console::ClearFault => {
+                        let snapshot = self.flight.snapshot();
+                        if snapshot.state == State::Fault
+                            && snapshot.reason == flight_core::Reason::SensorInit
+                        {
+                            // Clearing must prove the sensor works; never just drop the flag.
+                            self.sensor_retry_requested = true;
+                            "retrying sensor"
+                        } else if snapshot.state == State::Fault && snapshot.reason.latched() {
+                            let how = match snapshot.reason {
+                                flight_core::Reason::Configuration => "configuration (reflash)",
+                                _ => "generation (reboot)",
+                            };
+                            self.notice(MAV_SEVERITY_WARNING, "clear denied: ", how);
+                            "denied"
+                        } else if self.flight.clear_fault() {
+                            "ok"
+                        } else {
+                            "no fault"
+                        }
+                    }
+                    Console::Save => {
+                        self.save_requested = self.flight.stopped_maintenance();
+                        if self.save_requested {
+                            "saving"
+                        } else {
+                            "denied: maintenance only"
+                        }
+                    }
+                    Console::CalibrateGyro => {
+                        self.calibration_requested = self.flight.stopped_maintenance();
+                        if self.calibration_requested {
+                            "calibrating"
+                        } else {
+                            "denied: maintenance only"
+                        }
+                    }
+                    Console::Disarm => {
                         self.flight.disarm();
+                        "ok"
                     }
-                }
-                Console::ClearFault => {
-                    let snapshot = self.flight.snapshot();
-                    if snapshot.state == State::Fault
-                        && snapshot.reason == flight_core::Reason::SensorInit
-                    {
-                        // Clearing must prove the sensor works; never just drop the flag.
-                        self.sensor_retry_requested = true;
-                    } else if snapshot.state == State::Fault && snapshot.reason.latched() {
-                        let how = match snapshot.reason {
-                            flight_core::Reason::Configuration => "configuration (reflash)",
-                            _ => "generation (reboot)",
-                        };
-                        self.notice(MAV_SEVERITY_WARNING, "clear denied: ", how);
-                    } else {
-                        self.flight.clear_fault();
+                    Console::Mode(mode) => {
+                        if self.select_mode(mode) {
+                            "ok"
+                        } else {
+                            "denied: disarm first"
+                        }
                     }
-                }
-                Console::Save => {
-                    self.save_requested = self.flight.stopped_maintenance();
-                }
-                Console::CalibrateGyro => {
-                    self.calibration_requested = self.flight.stopped_maintenance();
-                }
-                Console::Disarm => self.flight.disarm(),
-            },
+                    Console::Metrics(_) => return,
+                };
+                self.console_reply(command.name(), result);
+            }
             Event::Log { offset, count } => {
                 if self.flight.stopped_maintenance() {
                     let total = 12 + self.log.len() * 64;

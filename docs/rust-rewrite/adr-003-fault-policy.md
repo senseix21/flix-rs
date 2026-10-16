@@ -121,5 +121,10 @@ The firmware boot path keeps its existing fallback to identity rotation for unre
 settings. Only its fault reason changed. All gates pass: `scripts/check.sh` (75 Rust, 37 Python,
 400 parity cases), 6 Kani proofs, both Xtensa archives, and all fuzz targets.
 
+2026-10-16: the Failsafe arm denial reads `arm denied: failsafe (send disarm)`. HEARTBEAT reports
+Failsafe as disarmed, so QGroundControl offers only Arm and its operator could not tell what
+leaves Failsafe (R2-04 Gazebo session). The rule is unchanged: Failsafe still needs an explicit
+disarm. Owner test: `failsafe_arm_denial_names_the_recovery_and_disarm_then_arm_works`.
+
 Both D3 test failures during development were test mistakes (a 1 s time jump and a repeated
 timestamp, both clock-gap faults). The new notices named them (`fault: clock`).

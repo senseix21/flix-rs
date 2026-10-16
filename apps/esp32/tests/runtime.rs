@@ -57,8 +57,9 @@ fn maintenance_transfer_is_denied_armed_and_snapshot_offsets_work() {
         Tick(2000),
     );
     owner.tick(Tick(2000), Some(sample(2000)));
-    let reply = owner.reply().unwrap();
-    assert_eq!(&reply.bytes[17..21], b"FLXR");
+    // The maintenance command's console echo is queued too; find the log chunk.
+    let replies: Vec<_> = std::iter::from_fn(|| owner.reply()).collect();
+    assert!(replies.iter().any(|r| &r.bytes[17..21] == b"FLXR"));
     owner.submit(Event::Console(Console::Save), Tick(3000));
     owner.tick(Tick(3000), Some(sample(3000)));
     assert!(owner.save_requested);

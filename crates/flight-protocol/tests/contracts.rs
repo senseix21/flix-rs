@@ -189,3 +189,118 @@ fn peers_are_bounded_and_require_unicast_nonzero_keys() {
         Err(Error::Unauthorized)
     );
 }
+#[test]
+fn upstream_pyflix_mode_and_console_encodings_are_accepted() {
+    // DO_SET_MODE with base mode 0 (upstream pyflix) and 1 (QGC); the mode is param2.
+    for base in [0.0f32, 1.0] {
+        let mut p = Vec::new();
+        for v in [base, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0] {
+            p.extend_from_slice(&v.to_le_bytes());
+        }
+        p.extend_from_slice(&176u16.to_le_bytes());
+        p.extend_from_slice(&[1, 1, 0]);
+        let mut policy = bench();
+        let packet = wire::decode(&frame(76, &p), &mut policy).unwrap();
+        assert!(
+            matches!(event(&packet, 1), Ok(Event::Mode(3))),
+            "base {base}"
+        );
+    }
+    let mut p = Vec::new();
+    for v in [2.0f32, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0] {
+        p.extend_from_slice(&v.to_le_bytes());
+    }
+    p.extend_from_slice(&176u16.to_le_bytes());
+    p.extend_from_slice(&[1, 1, 0]);
+    let mut policy = bench();
+    let packet = wire::decode(&frame(76, &p), &mut policy).unwrap();
+    assert!(matches!(
+        event(&packet, 1),
+        Ok(Event::UnsupportedCommand(176))
+    ));
+    // SERIAL_CONTROL: device 0 (upstream pyflix) or 10 (shell); NUL padding counted in `count`.
+    for device in [0u8, 10] {
+        let mut data = [0u8; 70];
+        data[..7].copy_from_slice(b"status\n");
+        let mut p = vec![0u8; 6];
+        p.extend_from_slice(&[device, 0, 70]);
+        p.extend_from_slice(&data);
+        let mut policy = bench();
+        let packet = wire::decode(&frame(126, &p), &mut policy).unwrap();
+        assert!(
+            matches!(
+                event(&packet, 1),
+                Ok(Event::Console(flight_protocol::Console::Status))
+            ),
+            "device {device}"
+        );
+    }
+    // QGC v5.0.8 MAVLinkConsoleController sends EXCLUSIVE | RESPOND | MULTI (2 | 4 | 16).
+    let mut p = vec![0u8; 6];
+    p.extend_from_slice(&[10, 2 | 4 | 16, 5]);
+    p.extend_from_slice(b"stab\n");
+    let mut policy = bench();
+    let packet = wire::decode(&frame(126, &p), &mut policy).unwrap();
+    assert!(matches!(
+        event(&packet, 1),
+        Ok(Event::Console(flight_protocol::Console::Mode(2)))
+    ));
+    // REPLY (1) and baudrate change (8) stay refused: those are drone-to-client or port control.
+    for flags in [1u8, 8] {
+        let mut p = vec![0u8; 6];
+        p.extend_from_slice(&[10, flags, 6]);
+        p.extend_from_slice(b"status");
+        let mut policy = bench();
+        let packet = wire::decode(&frame(126, &p), &mut policy).unwrap();
+        assert_eq!(
+            event(&packet, 1).unwrap_err(),
+            Error::Bounds,
+            "flags {flags}"
+        );
+    }
+    let mut p = vec![0u8; 6];
+    p.extend_from_slice(&[1, 0, 6]);
+    p.extend_from_slice(b"status");
+    let mut policy = bench();
+    let packet = wire::decode(&frame(126, &p), &mut policy).unwrap();
+    assert_eq!(event(&packet, 1).unwrap_err(), Error::Bounds);
+}
+#[test]
+fn wired_policy_also_accepts_component_zero_but_radio_stays_exact() {
+    // wire::encode refuses a zero sender (the drone never sends as 0), so build an incoming
+    // frame by patching the sender bytes and recomputing the checksum (HEARTBEAT CRC extra 50).
+    let heartbeat = |system: u8, component: u8| {
+        let mut bytes = frame(0, &[0, 0, 0, 0, 6, 8, 0, 4, 3]);
+        bytes[5] = system;
+        bytes[6] = component;
+        let end = bytes.len() - 2;
+        let c = wire::crc(&bytes[1..end], 50);
+        bytes[end..].copy_from_slice(&c.to_le_bytes());
+        bytes
+    };
+    for (system, component, ok) in [
+        (255, 190, true),
+        (255, 0, true),
+        (255, 1, false),
+        (254, 0, false),
+        (0, 0, false),
+    ] {
+        let mut policy = bench();
+        assert_eq!(
+            wire::decode(&heartbeat(system, component), &mut policy).is_ok(),
+            ok,
+            "{system}/{component}"
+        );
+    }
+    let key = [7u8; 32];
+    let mut policy = Policy::Signed {
+        system: 255,
+        component: 190,
+        signing: Signing::new(key, 1).unwrap(),
+    };
+    let unsigned_zero = heartbeat(255, 0);
+    assert_eq!(
+        wire::decode(&signed(unsigned_zero, key, 10), &mut policy).unwrap_err(),
+        Error::Unauthorized
+    );
+}
