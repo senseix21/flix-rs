@@ -1,6 +1,6 @@
 # Current status
 
-Updated 2026-10-13 at `main` `fdcb651`. This page is the current summary. The reports it links,
+Updated 2026-10-16 at `main` `7a3dfcb`. This page is the current summary. The reports it links,
 and older pages such as [implementation status](implementation-status.md) and
 [software acceptance](software-acceptance.md), are kept as dated history, and their counts are
 not current.
@@ -8,16 +8,21 @@ not current.
 **Development software, not flight-qualified.** No board has been flashed. Host, simulator and
 compile-only evidence do not establish motor stop timing, target timing, radio behaviour or flight.
 
-## Verification (every push, GitHub Actions)
+## Verification
+
+GitHub Actions has been on hold since 2026-10-13 (spending limit), so its jobs stopped starting.
+The latest results are a local run of the same jobs at `b8414e4` on 2026-10-16
+([local gates](evidence/local-gates-2026-10-16.md)); `gazebo` and `swarm` were not run in their
+amd64 CI image. The last remote pass of all six jobs was on `fdcb651`.
 
 | Job | What it runs | State |
 | --- | --- | --- |
-| contracts | `scripts/check.sh`: generation, fmt, Clippy (host and both firmware crates), 95 Rust and 55 Python tests (38 tools, 17 swarm), 400-case legacy scalar oracle (max error 4.77e-7), ABI smoke v1/v2, simulator contracts, swarm harness (7 S1 and 11 S2 scenarios), replay benchmark | pass |
-| supply-chain | `scripts/deny.sh`: advisories, licences, bans, sources for all four workspaces | pass |
-| kani | 8 model-checked proofs in `crates/flight-core/src/proofs.rs` (`cargo kani -Z stubbing`) | pass |
-| fuzz | 6 cargo-fuzz targets, 120 s each | pass |
-| gazebo | Plugin smoke, 20 finite scenario runs, paired C++/Rust comparison (`make sim-parity`), three-drone Gazebo swarm flight (`make swarm-gazebo-check`) | pass |
-| swarm | Crazyswarm2 (ROS 2 Jazzy) coordinating simulated Flix drones: formation, stop, partial arming; formation with the position loop on the drone (`make swarm-sim`) | pass |
+| contracts | `scripts/check.sh`: generation, fmt, Clippy (host and both firmware crates), 110 Rust and 56 Python tests (38 tools, 18 swarm), 400-case legacy scalar oracle (max error 4.77e-7), ABI smoke v1/v2, simulator contracts, swarm harness (7 S1 and 11 S2 scenarios), replay benchmark | pass (local) |
+| supply-chain | `scripts/deny.sh`: advisories, licences, bans, sources for all four workspaces | pass (local) |
+| kani | 8 model-checked proofs in `crates/flight-core/src/proofs.rs` (`cargo kani -Z stubbing`) | pass (local) |
+| fuzz | 6 cargo-fuzz targets, 120 s each | pass (local, 47.3M runs) |
+| gazebo | Plugin smoke, 20 finite scenario runs, paired C++/Rust comparison (`make sim-parity`), three-drone Gazebo swarm flight (`make swarm-gazebo-check`) | last remote pass `fdcb651` |
+| swarm | Crazyswarm2 (ROS 2 Jazzy) coordinating simulated Flix drones: formation, stop, partial arming; formation with the position loop on the drone (`make swarm-sim`) | last remote pass `fdcb651` |
 
 Also verified locally: both ESP32-S3 Xtensa archives build. The full ESP-IDF image link was last
 run on 2026-10-05; `idf.py` is not installed on the current development host.
@@ -36,6 +41,9 @@ run on 2026-10-05; `idf.py` is not installed on the current development host.
 | Plant comparison | Root cause found (rigid-contact chatter). Soft contact is the default plant; 20/20 x86 pairs pass, worst 17.5 mm / 0.05° | [plant parity](evidence/plant-parity/README.md) |
 | CI | First remote runs exposed 3 pre-existing defects, all fixed; a property test later found the diagnostic-window bug (PR #6) | [CI first runs](evidence/ci-first-runs.md) |
 | Licence | Original work Apache-2.0; upstream images excluded (upstream has no licence) | `LICENSE`, `NOTICE` |
+| Real clients (R2-04) | Upstream pyflix passes 19 of 21 steps (2 deliberate refusals). QGroundControl v5.0.8: signed connection and all parameters; full operator checklist (console, virtual joystick, arm, link cut, reconnect, re-arm, disarm) passes against the Rust owner in Gazebo. Fixed on the way: QGC console commands were silently dropped (SERIAL_CONTROL MULTI flag) | [R2 clients](evidence/r2-clients/README.md) |
+| Signed link under attack (R2-05) | 10 owner-level tests (bad keys, every bit flip, replay including across reboot, delayed traffic, key rotation, link loss), loopback test of the real `radio.c`, six mutations caught | [R2 signing](evidence/r2-signing/README.md) |
+| Failsafe recovery message | After a link loss the drone reports disarmed but stays in Failsafe; the arm refusal now says `failsafe (send disarm)`. Rule unchanged | [ADR 003](adr-003-fault-policy.md) |
 | Swarm flight (simulation) | S1 and S2 done in simulation: Crazyswarm2 and Gazebo swarms; position loop in `flight-core` (MAVLink 84/138, heading fusion, `PositionExpired`); 21 `POS_*` parameters, settings record v2 with v1 migration | [swarm spec](../swarm-spec.md), [S1](evidence/swarm-s1/README.md), [S2](evidence/swarm-s2/README.md) |
 
 ## Remaining gates (from the [remaining plan](remaining-plan.md))
@@ -43,7 +51,7 @@ run on 2026-10-05; `idf.py` is not installed on the current development host.
 | Gate | State |
 | --- | --- |
 | R1 simulator | Comparison resolved and stable. Native multi-model reset and sustained-flight characterisation open |
-| R2 client and signing | Software complete; QGroundControl manual flight controls, joystick and real radio untested |
+| R2 client and signing | R2-01 to R2-05 done. Open: the QGroundControl operator flow over the signed link (shown in Gazebo over the unsigned development link), and real radio |
 | R3 exact board profile | **Blocked: no board inspected** |
 | R4 battery and loss policy | Needs electrical facts and a user decision |
 | R5 hardware bench | **Blocked: needs board and instruments** (stop traces, 30-minute timing, NVS power loss) |
@@ -59,6 +67,9 @@ run on 2026-10-05; `idf.py` is not installed on the current development host.
   The gate is the stable-interval rule in `fixtures/simulator/acceptance.json`.
 - The Gazebo IMU sample lags truth by one 1 ms step in both engines.
 - SCALED_IMU still saturates near 1,877°/s for upstream compatibility; HIGHRES_IMU does not.
+- QGroundControl v5.0.8 must run with `TZ=UTC` east of UTC to use the signed link: it measures
+  its signing time from local midnight (QGC defect, firmware unchanged).
+- After a link loss, re-arming from QGroundControl needs `disarm` in its MAVLink console first.
 - Upstream images in `docs/img/` need permission or replacement before any public release.
 
 ## Local development on Apple Silicon
