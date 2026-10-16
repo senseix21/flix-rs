@@ -12,6 +12,10 @@ recorder cuts the link for 3 s to test loss and reconnect.
 
 Signing keys never reach stdout, `progress.txt` or `result.json`. Private files are 0600 and the
 enrollment frame is deleted at exit.
+
+With `--gazebo 127.0.0.1:14550` the vehicle is the Rust owner inside Gazebo (scripts/gazebo-run.sh)
+instead of the bench. That link is the plugin's unsigned loopback development policy, so no key is
+made; the recorder sends heartbeats until the plugin answers, so it learns where to send telemetry.
 """
 import argparse
 import hashlib
@@ -175,10 +179,14 @@ def main():
     parser.add_argument('--executable', type=pathlib.Path, required=True)
     parser.add_argument('--output', type=pathlib.Path, required=True)
     parser.add_argument('--minutes', type=float, default=12.0)
+    parser.add_argument('--gazebo', metavar='HOST:PORT',
+                        help='use a running Gazebo simulation (unsigned development link) instead of the bench')
     args = parser.parse_args()
     if subprocess.run(['pgrep', '-x', 'QGroundControl'], capture_output=True).returncode == 0:
         raise SystemExit('close any running QGroundControl first')
     args.output.mkdir(parents=True, exist_ok=False)
+    if args.gazebo:
+        return gazebo_session(args)
     phrase = secrets.token_hex(32)
     key = hashlib.sha256(phrase.encode()).digest()
     stamp = int((time.time() - 1420070400) * 100000)
@@ -270,6 +278,97 @@ def main():
         'frames': session.counts,
         'events': [list(e) for e in session.events],
         'bench_counters': ((args.output / 'bench.log').read_text().strip().splitlines() or [''])[-1],
+        'physical_hardware': False,
+    }
+    (args.output / 'result.json').write_text(json.dumps(result, indent=1) + '\n')
+    session.write()
+    print(json.dumps({k: result[k] for k in ('passed', 'steps', 'manual_control_frames', 'max_throttle')}, indent=1))
+    return 0 if result['passed'] else 1
+
+
+def gazebo_session(args):
+    host, port = args.gazebo.rsplit(':', 1)
+    endpoint = (host, int(port))
+    config = args.output.resolve() / 'qgc-config'
+    ini = config / 'qgroundcontrol.com/QGroundControl.ini'
+    ini.parent.mkdir(parents=True)
+    ini.write_text(f'[General]\ntelemetrySave=false\n\n[AutoConnect]\nudpListenPort={QGC_PORT}\n')
+    session = Session(args.output)
+    stop = threading.Event()
+    heard = threading.Event()
+    relay = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    relay.bind(('127.0.0.1', RELAY_PORT))
+    relay.settimeout(0.1)
+    environment = dict(os.environ, XDG_CONFIG_HOME=str(config), XDG_CACHE_HOME=str(config.parent / 'qgc-cache'),
+                       XDG_DATA_HOME=str(config.parent / 'qgc-data'), TZ='UTC')
+    deadline = time.monotonic() + args.minutes * 60
+    qgc = None
+    # GCS heartbeat (type 6, autopilot 8, MAVLink 3): the plugin learns its endpoint from accepted frames.
+    hello = pack(0, struct.pack('<IBBBBB', 0, 6, 8, 0, 0, 3))
+    try:
+        qlog = (args.output / 'qgc.log').open('w')
+        qgc = subprocess.Popen([str(args.executable),
+                                '--logging:qgc.comms.linkinterface,qgc.vehicle.multivehiclemanager,'
+                                'qgc.vehicle.initialconnectstatemachine,qgc.factsystem.parametermanager'],
+                               stdout=qlog, stderr=qlog, env=environment)
+
+        def pump():
+            while not stop.is_set():
+                try:
+                    data, source = relay.recvfrom(4096)
+                except socket.timeout:
+                    continue
+                cutting = session.cut_until is not None and time.monotonic() < session.cut_until
+                if source == endpoint:
+                    heard.set()
+                    session.to_qgc(data)
+                    if not cutting:
+                        relay.sendto(data, ('127.0.0.1', QGC_PORT))
+                elif source == ('127.0.0.1', QGC_PORT):
+                    if not cutting:
+                        session.to_drone(data)
+                        relay.sendto(data, endpoint)
+                else:
+                    session.note('unknown-source', f'{source} {len(data)} bytes')
+
+        worker = threading.Thread(target=pump, daemon=True)
+        worker.start()
+        last_hello = 0.0
+        while qgc.poll() is None and time.monotonic() < deadline:
+            # Keep greeting until QGC itself talks: Colima's UDP forwarder drops an idle flow.
+            if not session.last_qgc and time.monotonic() - last_hello > 1.0:
+                relay.sendto(hello, endpoint)
+                last_hello = time.monotonic()
+            if 'throttle' in session.done and 'cut' not in session.done and session.cut_until is None:
+                session.cut_until = time.monotonic() + CUT_SECONDS
+                session.note('cut', f'link cut for {CUT_SECONDS:g} s while armed: {session.armed}')
+            if session.cut_until is not None and time.monotonic() >= session.cut_until:
+                session.cut_until = None
+                session.mark('cut', f'link restored; drone armed: {session.armed}')
+            session.write()
+            if 'disarmed' in session.done:
+                break
+            time.sleep(0.2)
+    finally:
+        stop.set()
+        relay.close()
+        if qgc is not None and qgc.poll() is None:
+            qgc.terminate()
+            try:
+                qgc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                qgc.kill()
+    result = {
+        'client': 'QGroundControl v5.0.8',
+        'executable_sha256': hashlib.sha256(args.executable.read_bytes()).hexdigest(),
+        'vehicle': f'Rust owner in Gazebo 11 (flight-gazebo plugin) at {args.gazebo}',
+        'policy': 'unsigned loopback development link (plugin policy)',
+        'steps': {step: session.done.get(step) for step, _ in STEPS},
+        'passed': all(step in session.done for step, _ in STEPS),
+        'manual_control_frames': session.manual,
+        'max_throttle': session.max_throttle,
+        'frames': session.counts,
+        'events': [list(e) for e in session.events],
         'physical_hardware': False,
     }
     (args.output / 'result.json').write_text(json.dumps(result, indent=1) + '\n')

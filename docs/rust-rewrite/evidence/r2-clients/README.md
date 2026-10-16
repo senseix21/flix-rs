@@ -75,7 +75,8 @@ evidence; notarized Developer ID, `codesign --verify --deep --strict` passes.
 | Check | Result |
 | --- | --- |
 | `tools/qgc-acceptance.py` (automated, signed per-boot session) | **pass**: vehicle discovered, signed parameter request, all 117 parameters (including the 21 `POS_*`) transferred; QGC reports initial load complete |
-| `tools/qgc-session.py` (operator checklist: console `stab`, virtual joystick, arm, throttle, 3 s link cut, reconnect, re-arm, disarm) | **not completed**: QGC connected and loaded parameters, then the session ran 15 minutes with no operator input and was stopped. QGC sent only its own background requests (COMMAND_LONG 512 and 521, both answered UNSUPPORTED) |
+| `tools/qgc-session.py` against the bench (signed) | **not completed**: QGC connected and loaded parameters in every run; the UI steps were not driven (no operator, then the console bug below) |
+| `tools/qgc-session.py --gazebo 127.0.0.1:14550` (operator checklist against the Rust owner in Gazebo, unsigned loopback development link) | **pass**, 2026-10-16, all 9 steps: [qgc-gazebo-session.json](qgc-gazebo-session.json) |
 
 **Finding: QGC signing depends on the host time zone (confirmed).** With the machine's local
 zone (UTC+6) QGC received 1,155 to 1,898 correctly signed frames per run and sent nothing back, in
@@ -99,13 +100,44 @@ now accepted; REPLY (1) and baudrate change (8) stay refused. Contract test:
 pyflix and the repo client send flags 0 and were unaffected, which is why earlier console tests
 passed. The UI session itself was stopped before arming and must be rerun with the fix.
 
+**Gazebo operator session (2026-10-16), revision `d48e2d4` plus the `--gazebo` mode of
+`tools/qgc-session.py`.** Vehicle: the `flight-gazebo` plugin in Gazebo 11.15.1
+(`flix-rust-gazebo:arm64`, `scripts/gazebo-run.sh`, soft contact), reached through
+`tools/gazebo-server.py` on host UDP 14550. Link: the plugin's unsigned loopback development
+policy, so this run covers the operator flow, not signing (signing is covered by the automated
+signed session above). Operator: Claude through computer use, following `progress.txt`. Times are
+seconds from start, from the recorder's own traffic decode:
+
+| Step | t (s) | Evidence in traffic |
+| --- | --- | --- |
+| connected | 7.0 | all parameters sent |
+| console `stab` | 76.5 | reply `> stab` / `ok` (the MULTI-flag fix, live) |
+| virtual joystick | 100.9 | MANUAL_CONTROL from 255/190 (4,187 frames in the run) |
+| armed | 143.0 | COMMAND_ACK 400 accepted, heartbeat armed |
+| throttle > 20 % for 2 s | 153.9 | MANUAL_CONTROL throttle 0.30 |
+| link cut 3 s | 154.0–157.1 | recorder dropped both directions |
+| reconnected, disarmed | 157.5 | first heartbeat after the cut reports disarmed |
+| re-armed | 258.6 | after `disarm` + `stab` in the console (see finding) |
+| disarmed from QGC | 271.6 | COMMAND_ACK 400 accepted, heartbeat disarmed |
+
+The `max_throttle` of 0.50 in the record is the virtual stick's centre position before it was
+moved down for arming; the flight value was 0.30.
+
+**Finding: after a link loss QGC cannot leave Failsafe by itself.** The lease expiry put the owner
+in Failsafe (`CommandExpired`), which HEARTBEAT reports as disarmed. QGC therefore offers only
+Arm, and arming is refused with STATUSTEXT `arm denied: failsafe` (shown in QGC's Vehicle
+Messages). Recovery needed the console `disarm`, which ADR 003 requires as the explicit
+acknowledgement. Safe, and the denial names its cause, but the operator has to know the console
+command. Options, not decided here: accept an Arm command from Failsafe as the acknowledgement
+(still requiring low thrust and a fresh lease), or make the denial text say `send disarm`.
+
 Also added for the session: console `stab`, `acro`, `auto` (explicit source selection, as the
 legacy console offered; QGC's generic-vehicle UI has no mode switcher), and the bench may now run
 up to 15 minutes.
 
 ## Not established
 
-- QGroundControl UI arming, virtual joystick, disarm and reconnect: the operator session is ready
-  (`tools/qgc-session.py`) but has not been completed.
+- The QGroundControl operator flow over the signed link: it ran against Gazebo's unsigned
+  development link; the signed link is shown only for connection and parameters.
 - Signed radio use by pyflix (upstream pyflix has no signing support).
 - Real serial/USB, radio and hardware.
