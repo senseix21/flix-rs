@@ -99,9 +99,36 @@ class Grounds(unittest.TestCase):
     def test_ground_alone_provisions_then_waits(self):
         ground = Ground('g', 12)
         frames = [ground.outgoing(t, (0, 0, 0), (0, 0, 0)) for t in range(1000, 8000, 1000)]
-        self.assertEqual(sum(f is not None for f in frames), 4)  # maintenance, two PARAM_SETs, exit
+        self.assertEqual(sum(f is not None for f in frames), 3)  # maintenance, two PARAM_SETs; exit waits for echoes
         self.assertEqual(ground.phase, 'provisioning')
         self.assertFalse(ground.request_arm(8000))
+
+    def test_arms_when_the_transport_delivers_frames_in_bursts(self):
+        # Gazebo under load hands the owner every queued datagram in one tick. Mode, lease and
+        # arm arriving together lost the lease (selecting a source clears it) and the arm was
+        # refused with "no command" (CI run 38419153537).
+        owner = Owner()
+        try:
+            ground = Ground('g', 12)
+            burst = []
+            for step in range(1, 400):
+                now = step * 1000
+                frame = ground.outgoing(now, (0, 0, 0), (0, 0, 0))
+                if frame is not None:
+                    burst.append(frame)
+                if step % 20 == 0:  # deliver everything from the last 20 ms in one owner tick
+                    for queued in burst:
+                        owner.receive(queued, now)
+                    burst.clear()
+                owner.tick(now, (0, 0, 0), (0, 0, GRAVITY))
+                ground.receive(now, owner.replies())
+                if ground.phase == 'standby':
+                    ground.request_arm(now)
+                if ground.phase not in ('provisioning', 'standby', 'arming'):
+                    break
+            self.assertEqual((ground.phase, ground.refusal), ('armed', None))
+        finally:
+            owner.close()
 
     def test_release_only_after_a_completed_stop(self):
         ground = Ground('g', 12)

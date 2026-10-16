@@ -208,3 +208,37 @@ fn clear_denials_say_how_to_recover() {
     );
     assert_eq!(owner.counters.reply_overflow, 0);
 }
+
+#[test]
+fn failsafe_arm_denial_names_the_recovery_and_disarm_then_arm_works() {
+    // R2-04 Gazebo session: after a link loss QGC sees "disarmed" (Failsafe) and offers only Arm.
+    let mut owner = Owner::default();
+    tick_notices(&mut owner, 0);
+    owner.submit(Event::Select(Source::Pilot), Tick(1000));
+    tick_notices(&mut owner, 1);
+    owner.submit(Event::Setpoint(Source::Pilot, pilot(0.0)), Tick(2000));
+    tick_notices(&mut owner, 2);
+    owner.submit(Event::Arm, Tick(3000));
+    tick_notices(&mut owner, 3);
+    advance(&mut owner, 4, 1100);
+    assert_eq!(owner.flight.snapshot().state, State::Failsafe);
+
+    owner.submit(Event::Setpoint(Source::Pilot, pilot(0.0)), Tick(1_101_000));
+    tick_notices(&mut owner, 1101);
+    owner.submit(Event::Arm, Tick(1_102_000));
+    assert_eq!(
+        texts(&tick_notices(&mut owner, 1102)),
+        ["arm denied: failsafe (send disarm)"]
+    );
+    assert_eq!(owner.flight.snapshot().state, State::Failsafe);
+
+    owner.submit(Event::Console(Console::Disarm), Tick(1_103_000));
+    tick_notices(&mut owner, 1103);
+    owner.submit(Event::Select(Source::Pilot), Tick(1_104_000));
+    tick_notices(&mut owner, 1104);
+    owner.submit(Event::Setpoint(Source::Pilot, pilot(0.0)), Tick(1_105_000));
+    tick_notices(&mut owner, 1105);
+    owner.submit(Event::Arm, Tick(1_106_000));
+    tick_notices(&mut owner, 1106);
+    assert_eq!(owner.flight.snapshot().state, State::Armed);
+}

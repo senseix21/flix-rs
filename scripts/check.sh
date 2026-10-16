@@ -18,6 +18,8 @@ cargo check -p flight-core -p flight-protocol -p flight-config -p flight-esp32 -
 PYTHONPATH=tools python3 -m unittest discover -s tools/tests -v
 python3 scripts/legacy-parity.py
 python3 scripts/abi-smoke.py
+# Firmware UDP transport on the host: endpoint learning follows owner admission (R2-05).
+sh scripts/radio-endpoint-test.sh
 # Swarm S1 harness: real owners through the cdylib, no ROS (swarm plan S1-09, S1-10).
 PYTHONPATH=adapters/crazyswarm2 python3 -m unittest discover -s adapters/crazyswarm2/tests -v
 PYTHONPATH=adapters/crazyswarm2 python3 -m flix_swarm.scenarios --output target/swarm-s1
