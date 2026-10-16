@@ -128,8 +128,9 @@ in Failsafe (`CommandExpired`), which HEARTBEAT reports as disarmed. QGC therefo
 Arm, and arming is refused with STATUSTEXT `arm denied: failsafe` (shown in QGC's Vehicle
 Messages). Recovery needed the console `disarm`, which ADR 003 requires as the explicit
 acknowledgement. Safe, and the denial names its cause, but the operator has to know the console
-command. Options, not decided here: accept an Arm command from Failsafe as the acknowledgement
-(still requiring low thrust and a fresh lease), or make the denial text say `send disarm`.
+command. Decided 2026-10-16: keep the explicit disarm and make the denial say so,
+`arm denied: failsafe (send disarm)` (ADR 003 implementation record). Accepting Arm from Failsafe
+as the acknowledgement was not chosen: it would change the ADR 003 rule and its proofs.
 
 Also added for the session: console `stab`, `acro`, `auto` (explicit source selection, as the
 legacy console offered; QGC's generic-vehicle UI has no mode switcher), and the bench may now run

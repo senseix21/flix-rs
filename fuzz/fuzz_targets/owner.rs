@@ -57,7 +57,7 @@ fn check_notice(severity: u8, text: &str) {
         "booting",
         "maintenance",
         "already armed",
-        "failsafe",
+        "failsafe (send disarm)",
         "fault",
         "standby",
         "sensor",
