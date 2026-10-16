@@ -33,7 +33,7 @@ The GitHub repository is named `flix-rs`. Existing crate names, scripts, and Doc
 
 **Development software; physical flight qualification is incomplete.** Firmware builds and simulation checks provide evidence for their stated workloads. They do not establish safe motor operation, target timing, radio reliability, or real flight behavior.
 
-Every push runs five CI jobs: 76 Rust and 37 Python tests, 7 Kani proofs, 6 fuzz targets, supply-chain checks, 20 Gazebo scenario runs and the paired C++/Rust comparison (now passing on a soft-contact plant). Manual QGroundControl flight controls and all physical hardware qualification remain open.
+The checks cover 110 Rust and 56 Python tests, 8 Kani proofs, 6 fuzz targets, supply-chain checks, 20 Gazebo scenario runs and the paired C++/Rust comparison (passing on a soft-contact plant). GitHub Actions is on hold; the latest results are a local run on 2026-10-16. The QGroundControl operator checklist passes against the Rust owner in Gazebo; physical hardware qualification remains open.
 
 See the [current status](docs/rust-rewrite/status.md) for the summary and evidence links. The [software acceptance report](docs/rust-rewrite/software-acceptance.md) records the 2026-10-05 state.
 
@@ -227,18 +227,18 @@ Current results; details in [current status](docs/rust-rewrite/status.md):
 | Check | Result |
 | --- | --- |
 | Formatting, generated contracts, and Clippy | Passed |
-| Rust / Python tests | 76 / 37 passed |
-| Kani model-checking proofs | 7 passed |
+| Rust / Python tests | 110 / 56 passed |
+| Kani model-checking proofs | 8 passed |
 | Fuzzing (6 targets) | No crashes |
 | Supply chain (cargo-deny) | Passed |
 | Legacy scalar oracle | 400 cases passed |
 | Simulator ABI safety scenarios | 14 passed |
 | Actual Gazebo scenarios | 20 runs passed on the soft-contact plant |
 | ESP32-S3 SDK builds | Default flight, ESP-NOW flight, and proxy passed |
-| QGroundControl v5.0.8 | Signed discovery, protocol negotiation, and all 96 parameters verified |
+| QGroundControl v5.0.8 | Signed discovery and all 117 parameters; operator checklist (console, virtual joystick, arm, link cut, re-arm, disarm) passed in Gazebo over the unsigned development link |
 | Clean source build, local package installation, and rollback | Passed |
 | Paired C++/Rust plant comparison | Passed (stable-interval rule; 20/20 x86 pairs, worst 17.5 mm) |
-| Manual QGroundControl flight controls | Unverified |
+| QGroundControl operator flow over the signed link | Open |
 | Physical sensor, output, radio, timing, and flight qualification | Open |
 
 The earlier comparison failure was caused by rigid ground-contact chatter in the simulator, not by the controller; see [plant parity](docs/rust-rewrite/evidence/plant-parity/README.md). No controller gains or limits were changed. Full-tick parity still differs at stick transitions by design.
