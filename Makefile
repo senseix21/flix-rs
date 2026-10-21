@@ -74,3 +74,30 @@ swarm-gazebo:
 # One checked flight; exit status is the result.
 swarm-gazebo-check:
 	docker run --rm --init -v "$(CURDIR):/work" -v "$(LEGACY):/legacy:ro" -w /work $(GAZEBO_IMAGE) sh scripts/gazebo-swarm.sh $(SWARM_DRONES) once
+
+# Interactive browser simulation. Keep this terminal open; Ctrl+C stops both services.
+.PHONY: help sim sim-swarm sim-stop sim-status sim-logs sim-build
+SIM_PORT ?= 8765
+SIM_IMAGE ?=
+SIM_LEGACY ?=
+help:
+	@echo 'make sim          Build if needed, start Gazebo, and open the browser'
+	@echo 'make sim-swarm    Start the autonomous swarm demo and open its viewer'
+	@echo 'make sim-stop     Stop the managed world and its viewer'
+	@echo 'make sim-status   Show the managed container status'
+	@echo 'make sim-logs     Follow Gazebo build/runtime logs'
+	@echo 'make sim-build    Build the development Gazebo image'
+	@echo 'make check | demo | build | sim-check | sim-scenarios | sim-parity'
+	@echo 'Options: SIM_PORT=8765 SIM_IMAGE=... SIM_LEGACY=/path/to/flix'
+sim:
+	python3 tools/gazebo-dev.py start --port "$(SIM_PORT)" --image "$(SIM_IMAGE)" --legacy "$(SIM_LEGACY)"
+sim-swarm:
+	python3 tools/gazebo-dev.py start --swarm --drones "$(SWARM_DRONES)" --port "$(SIM_PORT)" --image "$(SIM_IMAGE)" --legacy "$(SIM_LEGACY)"
+sim-stop:
+	python3 tools/gazebo-dev.py stop
+sim-status:
+	python3 tools/gazebo-dev.py status
+sim-logs:
+	python3 tools/gazebo-dev.py logs
+sim-build:
+	python3 tools/gazebo-dev.py build --image "$(SIM_IMAGE)"
