@@ -131,22 +131,44 @@ The supported workflow runs Gazebo 11 headlessly in Docker and exposes a local b
 
 ### Start the world and viewer
 
-From the repository root:
+From the repository root, with Docker running and the legacy Flix plant checkout available:
 
 ```sh
-docker build -t flix-rust-gazebo:local -f adapters/gazebo/Dockerfile .
-
-docker run --init -d --name flix-rust-gazebo \
-  -p 127.0.0.1:14550:14551/udp \
-  -v "$PWD:/work" -v "$PWD/../flix:/legacy:ro" -w /work \
-  flix-rust-gazebo:local sh scripts/gazebo-run.sh
-
-python3 tools/gazebo-viewer.py
+make sim
 ```
 
-Open **[http://127.0.0.1:8765/?v=5](http://127.0.0.1:8765/?v=5)**. The viewer displays the actual Gazebo pose and Rust controller telemetry. It uses no external web assets or dependencies.
+This builds the image if missing, starts the world and viewer, waits for a live
+Gazebo pose, and opens http://127.0.0.1:8765. Keep the terminal open; Ctrl+C stops
+both processes. Arming remains an explicit browser action. Startup times out
+after ten minutes (excluding the initial image build).
 
-For an existing container, use `docker start flix-rust-gazebo`. Stop the world with `docker stop flix-rust-gazebo`; inspect it with `docker logs --tail 30 flix-rust-gazebo`.
+Use `make sim-status`, `make sim-logs`, and `make sim-stop` from another terminal.
+`make sim-build` explicitly rebuilds the image; `make help` lists commands.
+The launcher manages only its own labeled `flix-rust-gazebo-browser` container.
+Stop older manually launched simulations first if they hold UDP port 14550.
+
+Apple Silicon selects the native arm64 development image; other hosts use the
+existing default image. With Colima, start it using
+`colima start --port-forwarder grpc` so UDP reaches the simulator.
+The arm64 image is for development and is separate from the CI evidence image.
+Plant assets are found in `.local/legacy-git` or `../flix`; override with
+`make sim SIM_LEGACY=/path/to/flix`. See [legacy source](docs/legacy-source.md)
+for the pinned plant revision. `SIM_IMAGE` and `SIM_PORT` override the image
+and browser port. Both HTTP and published UDP bind only to host loopback.
+
+### Swarm browser demo
+
+```sh
+make sim-swarm
+```
+
+Starts three drones, waits for all three live poses, and opens the viewer.
+The existing coordinator automatically arms and flies a repeating demo; the
+swarm browser is view only. Set the count with `make sim-swarm SWARM_DRONES=5`
+(1–8). The image, plant path, and browser port options are the same as `make sim`.
+Stop the current session with `make sim-stop` before switching between single
+drone and swarm. `make sim-status` and `make sim-logs` work for either session;
+Ctrl+C stops the viewer and world.
 
 ### Browser controls
 

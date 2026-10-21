@@ -1,0 +1,12 @@
+# Local development image for Apple Silicon only. Not the pinned CI/evidence image
+# (adapters/gazebo/Dockerfile: Ubuntu 22.04 amd64, Gazebo 11.10.2).
+FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl gnupg lsb-release \
+ && curl -fsSL https://packages.osrfoundation.org/gazebo.gpg -o /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg \
+ && echo "deb [arch=arm64 signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable focal main" > /etc/apt/sources.list.d/gazebo-stable.list \
+ && apt-get update && apt-get install -y --no-install-recommends git build-essential cmake pkg-config gazebo11 libgazebo11-dev libsdl2-dev python3 coreutils \
+ && rm -rf /var/lib/apt/lists/*
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup.sh && sh /tmp/rustup.sh -y --default-toolchain 1.92.0 --profile minimal
+ENV PATH=/root/.cargo/bin:$PATH
+WORKDIR /work
